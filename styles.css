@@ -13,8 +13,8 @@ https://docs.obsidian.md/Reference/CSS+variables/CSS+variables
 }
 
 .pomodoro-timer.paused {
-	/* background-color: var(--background-modifier-hover); */
-	background-color: var(--interactive-normal);
+	background-color: var(--background-modifier-error);
+	color: var(--text-on-error);
 }
 
 .pomodoro-timer.active {
@@ -22,15 +22,10 @@ https://docs.obsidian.md/Reference/CSS+variables/CSS+variables
 	color: var(--text-on-accent);
 }
 
-.pomodoro-timer.break {
-	background-color: var(--color-break);
-	color: var(--text-on-break);
-}
-
 .pomodoro-timer:not(.active):hover {
 	background-color: var(--background-modifier-hover);
 }
 
 .pomodoro-timer.active:hover {
-	background-color: var(--color-hover-active);
+	background-color: var(--background-modifier-active-hover);
 }

@@ -71,7 +71,6 @@ export default class PomodoroPlugin extends Plugin {
 		if (!this.isRunning) {
 			this.isRunning = true;
 			this.statusBarItem.addClass("active");
-			this.statusBarItem.removeClass("break");
 			this.timer = window.setInterval(() => {
 				if (this.remainingTime > 0) {
 					this.remainingTime--;
@@ -80,10 +79,8 @@ export default class PomodoroPlugin extends Plugin {
 					this.pauseTimer();
 					if (this.currentDurationIndex === 0) {
 						this.currentDurationIndex = 1;
-						this.statusBarItem.addClass("break");
 					} else {
 						this.currentDurationIndex = 0;
-						this.statusBarItem.removeClass("break");
 					}
 				}
 			}, 1000);
