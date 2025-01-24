@@ -1,4 +1,4 @@
-# Status Bar Pomodoro for Obsidian
+# Status Bar Pomodoro for Obsidian (Pomobar? Name is a work in progress)
 
 A minimalist Pomodoro timer that lives in your Obsidian status bar. Focus on your work while keeping track of time with this unobtrusive timer. While learning to make Obsidian plugins, I thought it would be a good idea to make a Pomodoro timer that lives in the status bar. I use one all the time!
 
@@ -24,7 +24,7 @@ A minimalist Pomodoro timer that lives in your Obsidian status bar. Focus on you
 
 1. Look for the timer in your status bar (shows as "25:00" when not started)
 2. Left click to start the timer
-3. Left click again to pause
+3. Left click again to pause the timer
 4. Middle click to cycle between different durations (25/15/5 minutes)
 5. When paused, right click to reset to the current duration
 6. Timer will automatically stop when it reaches 00:00
