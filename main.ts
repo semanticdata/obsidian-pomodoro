@@ -71,12 +71,20 @@ export default class PomodoroPlugin extends Plugin {
 		if (!this.isRunning) {
 			this.isRunning = true;
 			this.statusBarItem.addClass("active");
+			this.statusBarItem.removeClass("break");
 			this.timer = window.setInterval(() => {
 				if (this.remainingTime > 0) {
 					this.remainingTime--;
 					this.updateDisplay();
 				} else {
 					this.pauseTimer();
+					if (this.currentDurationIndex === 0) {
+						this.currentDurationIndex = 1;
+						this.statusBarItem.addClass("break");
+					} else {
+						this.currentDurationIndex = 0;
+						this.statusBarItem.removeClass("break");
+					}
 				}
 			}, 1000);
 		}
@@ -100,6 +108,10 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	cycleDuration() {
+		// Prevent changing duration if the timer is running or paused
+		if (this.isRunning) {
+			return; // Do nothing if the timer is running
+		}
 		this.currentDurationIndex =
 			(this.currentDurationIndex + 1) % this.durationCycle.length;
 		this.resetTimer(); // Reset timer to the new duration
