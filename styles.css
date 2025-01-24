@@ -12,20 +12,24 @@ https://docs.obsidian.md/Reference/CSS+variables/CSS+variables
 	cursor: pointer;
 }
 
-.pomodoro-timer.paused {
-	background-color: var(--background-modifier-error);
-	color: var(--text-on-error);
-}
-
 .pomodoro-timer.active {
-	background-color: var(--color-accent);
+	background-color: var(--interactive-accent);
 	color: var(--text-on-accent);
 }
 
 .pomodoro-timer:not(.active):hover {
-	background-color: var(--background-modifier-hover);
+	background-color: var(--interactive-accent-hover);
+	color: var(--text-on-accent);
 }
 
 .pomodoro-timer.active:hover {
 	background-color: var(--background-modifier-active-hover);
+}
+
+.pomodoro-timer.paused {
+	background-color: var(--interactive-normal);
+}
+
+.pomodoro-timer.paused:hover {
+	background-color: var(--interactive-hover);
 }
