@@ -47,13 +47,3 @@ This plugin is built using the Obsidian Plugin API.
 ## License
 
 The code in this repository is available under the [MIT License](LICENSE).
-
----
-
-## Support
-
-If you find this plugin helpful, you can:
-
--   Star the repository
--   Report issues on GitHub
--   Submit pull requests to help improve the plugin

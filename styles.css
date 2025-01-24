@@ -1,8 +1,24 @@
 /*
-
 This CSS file will be included with your plugin, and
 available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
 */
+
+.pomodoro-timer {
+	padding: 4px 8px;
+	border-radius: 4px;
+	transition: background-color 0.3s ease;
+	cursor: pointer;
+}
+
+.pomodoro-timer.paused {
+	background-color: var(--background-modifier-hover);
+}
+
+.pomodoro-timer.active {
+	background-color: var(--color-accent);
+	color: var(--text-on-accent);
+}
+
+.pomodoro-timer:not(.active):hover {
+	background-color: var(--background-modifier-hover);
+}

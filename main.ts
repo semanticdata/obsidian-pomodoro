@@ -20,6 +20,7 @@ export default class PomodoroPlugin extends Plugin {
 
 		// Create status bar item
 		this.statusBarItem = this.addStatusBarItem();
+		this.statusBarItem.addClass("pomodoro-timer");
 		this.updateDisplay();
 
 		// Left click to start/stop
@@ -56,6 +57,7 @@ export default class PomodoroPlugin extends Plugin {
 	startTimer() {
 		if (!this.isRunning) {
 			this.isRunning = true;
+			this.statusBarItem.addClass("active");
 			this.timer = window.setInterval(() => {
 				if (this.remainingTime > 0) {
 					this.remainingTime--;
@@ -73,10 +75,14 @@ export default class PomodoroPlugin extends Plugin {
 			this.timer = null;
 		}
 		this.isRunning = false;
+		this.statusBarItem.removeClass("active");
+		this.statusBarItem.addClass("paused");
 	}
 
 	resetTimer() {
 		this.remainingTime = this.settings.defaultDuration * 60;
+		this.statusBarItem.removeClass("active");
+		this.statusBarItem.removeClass("paused");
 		this.updateDisplay();
 	}
 
