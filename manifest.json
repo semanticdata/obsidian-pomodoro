@@ -6,6 +6,6 @@
 	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
 	"author": "Miguel Pimentel",
 	"authorUrl": "https://github.com/semanticdata",
-	"fundingUrl": "https://obsidian.md/pricing",
+	"fundingUrl": "https://github.com/sponsors/semanticdata",
 	"isDesktopOnly": true
 }
