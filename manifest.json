@@ -4,8 +4,8 @@
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
-	"author": "Your Name",
-	"authorUrl": "",
+	"author": "Miguel Pimentel",
+	"authorUrl": "https://github.com/semanticdata",
 	"fundingUrl": "https://obsidian.md/pricing",
-	"isDesktopOnly": false
+	"isDesktopOnly": true
 }

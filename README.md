@@ -5,9 +5,10 @@ A minimalist Pomodoro timer that lives in your Obsidian status bar. Focus on you
 ## Features
 
 -   Clean and simple status bar timer
--   Default 25-minute Pomodoro sessions
+-   Default 25-minute Pomodoro sessions with 15 and 5-minute break options
 -   Easy controls:
     -   Left click to start/stop the timer
+    -   Middle click to cycle between 25/15/5 minute durations
     -   Right click to reset
 -   Minimal interface that doesn't get in your way
 
@@ -24,8 +25,9 @@ A minimalist Pomodoro timer that lives in your Obsidian status bar. Focus on you
 1. Look for the timer in your status bar (shows as "25:00" when not started)
 2. Left click to start the timer
 3. Left click again to pause
-4. When paused, right click to reset to 25:00
-5. Timer will automatically stop when it reaches 00:00
+4. Middle click to cycle between different durations (25/15/5 minutes)
+5. When paused, right click to reset to the current duration
+6. Timer will automatically stop when it reaches 00:00
 
 ## Development
 

@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-pomodoro",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

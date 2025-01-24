@@ -14,6 +14,8 @@ export default class PomodoroPlugin extends Plugin {
 	timer: number | null = null;
 	remainingTime: number = 0;
 	isRunning: boolean = false;
+	durationCycle: number[] = [25, 15, 5]; // Array to hold the durations
+	currentDurationIndex: number = 0; // Index to track the current duration
 
 	async onload() {
 		await this.loadSettings();
@@ -25,10 +27,21 @@ export default class PomodoroPlugin extends Plugin {
 
 		// Left click to start/stop
 		this.statusBarItem.onClickEvent((e: MouseEvent) => {
-			if (this.isRunning) {
-				this.pauseTimer();
-			} else {
-				this.startTimer();
+			if (e.button === 0) {
+				// Check for left click
+				if (this.isRunning) {
+					this.pauseTimer();
+				} else {
+					this.startTimer();
+				}
+			}
+		});
+
+		// Middle click to cycle through durations
+		this.statusBarItem.onClickEvent((e: MouseEvent) => {
+			if (e.button === 1) {
+				// Check for middle click
+				this.cycleDuration();
 			}
 		});
 
@@ -80,10 +93,16 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	resetTimer() {
-		this.remainingTime = this.settings.defaultDuration * 60;
+		this.remainingTime = this.durationCycle[this.currentDurationIndex] * 60;
 		this.statusBarItem.removeClass("active");
 		this.statusBarItem.removeClass("paused");
 		this.updateDisplay();
+	}
+
+	cycleDuration() {
+		this.currentDurationIndex =
+			(this.currentDurationIndex + 1) % this.durationCycle.length;
+		this.resetTimer(); // Reset timer to the new duration
 	}
 
 	updateDisplay() {
