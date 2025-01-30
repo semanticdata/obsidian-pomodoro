@@ -12,10 +12,10 @@ export default class PomodoroPlugin extends Plugin {
 	settings: PomodoroSettings;
 	statusBarItem: HTMLElement;
 	timer: number | null = null;
-	remainingTime: number = 0;
-	isRunning: boolean = false;
+	remainingTime = 0;
+	isRunning = false;
 	durationCycle: number[] = [25, 15, 5]; // Array to hold the durations
-	currentDurationIndex: number = 0; // Index to track the current duration
+	currentDurationIndex = 0; // Index to track the current duration
 
 	async onload() {
 		await this.loadSettings();

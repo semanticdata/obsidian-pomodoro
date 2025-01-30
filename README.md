@@ -44,10 +44,11 @@ This plugin is built using the Obsidian Plugin API.
 2. Run `npm install`
 3. Run `npm run dev` to start compilation in watch mode
 4. Run `npm run build` to build the plugin
+5. Run `npm run lint` to check for linting errors
 
 ### 📁 Manual Installation
 
-1. Create a new folder `status-bar-pomodoro` in your vault's `.obsidian/plugins` folder
+1. Create a new folder `obsidian-pomobar` in your vault's `.obsidian/plugins` folder
 2. Copy `main.js`, `manifest.json`, and `styles.css` to the new folder
 3. Reload Obsidian to load the plugin
 
