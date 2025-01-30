@@ -1,9 +1,11 @@
-# 🌟 Obsidian PomoBar
+# 🌟 PomoBar for Obsidian
 
-A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer. 
+A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer.
 
-| ![screenshot-1](./screenshot-1.png) | ![screenshot-2](./screenshot-2.png) |
-| :---------------------------------: | :---------------------------------: |
+| Description  |             Screenshots             |
+| ------------ | :---------------------------------: |
+| Default View | ![screenshot-1](./screenshot-1.png) |
+| Running      | ![screenshot-2](./screenshot-2.png) |
 
 While learning to make Obsidian plugins, I thought it would be a good idea to make a Pomodoro timer that lives in the status bar. I use one all the time!
 
@@ -48,15 +50,9 @@ This plugin is built using the Obsidian Plugin API.
 
 ### 📁 Manual Installation
 
-1. Create a new folder `obsidian-pomobar` in your vault's `.obsidian/plugins` folder
+1. Create a new folder `pomobar` in your vault's `.obsidian/plugins` folder
 2. Copy `main.js`, `manifest.json`, and `styles.css` to the new folder
 3. Reload Obsidian to load the plugin
-
-## 📜 License
-
-The code in this repository is available under the [MIT License](LICENSE).
-
----
 
 ## Releasing new releases
 
@@ -79,3 +75,7 @@ The code in this repository is available under the [MIT License](LICENSE).
 ## API Documentation
 
 See https://github.com/obsidianmd/obsidian-api
+
+## 📜 License
+
+The code in this repository is available under the [MIT License](LICENSE).
