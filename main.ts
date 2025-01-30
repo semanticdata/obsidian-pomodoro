@@ -63,6 +63,9 @@ export default class PomodoroPlugin extends Plugin {
 					this.updateDisplay();
 				} else {
 					this.pauseTimer();
+					alert(
+						"PomoBar: Time's up! Your most recent timer has finished."
+					);
 					this.currentDurationIndex =
 						(this.currentDurationIndex + 1) %
 						this.durationCycle.length;
@@ -83,6 +86,7 @@ export default class PomodoroPlugin extends Plugin {
 
 	resetTimer() {
 		this.remainingTime = this.durationCycle[this.currentDurationIndex] * 60;
+		// this.remainingTime = 2; // Set to 2 seconds for testing
 		this.statusBarItem.removeClass("active");
 		this.statusBarItem.removeClass("paused");
 		this.updateDisplay();
