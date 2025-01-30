@@ -3,7 +3,7 @@
 .pomodoro-timer {
 	padding: 4px 8px;
 	border-radius: 4px;
-	transition: background-color 0.3s ease;
+	transition: background-color 0.3s ease, color 0.3s ease;
 	cursor: pointer;
 }
 
