@@ -25,37 +25,23 @@ export default class PomodoroPlugin extends Plugin {
 		this.statusBarItem.addClass("pomodoro-timer");
 		this.updateDisplay();
 
-		// Left click to start/stop
+		// Improved click handling
 		this.statusBarItem.onClickEvent((e: MouseEvent) => {
-			if (e.button === 0) {
-				// Check for left click
-				if (this.isRunning) {
-					this.pauseTimer();
-				} else {
-					this.startTimer();
-				}
+			switch (e.button) {
+				case 0: // Left click
+					this.isRunning ? this.pauseTimer() : this.startTimer();
+					break;
+				case 1: // Middle click
+					this.cycleDuration();
+					break;
+				case 2: // Right click
+					e.preventDefault();
+					if (!this.isRunning) {
+						this.resetTimer();
+					}
+					break;
 			}
 		});
-
-		// Middle click to cycle through durations
-		this.statusBarItem.onClickEvent((e: MouseEvent) => {
-			if (e.button === 1) {
-				// Check for middle click
-				this.cycleDuration();
-			}
-		});
-
-		// Right click to reset (only when paused)
-		this.registerDomEvent(
-			this.statusBarItem,
-			"contextmenu",
-			(e: MouseEvent) => {
-				e.preventDefault();
-				if (!this.isRunning) {
-					this.resetTimer();
-				}
-			}
-		);
 
 		// Initialize timer
 		this.resetTimer();
@@ -77,11 +63,9 @@ export default class PomodoroPlugin extends Plugin {
 					this.updateDisplay();
 				} else {
 					this.pauseTimer();
-					if (this.currentDurationIndex === 0) {
-						this.currentDurationIndex = 1;
-					} else {
-						this.currentDurationIndex = 0;
-					}
+					this.currentDurationIndex =
+						(this.currentDurationIndex + 1) %
+						this.durationCycle.length;
 				}
 			}, 1000);
 		}
