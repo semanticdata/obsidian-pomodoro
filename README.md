@@ -1,6 +1,8 @@
-# 🌟 Status Bar Pomodoro for Obsidian (Pomobar? Name is a work in progress)
+# 🌟 Obsidian PomoBar
 
-A minimalist Pomodoro timer that lives in your Obsidian status bar. Focus on your work while keeping track of time with this unobtrusive timer. While learning to make Obsidian plugins, I thought it would be a good idea to make a Pomodoro timer that lives in the status bar. I use one all the time!
+A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer. 
+
+While learning to make Obsidian plugins, I thought it would be a good idea to make a Pomodoro timer that lives in the status bar. I use one all the time!
 
 ## ✨ Features
 
@@ -51,19 +53,6 @@ This plugin is built using the Obsidian Plugin API.
 The code in this repository is available under the [MIT License](LICENSE).
 
 ---
-
-This is a sample plugin for Obsidian (https://obsidian.md).
-
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
-
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-
--   Adds a ribbon icon, which shows a Notice when clicked.
--   Adds a command "Open Sample Modal" which opens a Modal.
--   Adds a plugin setting tab to the settings page.
--   Registers a global click event and output 'click' to the console.
--   Registers a global interval which logs 'setInterval' to the console.
 
 ## First time developing plugins?
 

@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-pomodoro",
-	"name": "Status Bar Pomodoro",
+	"id": "obsidian-pomobar",
+	"name": "PomoBar",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
+	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused, middle click to cycle between 25/15/5 minute durations.",
 	"author": "Miguel Pimentel",
 	"authorUrl": "https://github.com/semanticdata",
 	"fundingUrl": "https://github.com/sponsors/semanticdata",
