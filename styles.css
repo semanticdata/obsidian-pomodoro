@@ -1,9 +1,4 @@
-/*
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-https://docs.obsidian.md/Reference/CSS+variables/CSS+variables
-*/
+/* https://docs.obsidian.md/Reference/CSS+variables/CSS+variables */
 
 .pomodoro-timer {
 	padding: 4px 8px;
