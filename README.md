@@ -1,4 +1,4 @@
-# 🌟 PomoBar for Obsidian
+# 🌟 PomoBar
 
 A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer.
 
