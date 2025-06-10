@@ -1,11 +1,17 @@
-import { Plugin } from "obsidian";
+import { App, Plugin, PluginSettingTab, Setting } from "obsidian";
 
 interface PomodoroSettings {
-	defaultDuration: number;
+	workTime: number;
+	shortBreakTime: number;
+	longBreakTime: number;
+	intervalsBeforeLongBreak: number;
 }
 
 const DEFAULT_SETTINGS: PomodoroSettings = {
-	defaultDuration: 25,
+	workTime: 25,
+	shortBreakTime: 5,
+	longBreakTime: 15,
+	intervalsBeforeLongBreak: 4,
 };
 
 export default class PomodoroPlugin extends Plugin {
@@ -13,8 +19,13 @@ export default class PomodoroPlugin extends Plugin {
 	statusBarItem: HTMLElement;
 	remainingTime = 0;
 	isRunning = false;
-	durationCycle: number[] = [25, 15, 5];
-	currentDurationIndex = 0;
+	currentDurationIndex = 0; // 0: work, 1: short break, 2: long break
+	workIntervalCount = 0;
+	private get currentCycle(): number[] {
+		// This will be dynamically determined based on workIntervalCount
+		// For now, let's keep it simple and adjust in the timer logic
+		return [this.settings.workTime, this.settings.shortBreakTime, this.settings.longBreakTime];
+	}
 	private currentInterval: number | null = null;
 
 	async onload() {
@@ -49,6 +60,9 @@ export default class PomodoroPlugin extends Plugin {
 
 		// Initialize timer
 		this.resetTimer();
+
+		// Add settings tab
+		this.addSettingTab(new PomodoroSettingTab(this.app, this));
 	}
 
 	startTimer() {
@@ -65,8 +79,18 @@ export default class PomodoroPlugin extends Plugin {
 				} else {
 					this.pauseTimer();
 					alert("PomoBar: Time's up! Your most recent timer has finished.");
-					this.currentDurationIndex =
-						(this.currentDurationIndex + 1) % this.durationCycle.length;
+					// Determine next state
+					if (this.currentDurationIndex === 0) { // If it was a work timer
+						this.workIntervalCount++;
+						if (this.workIntervalCount >= this.settings.intervalsBeforeLongBreak) {
+							this.currentDurationIndex = 2; // Long break
+							this.workIntervalCount = 0; // Reset counter
+						} else {
+							this.currentDurationIndex = 1; // Short break
+						}
+					} else { // If it was a break timer (short or long)
+						this.currentDurationIndex = 0; // Go back to work
+					}
 					this.resetTimer();
 				}
 			}, 1000);
@@ -95,7 +119,14 @@ export default class PomodoroPlugin extends Plugin {
 			this.currentInterval = null;
 		}
 		this.isRunning = false;
-		this.remainingTime = this.durationCycle[this.currentDurationIndex] * 60;
+		// Determine the correct duration based on the currentDurationIndex
+		if (this.currentDurationIndex === 0) {
+			this.remainingTime = this.settings.workTime * 60;
+		} else if (this.currentDurationIndex === 1) {
+			this.remainingTime = this.settings.shortBreakTime * 60;
+		} else { // currentDurationIndex === 2
+			this.remainingTime = this.settings.longBreakTime * 60;
+		}
 		this.statusBarItem.removeClass("active");
 		this.statusBarItem.removeClass("paused");
 		this.updateDisplay();
@@ -106,8 +137,18 @@ export default class PomodoroPlugin extends Plugin {
 		if (this.isRunning) {
 			return; // Do nothing if the timer is running
 		}
-		this.currentDurationIndex =
-			(this.currentDurationIndex + 1) % this.durationCycle.length;
+		// Cycle through Work -> Short Break -> Work -> Short Break ... -> Long Break
+		// This logic is now primarily handled when a timer finishes.
+		// For manual cycling via middle click, we can simplify it or make it smarter.
+		// Let's make it cycle W -> SB -> LB -> W for simplicity if manually triggered when not running.
+		if (this.currentDurationIndex === 0) {
+			this.currentDurationIndex = 1; // Go to Short Break
+		} else if (this.currentDurationIndex === 1) {
+			this.currentDurationIndex = 2; // Go to Long Break
+		} else { // currentDurationIndex === 2
+			this.currentDurationIndex = 0; // Go to Work
+		}
+		this.workIntervalCount = 0; // Reset work interval count if manually cycled
 		this.resetTimer(); // Reset timer to the new duration
 	}
 
@@ -133,5 +174,84 @@ export default class PomodoroPlugin extends Plugin {
 	async saveSettings() {
 		// @ts-ignore - Ignoring TypeScript errors as the methods exist in the Obsidian Plugin class
 		await this.saveData(this.settings);
+	}
+}
+
+class PomodoroSettingTab extends PluginSettingTab {
+	plugin: PomodoroPlugin;
+
+	constructor(app: App, plugin: PomodoroPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		const { containerEl } = this;
+
+		containerEl.empty();
+
+		containerEl.createEl("h1", { text: "PomoBar" });
+
+		new Setting(containerEl)
+			.setName("Work Duration")
+			.setDesc("Duration of the work timer in minutes.")
+			.addText(text => text
+				.setPlaceholder("e.g., 25")
+				.setValue(this.plugin.settings.workTime.toString())
+				.onChange(async (value) => {
+					const duration = parseInt(value.trim());
+					if (!isNaN(duration) && duration > 0) {
+						this.plugin.settings.workTime = duration;
+						await this.plugin.saveSettings();
+						this.plugin.resetTimer();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName("Short Break Duration")
+			.setDesc("Duration of the short break timer in minutes.")
+			.addText(text => text
+				.setPlaceholder("e.g., 5")
+				.setValue(this.plugin.settings.shortBreakTime.toString())
+				.onChange(async (value) => {
+					const duration = parseInt(value.trim());
+					if (!isNaN(duration) && duration > 0) {
+						this.plugin.settings.shortBreakTime = duration;
+						await this.plugin.saveSettings();
+						this.plugin.resetTimer();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName("Long Break Duration")
+			.setDesc("Duration of the long break timer in minutes.")
+			.addText(text => text
+				.setPlaceholder("e.g., 15")
+				.setValue(this.plugin.settings.longBreakTime.toString())
+				.onChange(async (value) => {
+					const duration = parseInt(value.trim());
+					if (!isNaN(duration) && duration > 0) {
+						this.plugin.settings.longBreakTime = duration;
+						await this.plugin.saveSettings();
+						this.plugin.resetTimer();
+					}
+				}));
+
+		new Setting(containerEl)
+			.setName("Intervals Before Long Break")
+			.setDesc("Number of work intervals before a long break is triggered.")
+			.addText(text => text
+				.setPlaceholder("e.g., 4")
+				.setValue(this.plugin.settings.intervalsBeforeLongBreak.toString())
+				.onChange(async (value) => {
+					const intervals = parseInt(value.trim());
+					if (!isNaN(intervals) && intervals > 0) {
+						this.plugin.settings.intervalsBeforeLongBreak = intervals;
+						await this.plugin.saveSettings();
+						this.plugin.workIntervalCount = 0; // Reset counter with new setting
+						this.plugin.currentDurationIndex = 0; // Start with work timer
+						this.plugin.resetTimer();
+					}
+				}));
 	}
 }
