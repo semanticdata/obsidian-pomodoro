@@ -33,7 +33,7 @@ export default class PomodoroPlugin extends Plugin {
 
 		// Create status bar item
 		this.statusBarItem = this.addStatusBarItem();
-		this.statusBarItem.addClass("pomodoro-timer");
+		this.statusBarItem.classList.add("pomodoro-timer");
 		this.updateDisplay();
 
 		// @ts-ignore - Ignoring TypeScript errors as the methods exist in the Obsidian Plugin class
@@ -68,8 +68,8 @@ export default class PomodoroPlugin extends Plugin {
 	startTimer() {
 		if (!this.isRunning) {
 			this.isRunning = true;
-			this.statusBarItem.addClass("active");
-			this.statusBarItem.removeClass("paused");
+			this.statusBarItem.classList.add("active");
+			this.statusBarItem.classList.remove("paused");
 
 			// Create the interval and store its ID
 			const intervalId = window.setInterval(() => {
@@ -77,7 +77,6 @@ export default class PomodoroPlugin extends Plugin {
 					this.remainingTime--;
 					this.updateDisplay();
 				} else {
-					this.pauseTimer();
 					alert("PomoBar: Time's up! Your most recent timer has finished.");
 					// Determine next state
 					if (this.currentDurationIndex === 0) { // If it was a work timer
@@ -92,6 +91,7 @@ export default class PomodoroPlugin extends Plugin {
 						this.currentDurationIndex = 0; // Go back to work
 					}
 					this.resetTimer();
+					this.pauseTimer(); // Pause after state update and reset
 				}
 			}, 1000);
 
@@ -109,8 +109,8 @@ export default class PomodoroPlugin extends Plugin {
 			this.currentInterval = null;
 		}
 		this.isRunning = false;
-		this.statusBarItem.removeClass("active");
-		this.statusBarItem.addClass("paused");
+		this.statusBarItem.classList.remove("active");
+		this.statusBarItem.classList.add("paused");
 	}
 
 	resetTimer() {
@@ -127,8 +127,8 @@ export default class PomodoroPlugin extends Plugin {
 		} else { // currentDurationIndex === 2
 			this.remainingTime = this.settings.longBreakTime * 60;
 		}
-		this.statusBarItem.removeClass("active");
-		this.statusBarItem.removeClass("paused");
+		this.statusBarItem.classList.remove("active");
+		this.statusBarItem.classList.remove("paused");
 		this.updateDisplay();
 	}
 

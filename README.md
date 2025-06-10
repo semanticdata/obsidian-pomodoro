@@ -36,6 +36,46 @@ While learning to make Obsidian plugins, I thought it would be a good idea to ma
 5. When paused, right click to reset to the current duration
 6. Timer will automatically stop when it reaches 00:00
 
+## 🧪 Testing
+
+This plugin now includes Jest tests to ensure reliability and functionality.
+
+### Running Tests
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run all tests
+pnpm test
+
+# Run tests in watch mode
+pnpm test --watch
+
+# Run tests with verbose output
+pnpm test --verbose
+```
+
+### Test Coverage
+
+The test suite covers:
+
+- **Settings Management**: Loading default and saved settings
+- **Timer Functionality**: Start, pause, reset operations
+- **Timer Cycling**: Automatic transitions between work and break periods
+- **Duration Management**: Cycling between 25/15/5 minute durations
+- **Status Bar Updates**: Proper display updates during timer operations
+- **Event Handling**: Mouse click interactions (left, middle, right)
+
+### Test Structure
+
+Tests are located in `tests/main.test.ts` and use:
+
+- Jest for the testing framework
+- Mocked Obsidian API components (located in `tests/__mocks__/obsidian.ts`)
+- Fake timers for testing time-based functionality
+- Manual timer callback execution for precise control
+
 ### 📁 Manual Installation
 
 1. Create a new folder `pomobar` in your vault's `.obsidian/plugins` folder
