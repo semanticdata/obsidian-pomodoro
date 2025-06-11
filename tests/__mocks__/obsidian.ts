@@ -1,4 +1,3 @@
-// __mocks__/obsidian.ts
 import { jest } from '@jest/globals';
 
 export class Plugin {
@@ -12,12 +11,70 @@ export class Plugin {
   }
 
   addStatusBarItem(): HTMLElement {
-    const item = document.createElement('div') as HTMLElement & { setText: jest.Mock, classList: { add: jest.Mock, remove: jest.Mock } }; // Cast to add setText and classList mocks
-    item.setText = jest.fn(); // Add mock setText method
-    item.classList = { // Mock classList with add and remove
-      add: jest.fn(),
-      remove: jest.fn()
+    // Create a more complete mock element that includes our custom properties
+    const item = document.createElement('div');
+
+    // Add the setText method with proper typing
+    (item as any).setText = jest.fn();
+
+    // Create a proper mock for classList that implements DOMTokenList
+    const classList = new Set<string>();
+    const mockClassList = {
+      add: jest.fn((...tokens: string[]) => {
+        tokens.forEach(token => classList.add(token));
+      }),
+      remove: jest.fn((...tokens: string[]) => {
+        tokens.forEach(token => classList.delete(token));
+      }),
+      contains: jest.fn((token: string) => classList.has(token)),
+      toggle: jest.fn((token: string, force?: boolean) => {
+        const hasToken = classList.has(token);
+        if (typeof force !== 'undefined') {
+          if (force) classList.add(token);
+          else classList.delete(token);
+          return force;
+        }
+        if (hasToken) classList.delete(token);
+        else classList.add(token);
+        return !hasToken;
+      }),
+      item: jest.fn((index: number) => Array.from(classList)[index] || null),
+      length: 0, // Will be updated via getter
+      value: '', // Will be updated via getter
+      toString: jest.fn(() => Array.from(classList).join(' ')),
+      replace: jest.fn((oldToken: string, newToken: string) => {
+        if (classList.has(oldToken)) {
+          classList.delete(oldToken);
+          classList.add(newToken);
+          return true;
+        }
+        return false;
+      }),
+      supports: jest.fn((token: string) => true),
+      entries: jest.fn(() => Array.from(classList.entries())),
+      forEach: jest.fn((callback: (value: string, key: number, parent: any) => void) => {
+        Array.from(classList).forEach((value, index) => callback(value, index, mockClassList));
+      }),
+      keys: jest.fn(() => Array.from(classList.keys())),
+      values: jest.fn(() => Array.from(classList.values())),
+      [Symbol.iterator]: jest.fn(function* () {
+        yield* classList;
+      })
     };
+
+    // Add getters for length and value
+    Object.defineProperty(mockClassList, 'length', {
+      get: () => classList.size
+    });
+
+    Object.defineProperty(mockClassList, 'value', {
+      get: () => Array.from(classList).join(' ')
+    });
+
+    Object.defineProperty(item, 'classList', {
+      value: mockClassList,
+      configurable: true
+    });
     // this.statusBarItem = item; // PomodoroPlugin will set its own instance member
     return item;
   }

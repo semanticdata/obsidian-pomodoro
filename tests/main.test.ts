@@ -7,19 +7,40 @@ const mockApp = {} as App;
 jest.mock('obsidian'); // This will use the __mocks__/obsidian.ts automatically
 
 // Mock the global window object for setInterval/clearInterval if not already handled by JSDOM or similar
+const mockSetInterval = jest.fn().mockImplementation((callback: TimerHandler, delay?: number, ...args: any[]) => {
+  return Number(setTimeout(callback as any, delay, ...args));
+});
+
+const mockClearInterval = jest.fn().mockImplementation((id: number) => {
+  clearTimeout(id);
+});
+
 if (!global.window) {
-  let intervalId = 1;
   Object.defineProperty(global, 'window', {
     value: {
-      setInterval: jest.fn().mockImplementation(() => {
-        return intervalId++;
-      }),
-      clearInterval: jest.fn(),
+      setInterval: mockSetInterval,
+      clearInterval: mockClearInterval,
       // Add other window properties your plugin might use
     },
     writable: true,
   });
+} else {
+  // If window exists but we still want to mock these functions
+  window.setInterval = mockSetInterval as any;
+  window.clearInterval = mockClearInterval as any;
 }
+
+// Properly type the mocks for TypeScript
+declare global {
+  interface Window {
+    setInterval: typeof mockSetInterval;
+    clearInterval: typeof mockClearInterval;
+  }
+}
+
+// Cast the mocks to jest.Mock for testing
+const mockSetIntervalFn = window.setInterval as unknown as jest.Mock<number, [TimerHandler, (number | undefined)?, ...any[]]>;
+const mockClearIntervalFn = window.clearInterval as unknown as jest.Mock<void, [number | undefined]>;
 if (!global.alert) {
   global.alert = jest.fn();
 }
@@ -209,7 +230,7 @@ describe('PomodoroPlugin', () => {
 
       // Cycle 1: Work -> Short Break
       plugin.startTimer();
-      let timerCallback = (window.setInterval as jest.Mock).mock.calls[0][0];
+      let timerCallback = mockSetIntervalFn.mock.calls[0][0] as () => void;
       // Execute work timer to completion
       for (let i = 0; i < plugin.settings.workTime * 60; i++) {
         timerCallback();
@@ -220,7 +241,7 @@ describe('PomodoroPlugin', () => {
 
       // Cycle 1: Short Break -> Work
       plugin.startTimer(); // Starts short break timer
-      timerCallback = (window.setInterval as jest.Mock).mock.calls[1][0];
+      timerCallback = mockSetIntervalFn.mock.calls[1][0] as () => void;
       // Execute short break timer to completion
       for (let i = 0; i < plugin.settings.shortBreakTime * 60; i++) {
         timerCallback();
@@ -230,7 +251,7 @@ describe('PomodoroPlugin', () => {
 
       // Cycle 2: Work -> Long Break (because intervalsBeforeLongBreak is 2)
       plugin.startTimer(); // Starts work timer
-      timerCallback = (window.setInterval as jest.Mock).mock.calls[2][0];
+      timerCallback = mockSetIntervalFn.mock.calls[2][0] as () => void;
       // Execute work timer to completion
       for (let i = 0; i < plugin.settings.workTime * 60; i++) {
         timerCallback();
