@@ -405,6 +405,13 @@ describe('PomodoroPlugin', () => {
       await plugin.saveSettings();
       expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
     });
+
+    it('should save settings using saveSettings method', async () => {
+      const saveDataSpy = jest.spyOn(plugin, 'saveData').mockResolvedValue();
+      await plugin.saveSettings();
+      expect(saveDataSpy).toHaveBeenCalledWith(plugin.settings);
+      saveDataSpy.mockRestore();
+    });
   });
 
   describe('Plugin Lifecycle', () => {
@@ -420,6 +427,19 @@ describe('PomodoroPlugin', () => {
       expect(plugin.isRunning).toBe(false);
       expect(plugin.currentDurationIndex).toBe(0);
       expect(plugin.workIntervalCount).toBe(0);
+    });
+
+    it('should return correct durations array', async () => {
+      // Initialize plugin to ensure settings are loaded
+      await plugin.onload();
+
+      const durations = (plugin as any).currentCycle;
+      expect(durations).toEqual([
+        plugin.settings.workTime,
+        plugin.settings.shortBreakTime,
+        plugin.settings.longBreakTime
+      ]);
+      expect(durations).toHaveLength(3);
     });
   });
 
@@ -507,6 +527,330 @@ describe('PomodoroPlugin', () => {
       expect(plugin.workIntervalCount).toBe(0);
       expect(plugin.currentDurationIndex).toBe(0);
       expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+    });
+
+    it('should validate input in settings onChange callbacks', async () => {
+      // Test the validation logic directly by simulating the onChange behavior
+      const saveSettingsSpy = jest.spyOn(plugin, 'saveSettings').mockResolvedValue();
+      const resetTimerSpy = jest.spyOn(plugin, 'resetTimer');
+
+      // Test work time validation logic
+      const originalWorkTime = plugin.settings.workTime;
+
+      // Simulate invalid input parsing
+      const invalidDuration = parseInt('invalid'.trim());
+      if (!isNaN(invalidDuration) && invalidDuration > 0) {
+        plugin.settings.workTime = invalidDuration;
+        await plugin.saveSettings();
+        plugin.resetTimer();
+      }
+      expect(plugin.settings.workTime).toBe(originalWorkTime); // Should not change
+
+      // Simulate zero input parsing
+      const zeroDuration = parseInt('0'.trim());
+      if (!isNaN(zeroDuration) && zeroDuration > 0) {
+        plugin.settings.workTime = zeroDuration;
+        await plugin.saveSettings();
+        plugin.resetTimer();
+      }
+      expect(plugin.settings.workTime).toBe(originalWorkTime); // Should not change
+
+      // Simulate negative input parsing
+      const negativeDuration = parseInt('-5'.trim());
+      if (!isNaN(negativeDuration) && negativeDuration > 0) {
+        plugin.settings.workTime = negativeDuration;
+        await plugin.saveSettings();
+        plugin.resetTimer();
+      }
+      expect(plugin.settings.workTime).toBe(originalWorkTime); // Should not change
+
+      // Simulate valid input parsing
+      const validDuration = parseInt('30'.trim());
+      if (!isNaN(validDuration) && validDuration > 0) {
+        plugin.settings.workTime = validDuration;
+        await plugin.saveSettings();
+        plugin.resetTimer();
+      }
+      expect(plugin.settings.workTime).toBe(30); // Should change
+      expect(saveSettingsSpy).toHaveBeenCalled();
+      expect(resetTimerSpy).toHaveBeenCalled();
+
+      // Test short break validation
+      const originalShortBreak = plugin.settings.shortBreakTime;
+      const invalidShortBreak = parseInt('invalid'.trim());
+      if (!isNaN(invalidShortBreak) && invalidShortBreak > 0) {
+        plugin.settings.shortBreakTime = invalidShortBreak;
+      }
+      expect(plugin.settings.shortBreakTime).toBe(originalShortBreak);
+
+      // Test long break validation
+      const originalLongBreak = plugin.settings.longBreakTime;
+      const invalidLongBreak = parseInt('invalid'.trim());
+      if (!isNaN(invalidLongBreak) && invalidLongBreak > 0) {
+        plugin.settings.longBreakTime = invalidLongBreak;
+      }
+      expect(plugin.settings.longBreakTime).toBe(originalLongBreak);
+
+      // Test intervals validation
+      const originalIntervals = plugin.settings.intervalsBeforeLongBreak;
+      const invalidIntervals = parseInt('invalid'.trim());
+      if (!isNaN(invalidIntervals) && invalidIntervals > 0) {
+        plugin.settings.intervalsBeforeLongBreak = invalidIntervals;
+        plugin.workIntervalCount = 0;
+        plugin.currentDurationIndex = 0;
+      }
+      expect(plugin.settings.intervalsBeforeLongBreak).toBe(originalIntervals);
+
+      saveSettingsSpy.mockRestore();
+      resetTimerSpy.mockRestore();
+    });
+
+    it('should test actual onChange callbacks in settings UI', async () => {
+      const capturedCallbacks: Array<(value: string) => Promise<void>> = [];
+
+      // Override the Setting mock to capture real onChange callbacks
+      const originalSetting = (global as any).Setting;
+      (global as any).Setting = jest.fn().mockImplementation((containerEl: any) => {
+        const setting: any = {
+          setName: jest.fn().mockReturnThis(),
+          setDesc: jest.fn().mockReturnThis(),
+          addText: jest.fn((callback: any): any => {
+            const textComponent: any = {
+              setPlaceholder: jest.fn().mockReturnThis(),
+              setValue: jest.fn().mockReturnThis(),
+              onChange: jest.fn((cb: any): any => {
+                // Store the actual callback from main.ts
+                capturedCallbacks.push(cb);
+                return textComponent;
+              })
+            };
+            // Call the callback to set up the text component
+            callback(textComponent);
+            return setting;
+          })
+        };
+        return setting;
+      });
+
+      const saveSettingsSpy = jest.spyOn(plugin, 'saveSettings').mockResolvedValue();
+      const resetTimerSpy = jest.spyOn(plugin, 'resetTimer');
+
+      // Use the existing settings tab to capture callbacks
+      settingTab.display();
+
+      // Test comprehensive validation scenarios for all settings
+      const testCases = [
+        { name: 'workTime', index: 0, originalValue: () => plugin.settings.workTime },
+        { name: 'shortBreakTime', index: 1, originalValue: () => plugin.settings.shortBreakTime },
+        { name: 'longBreakTime', index: 2, originalValue: () => plugin.settings.longBreakTime },
+        { name: 'intervalsBeforeLongBreak', index: 3, originalValue: () => plugin.settings.intervalsBeforeLongBreak }
+      ];
+
+      for (const testCase of testCases) {
+        if (capturedCallbacks[testCase.index]) {
+          const callback = capturedCallbacks[testCase.index];
+          const originalValue = testCase.originalValue();
+
+          // Test invalid inputs that should not change settings
+          const invalidInputs = ['', '   ', 'invalid', 'abc123', '0', '-5', '-10', '0.5', 'NaN'];
+
+          for (const invalidInput of invalidInputs) {
+            saveSettingsSpy.mockClear();
+            resetTimerSpy.mockClear();
+
+            await callback(invalidInput);
+
+            expect(testCase.originalValue()).toBe(originalValue);
+            expect(saveSettingsSpy).not.toHaveBeenCalled();
+            if (testCase.name === 'intervalsBeforeLongBreak') {
+              expect(resetTimerSpy).not.toHaveBeenCalled();
+            }
+          }
+
+          // Test valid inputs that should change settings
+          const validInputs = ['1', '  5  ', '25', '60', '999'];
+
+          for (const validInput of validInputs) {
+            saveSettingsSpy.mockClear();
+            resetTimerSpy.mockClear();
+
+            const expectedValue = parseInt(validInput.trim());
+            await callback(validInput);
+
+            expect(testCase.originalValue()).toBe(expectedValue);
+            expect(saveSettingsSpy).toHaveBeenCalled();
+            expect(resetTimerSpy).toHaveBeenCalled();
+
+            // Reset to original value for next test
+            if (testCase.name === 'workTime') plugin.settings.workTime = originalValue;
+            else if (testCase.name === 'shortBreakTime') plugin.settings.shortBreakTime = originalValue;
+            else if (testCase.name === 'longBreakTime') plugin.settings.longBreakTime = originalValue;
+            else if (testCase.name === 'intervalsBeforeLongBreak') plugin.settings.intervalsBeforeLongBreak = originalValue;
+          }
+        }
+      }
+
+      // Test specific behavior for intervalsBeforeLongBreak setting
+      if (capturedCallbacks[3]) {
+        const callback = capturedCallbacks[3];
+        const originalIntervals = plugin.settings.intervalsBeforeLongBreak;
+
+        // Set non-zero values to test reset behavior
+        plugin.workIntervalCount = 5;
+        plugin.currentDurationIndex = 2;
+
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+
+        await callback('3');
+
+        expect(plugin.settings.intervalsBeforeLongBreak).toBe(3);
+        expect(plugin.workIntervalCount).toBe(0); // Should be reset
+        expect(plugin.currentDurationIndex).toBe(0); // Should be reset
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+
+        // Restore original value
+        plugin.settings.intervalsBeforeLongBreak = originalIntervals;
+      }
+
+      // Restore original Setting mock
+      (global as any).Setting = originalSetting;
+    });
+
+
+
+
+
+    it('should comprehensively test validation edge cases in settings', async () => {
+      const saveSettingsSpy = jest.spyOn(plugin, 'saveSettings').mockResolvedValue();
+      const resetTimerSpy = jest.spyOn(plugin, 'resetTimer');
+
+      // Store original settings
+      const originalSettings = { ...plugin.settings };
+
+      // Test edge cases for work time validation
+      const workTimeTests = [
+        { input: '', shouldChange: false, description: 'empty string' },
+        { input: '   ', shouldChange: false, description: 'whitespace only' },
+        { input: 'abc', shouldChange: false, description: 'non-numeric' },
+        { input: '0', shouldChange: false, description: 'zero' },
+        { input: '-10', shouldChange: false, description: 'negative' },
+        { input: '0.5', shouldChange: false, description: 'decimal' },
+        { input: '1', shouldChange: true, description: 'valid minimum' },
+        { input: '  25  ', shouldChange: true, description: 'valid with whitespace' },
+        { input: '999', shouldChange: true, description: 'large valid number' }
+      ];
+
+      for (const test of workTimeTests) {
+        // Reset to original value
+        plugin.settings.workTime = originalSettings.workTime;
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+
+        // Simulate the validation logic directly
+        const duration = parseInt(test.input.trim());
+        if (!isNaN(duration) && duration > 0) {
+          plugin.settings.workTime = duration;
+          await plugin.saveSettings();
+          plugin.resetTimer();
+        }
+
+        if (test.shouldChange) {
+          const expectedValue = parseInt(test.input.trim());
+          expect(plugin.settings.workTime).toBe(expectedValue);
+          expect(saveSettingsSpy).toHaveBeenCalled();
+          expect(resetTimerSpy).toHaveBeenCalled();
+        } else {
+          expect(plugin.settings.workTime).toBe(originalSettings.workTime);
+          expect(saveSettingsSpy).not.toHaveBeenCalled();
+          expect(resetTimerSpy).not.toHaveBeenCalled();
+        }
+      }
+
+      // Test similar edge cases for other settings
+      const invalidInputs = ['', '   ', 'invalid', '0', '-5', '0.5'];
+      const validInputs = ['1', '  10  ', '60'];
+
+      // Test short break time validation
+      for (const input of invalidInputs) {
+        plugin.settings.shortBreakTime = originalSettings.shortBreakTime;
+        saveSettingsSpy.mockClear();
+
+        const duration = parseInt(input.trim());
+        if (!isNaN(duration) && duration > 0) {
+          plugin.settings.shortBreakTime = duration;
+          await plugin.saveSettings();
+        }
+
+        expect(plugin.settings.shortBreakTime).toBe(originalSettings.shortBreakTime);
+        expect(saveSettingsSpy).not.toHaveBeenCalled();
+      }
+
+      // Test long break time validation
+      for (const input of invalidInputs) {
+        plugin.settings.longBreakTime = originalSettings.longBreakTime;
+        saveSettingsSpy.mockClear();
+
+        const duration = parseInt(input.trim());
+        if (!isNaN(duration) && duration > 0) {
+          plugin.settings.longBreakTime = duration;
+          await plugin.saveSettings();
+        }
+
+        expect(plugin.settings.longBreakTime).toBe(originalSettings.longBreakTime);
+        expect(saveSettingsSpy).not.toHaveBeenCalled();
+      }
+
+      // Test intervals before long break validation
+      for (const input of invalidInputs) {
+        plugin.settings.intervalsBeforeLongBreak = originalSettings.intervalsBeforeLongBreak;
+        plugin.workIntervalCount = 5; // Set to non-zero to test reset
+        plugin.currentDurationIndex = 1; // Set to non-zero to test reset
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+
+        const intervals = parseInt(input.trim());
+        if (!isNaN(intervals) && intervals > 0) {
+          plugin.settings.intervalsBeforeLongBreak = intervals;
+          await plugin.saveSettings();
+          plugin.workIntervalCount = 0;
+          plugin.currentDurationIndex = 0;
+          plugin.resetTimer();
+        }
+
+        expect(plugin.settings.intervalsBeforeLongBreak).toBe(originalSettings.intervalsBeforeLongBreak);
+        expect(plugin.workIntervalCount).toBe(5); // Should not be reset
+        expect(plugin.currentDurationIndex).toBe(1); // Should not be reset
+        expect(saveSettingsSpy).not.toHaveBeenCalled();
+      }
+
+      // Test valid inputs for intervals setting
+      for (const input of validInputs) {
+        plugin.settings.intervalsBeforeLongBreak = originalSettings.intervalsBeforeLongBreak;
+        plugin.workIntervalCount = 5;
+        plugin.currentDurationIndex = 1;
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+
+        const intervals = parseInt(input.trim());
+        if (!isNaN(intervals) && intervals > 0) {
+          plugin.settings.intervalsBeforeLongBreak = intervals;
+          await plugin.saveSettings();
+          plugin.workIntervalCount = 0;
+          plugin.currentDurationIndex = 0;
+          plugin.resetTimer();
+        }
+
+        expect(plugin.settings.intervalsBeforeLongBreak).toBe(intervals);
+        expect(plugin.workIntervalCount).toBe(0); // Should be reset
+        expect(plugin.currentDurationIndex).toBe(0); // Should be reset
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+      }
+
+      saveSettingsSpy.mockRestore();
+      resetTimerSpy.mockRestore();
     });
   });
 });

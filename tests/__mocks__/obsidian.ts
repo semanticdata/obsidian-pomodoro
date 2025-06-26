@@ -125,22 +125,40 @@ export class PluginSettingTab {
 
 export class Setting {
   settingEl: HTMLElement;
+  private onChangeCallback?: (value: string) => Promise<void>;
+
   constructor(containerEl: HTMLElement) {
     this.settingEl = document.createElement('div');
     containerEl.appendChild(this.settingEl);
   }
+
   setName(name: string) { return this; }
   setDesc(desc: string) { return this; }
+
   addText(cb: (textComponent: any) => any) {
     // Mock text component for chaining
     const mockText = {
       setPlaceholder: jest.fn().mockReturnThis(),
       setValue: jest.fn().mockReturnThis(),
-      onChange: jest.fn().mockReturnThis(),
+      onChange: jest.fn((callback: (value: string) => Promise<void>) => {
+        this.onChangeCallback = callback;
+        return mockText;
+      }),
       inputEl: document.createElement('input'),
+      // Add method to simulate user input for testing
+      simulateInput: async (value: string) => {
+        if (this.onChangeCallback) {
+          await this.onChangeCallback(value);
+        }
+      }
     };
     cb(mockText);
     return this;
+  }
+
+  // Method to get the text component for testing
+  getTextComponent() {
+    return this.settingEl.querySelector('input');
   }
 }
 
