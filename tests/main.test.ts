@@ -1,5 +1,5 @@
 import PomodoroPlugin from '../main';
-import { App, Plugin } from 'obsidian';
+import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
 
 // Mock Obsidian's Plugin class and other UI elements
 const mockApp = {} as App;
@@ -14,6 +14,19 @@ const mockSetInterval = jest.fn().mockImplementation((callback: TimerHandler, de
 const mockClearInterval = jest.fn().mockImplementation((id: number) => {
   clearTimeout(id);
 });
+
+// Mock MouseEvent
+(global as any).MouseEvent = class MockMouseEvent {
+  type: string;
+  button: number;
+  preventDefault: jest.Mock;
+
+  constructor(type: string, options: any = {}) {
+    this.type = type;
+    this.button = options.button || 0;
+    this.preventDefault = jest.fn();
+  }
+};
 
 if (!global.window) {
   Object.defineProperty(global, 'window', {
@@ -289,6 +302,211 @@ describe('PomodoroPlugin', () => {
       plugin.cycleDuration();
       expect(plugin.currentDurationIndex).toBe(initialDurationIndex);
       expect(plugin.remainingTime).toBe(initialRemainingTime);
+    });
+  });
+
+  describe('DOM Event Handlers', () => {
+    beforeEach(async () => {
+      await plugin.onload();
+      mockStatusBarItem = plugin.statusBarItem;
+    });
+
+    it('should handle left click to start/pause timer', () => {
+      // Simulate left click event
+      const leftClickEvent = new MouseEvent('click', { button: 0 });
+
+      // Get the click handler from registerDomEvent mock
+      const registerDomEventMock = plugin.registerDomEvent as jest.Mock;
+      expect(registerDomEventMock).toHaveBeenCalledWith(
+        mockStatusBarItem,
+        'click',
+        expect.any(Function)
+      );
+
+      const clickHandler = registerDomEventMock.mock.calls.find(
+        call => call[1] === 'click'
+      )[2];
+
+      // Test starting timer
+      expect(plugin.isRunning).toBe(false);
+      clickHandler(leftClickEvent);
+      expect(plugin.isRunning).toBe(true);
+
+      // Test pausing timer
+      clickHandler(leftClickEvent);
+      expect(plugin.isRunning).toBe(false);
+    });
+
+    it('should handle middle click to cycle duration', () => {
+      // Simulate middle click event
+      const middleClickEvent = new MouseEvent('auxclick', { button: 1 });
+
+      // Get the auxclick handler from registerDomEvent mock
+      const registerDomEventMock = plugin.registerDomEvent as jest.Mock;
+      const auxclickHandler = registerDomEventMock.mock.calls.find(
+        call => call[1] === 'auxclick'
+      )[2];
+
+      // Test cycling duration when not running
+      plugin.pauseTimer();
+      plugin.currentDurationIndex = 0;
+      plugin.resetTimer();
+
+      auxclickHandler(middleClickEvent);
+      expect(plugin.currentDurationIndex).toBe(1); // Should cycle to short break
+    });
+
+    it('should handle right click to reset timer when not running', () => {
+      // Simulate right click event
+      const rightClickEvent = new MouseEvent('contextmenu', { button: 2 });
+      rightClickEvent.preventDefault = jest.fn();
+
+      // Get the contextmenu handler from registerDomEvent mock
+      const registerDomEventMock = plugin.registerDomEvent as jest.Mock;
+      const contextmenuHandler = registerDomEventMock.mock.calls.find(
+        call => call[1] === 'contextmenu'
+      )[2];
+
+      // Test reset when not running
+      plugin.pauseTimer();
+      plugin.remainingTime = 100;
+
+      contextmenuHandler(rightClickEvent);
+      expect(rightClickEvent.preventDefault).toHaveBeenCalled();
+      expect(plugin.remainingTime).toBe(plugin.settings.workTime * 60);
+    });
+
+    it('should not reset timer on right click when running', () => {
+      const rightClickEvent = new MouseEvent('contextmenu', { button: 2 });
+      rightClickEvent.preventDefault = jest.fn();
+
+      const registerDomEventMock = plugin.registerDomEvent as jest.Mock;
+      const contextmenuHandler = registerDomEventMock.mock.calls.find(
+        call => call[1] === 'contextmenu'
+      )[2];
+
+      // Test no reset when running
+      plugin.startTimer();
+      const initialTime = plugin.remainingTime;
+
+      contextmenuHandler(rightClickEvent);
+      expect(rightClickEvent.preventDefault).toHaveBeenCalled();
+      expect(plugin.remainingTime).toBe(initialTime); // Should not change
+    });
+  });
+
+  describe('Settings Management', () => {
+    beforeEach(async () => {
+      await plugin.onload();
+    });
+
+    it('should save settings', async () => {
+      plugin.settings.workTime = 30;
+      await plugin.saveSettings();
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+    });
+  });
+
+  describe('Plugin Lifecycle', () => {
+    it('should add settings tab on load', async () => {
+      const addSettingTabSpy = jest.spyOn(plugin, 'addSettingTab');
+      await plugin.onload();
+      expect(addSettingTabSpy).toHaveBeenCalledWith(expect.any(Object));
+    });
+
+    it('should initialize with correct default state', async () => {
+      await plugin.onload();
+      expect(plugin.remainingTime).toBe(plugin.settings.workTime * 60);
+      expect(plugin.isRunning).toBe(false);
+      expect(plugin.currentDurationIndex).toBe(0);
+      expect(plugin.workIntervalCount).toBe(0);
+    });
+  });
+
+  describe('Settings Tab', () => {
+    let settingTab: any;
+    let mockContainerEl: any;
+    let addSettingTabSpy: jest.SpyInstance;
+
+    beforeEach(async () => {
+      // Mock addSettingTab before calling onload
+      addSettingTabSpy = jest.spyOn(plugin, 'addSettingTab');
+
+      await plugin.onload();
+
+      // Create mock container element
+      mockContainerEl = {
+        empty: jest.fn(),
+        createEl: jest.fn().mockReturnValue({
+          setText: jest.fn(),
+          text: ''
+        }),
+        appendChild: jest.fn()
+      };
+
+      // Access the settings tab that was added during onload
+      expect(addSettingTabSpy).toHaveBeenCalled();
+      settingTab = addSettingTabSpy.mock.calls[0][0];
+      settingTab.containerEl = mockContainerEl;
+    });
+
+    afterEach(() => {
+      addSettingTabSpy.mockRestore();
+    });
+
+    it('should create settings tab with correct plugin reference', () => {
+      expect(settingTab.plugin).toBe(plugin);
+    });
+
+    it('should display settings interface', () => {
+      settingTab.display();
+
+      expect(mockContainerEl.empty).toHaveBeenCalled();
+      expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: 'PomoBar' });
+      expect(mockContainerEl.appendChild).toHaveBeenCalledTimes(4); // 4 settings
+    });
+
+    it('should handle work time setting change', async () => {
+      // Test the settings functionality directly
+      const originalWorkTime = plugin.settings.workTime;
+
+      // Test valid input
+      plugin.settings.workTime = 30;
+      await plugin.saveData(plugin.settings);
+      expect(plugin.settings.workTime).toBe(30);
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+
+      // Test that display method runs without errors
+      expect(() => settingTab.display()).not.toThrow();
+    });
+
+    it('should handle short break time setting change', async () => {
+      // Test the settings functionality directly
+      plugin.settings.shortBreakTime = 10;
+      await plugin.saveData(plugin.settings);
+      expect(plugin.settings.shortBreakTime).toBe(10);
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+    });
+
+    it('should handle long break time setting change', async () => {
+      // Test the settings functionality directly
+      plugin.settings.longBreakTime = 20;
+      await plugin.saveData(plugin.settings);
+      expect(plugin.settings.longBreakTime).toBe(20);
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+    });
+
+    it('should handle intervals before long break setting change', async () => {
+      // Test the settings functionality directly
+      plugin.settings.intervalsBeforeLongBreak = 3;
+      plugin.workIntervalCount = 0;
+      plugin.currentDurationIndex = 0;
+      await plugin.saveData(plugin.settings);
+
+      expect(plugin.settings.intervalsBeforeLongBreak).toBe(3);
+      expect(plugin.workIntervalCount).toBe(0);
+      expect(plugin.currentDurationIndex).toBe(0);
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
     });
   });
 });

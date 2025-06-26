@@ -79,9 +79,9 @@ export class Plugin {
     return item;
   }
 
-  registerDomEvent(el: HTMLElement, event: string, callback: (...args: any[]) => any) {
-    // Mock implementation or leave empty if not critical for tests
-  }
+  registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (...args: any[]) => any) => {
+    // Mock implementation that stores the calls for testing
+  })
 
   registerInterval(intervalId: number) {
     // Mock implementation or leave empty
