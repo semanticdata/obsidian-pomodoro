@@ -1,32 +1,33 @@
 import PomodoroPlugin from '../main';
-import { App, Plugin, PluginSettingTab, Setting } from 'obsidian';
-
-// Mock Obsidian's Plugin class and other UI elements
-const mockApp = {} as App;
+import { App } from 'obsidian';
 
 jest.mock('obsidian'); // This will use the __mocks__/obsidian.ts automatically
 
 // Mock the global window object for setInterval/clearInterval if not already handled by JSDOM or similar
-const mockSetInterval = jest.fn().mockImplementation((callback: TimerHandler, delay?: number, ...args: any[]) => {
-  return Number(setTimeout(callback as any, delay, ...args));
+const mockSetInterval = jest.fn().mockImplementation((callback: TimerHandler, delay?: number, ...args: unknown[]) => {
+  return Number(setTimeout(callback as TimerHandler, delay, ...args));
 });
 
 const mockClearInterval = jest.fn().mockImplementation((id: number) => {
   clearTimeout(id);
 });
 
+interface MockMouseEventOptions {
+  button?: number;
+}
+
 // Mock MouseEvent
-(global as any).MouseEvent = class MockMouseEvent {
+(global as typeof globalThis).MouseEvent = class MockMouseEvent {
   type: string;
   button: number;
   preventDefault: jest.Mock;
 
-  constructor(type: string, options: any = {}) {
+  constructor(type: string, options: MockMouseEventOptions = {}) {
     this.type = type;
     this.button = options.button || 0;
     this.preventDefault = jest.fn();
   }
-};
+} as unknown as typeof MouseEvent;
 
 if (!global.window) {
   Object.defineProperty(global, 'window', {
@@ -39,8 +40,8 @@ if (!global.window) {
   });
 } else {
   // If window exists but we still want to mock these functions
-  window.setInterval = mockSetInterval as any;
-  window.clearInterval = mockClearInterval as any;
+  window.setInterval = mockSetInterval as typeof window.setInterval;
+  window.clearInterval = mockClearInterval as typeof window.clearInterval;
 }
 
 // Properly type the mocks for TypeScript
@@ -52,8 +53,7 @@ declare global {
 }
 
 // Cast the mocks to jest.Mock for testing
-const mockSetIntervalFn = window.setInterval as unknown as jest.Mock<number, [TimerHandler, (number | undefined)?, ...any[]]>;
-const mockClearIntervalFn = window.clearInterval as unknown as jest.Mock<void, [number | undefined]>;
+const mockSetIntervalFn = window.setInterval as unknown as jest.Mock<number, [TimerHandler, (number | undefined)?, ...unknown[]]>;
 if (!global.alert) {
   global.alert = jest.fn();
 }
@@ -73,14 +73,14 @@ if (!global.document) { // Basic document mock if not present (e.g. Node environ
       // Add other properties/methods your code might use on elements
     })),
     // Add other document properties/methods if needed
-  } as any;
+  } as Document & { createElement: jest.Mock };
 }
 
 
 describe('PomodoroPlugin', () => {
   let plugin: PomodoroPlugin;
   let mockApp: App;
-  let mockStatusBarItem: any; // Will be set by the mocked Plugin's addStatusBarItem
+  let mockStatusBarItem: HTMLElement; // Will be set by the mocked Plugin's addStatusBarItem
 
   beforeEach(() => {
     // Reset mocks before each test
@@ -120,7 +120,7 @@ describe('PomodoroPlugin', () => {
       expect(plugin.settings.intervalsBeforeLongBreak).toBe(4);
       // expect(plugin.addStatusBarItem).toHaveBeenCalled(); // This is part of the mocked Plugin class
       expect(plugin.statusBarItem).toBeDefined();
-      mockStatusBarItem = plugin.statusBarItem; // Capture for later assertions
+      mockStatusBarItem = plugin.statusBarItem!; // Capture for later assertions
     });
 
     it('should load saved settings on onload', async () => {
@@ -145,16 +145,18 @@ describe('PomodoroPlugin', () => {
       plugin.workIntervalCount = 0;
       plugin.resetTimer();
       // Ensure statusBarItem is the one created by the plugin
-      mockStatusBarItem = plugin.statusBarItem;
+      mockStatusBarItem = plugin.statusBarItem!;
       // Clear mocks on the captured statusBarItem if it has jest.fn properties
-      if (mockStatusBarItem && mockStatusBarItem.setText && mockStatusBarItem.setText.mockClear) {
-        mockStatusBarItem.setText.mockClear();
+      const statusBarWithMocks = mockStatusBarItem as HTMLElement & { setText?: jest.Mock };
+      if (statusBarWithMocks.setText && statusBarWithMocks.setText.mockClear) {
+        statusBarWithMocks.setText.mockClear();
       }
-      if (mockStatusBarItem && mockStatusBarItem.classList && mockStatusBarItem.classList.add && mockStatusBarItem.classList.add.mockClear) {
-        mockStatusBarItem.classList.add.mockClear();
+      const mockClassList = mockStatusBarItem.classList as DOMTokenList & { add?: jest.Mock; remove?: jest.Mock };
+      if (mockClassList.add && mockClassList.add.mockClear) {
+        mockClassList.add.mockClear();
       }
-      if (mockStatusBarItem && mockStatusBarItem.classList && mockStatusBarItem.classList.remove && mockStatusBarItem.classList.remove.mockClear) {
-        mockStatusBarItem.classList.remove.mockClear();
+      if (mockClassList.remove && mockClassList.remove.mockClear) {
+        mockClassList.remove.mockClear();
       }
     });
 
@@ -178,14 +180,14 @@ describe('PomodoroPlugin', () => {
       // Manually execute the callback to simulate 1 second passing
       timerCallback();
       expect(plugin.remainingTime).toBe(initialTime - 1);
-      expect(mockStatusBarItem.setText).toHaveBeenCalledWith(`24:59`);
+      expect((mockStatusBarItem as HTMLElement & { setText: jest.Mock }).setText).toHaveBeenCalledWith(`24:59`);
 
       // Execute callback 59 more times to simulate 1 minute total
       for (let i = 0; i < 59; i++) {
         timerCallback();
       }
       expect(plugin.remainingTime).toBe(initialTime - 60);
-      expect(mockStatusBarItem.setText).toHaveBeenCalledWith(`24:00`);
+      expect((mockStatusBarItem as HTMLElement & { setText: jest.Mock }).setText).toHaveBeenCalledWith(`24:00`);
       jest.useRealTimers();
     });
 
@@ -204,9 +206,9 @@ describe('PomodoroPlugin', () => {
       plugin.resetTimer();
       expect(plugin.isRunning).toBe(false);
       expect(plugin.remainingTime).toBe(plugin.settings.workTime * 60);
-      expect(mockStatusBarItem.setText).toHaveBeenCalledWith(`${String(plugin.settings.workTime).padStart(2, '0')}:00`);
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('active');
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('paused');
+      expect((mockStatusBarItem as HTMLElement & { setText: jest.Mock }).setText).toHaveBeenCalledWith(`${String(plugin.settings.workTime).padStart(2, '0')}:00`);
+      expect((mockStatusBarItem.classList as DOMTokenList & { remove: jest.Mock }).remove).toHaveBeenCalledWith('active');
+      expect((mockStatusBarItem.classList as DOMTokenList & { remove: jest.Mock }).remove).toHaveBeenCalledWith('paused');
     });
 
     it('should cycle to short break after work timer finishes', () => {
@@ -308,7 +310,7 @@ describe('PomodoroPlugin', () => {
   describe('DOM Event Handlers', () => {
     beforeEach(async () => {
       await plugin.onload();
-      mockStatusBarItem = plugin.statusBarItem;
+      mockStatusBarItem = plugin.statusBarItem!;
     });
 
     it('should handle left click to start/pause timer', () => {
@@ -433,7 +435,7 @@ describe('PomodoroPlugin', () => {
       // Initialize plugin to ensure settings are loaded
       await plugin.onload();
 
-      const durations = (plugin as any).currentCycle;
+      const durations = (plugin as unknown as { currentCycle: number[] }).currentCycle;
       expect(durations).toEqual([
         plugin.settings.workTime,
         plugin.settings.shortBreakTime,
@@ -444,8 +446,8 @@ describe('PomodoroPlugin', () => {
   });
 
   describe('Settings Tab', () => {
-    let settingTab: any;
-    let mockContainerEl: any;
+    let settingTab: { plugin: PomodoroPlugin; display: () => void; containerEl: HTMLElement };
+    let mockContainerEl: Partial<HTMLElement>;
     let addSettingTabSpy: jest.SpyInstance;
 
     beforeEach(async () => {
@@ -467,7 +469,7 @@ describe('PomodoroPlugin', () => {
       // Access the settings tab that was added during onload
       expect(addSettingTabSpy).toHaveBeenCalled();
       settingTab = addSettingTabSpy.mock.calls[0][0];
-      settingTab.containerEl = mockContainerEl;
+      settingTab.containerEl = mockContainerEl as HTMLElement;
     });
 
     afterEach(() => {
@@ -488,7 +490,6 @@ describe('PomodoroPlugin', () => {
 
     it('should handle work time setting change', async () => {
       // Test the settings functionality directly
-      const originalWorkTime = plugin.settings.workTime;
 
       // Test valid input
       plugin.settings.workTime = 30;
@@ -608,17 +609,29 @@ describe('PomodoroPlugin', () => {
     it('should test actual onChange callbacks in settings UI', async () => {
       const capturedCallbacks: Array<(value: string) => Promise<void>> = [];
 
+      interface MockSetting {
+        setName: jest.Mock;
+        setDesc: jest.Mock;
+        addText: jest.Mock;
+      }
+
+      interface MockTextComponent {
+        setPlaceholder: jest.Mock;
+        setValue: jest.Mock;
+        onChange: jest.Mock;
+      }
+
       // Override the Setting mock to capture real onChange callbacks
-      const originalSetting = (global as any).Setting;
-      (global as any).Setting = jest.fn().mockImplementation((containerEl: any) => {
-        const setting: any = {
+      const originalSetting = (global as typeof globalThis & { Setting?: unknown }).Setting;
+      (global as typeof globalThis & { Setting: unknown }).Setting = jest.fn().mockImplementation((containerEl: HTMLElement) => {
+        const setting: MockSetting = {
           setName: jest.fn().mockReturnThis(),
           setDesc: jest.fn().mockReturnThis(),
-          addText: jest.fn((callback: any): any => {
-            const textComponent: any = {
+          addText: jest.fn((callback: (textComponent: MockTextComponent) => MockTextComponent): MockSetting => {
+            const textComponent: MockTextComponent = {
               setPlaceholder: jest.fn().mockReturnThis(),
               setValue: jest.fn().mockReturnThis(),
-              onChange: jest.fn((cb: any): any => {
+              onChange: jest.fn((cb: (value: string) => Promise<void>): MockTextComponent => {
                 // Store the actual callback from main.ts
                 capturedCallbacks.push(cb);
                 return textComponent;
@@ -715,7 +728,7 @@ describe('PomodoroPlugin', () => {
       }
 
       // Restore original Setting mock
-      (global as any).Setting = originalSetting;
+      (global as typeof globalThis & { Setting: unknown }).Setting = originalSetting;
     });
 
 

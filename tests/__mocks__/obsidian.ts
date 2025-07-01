@@ -1,11 +1,20 @@
 import { jest } from '@jest/globals';
 
+interface PluginManifest {
+  id: string;
+  name: string;
+  version: string;
+  minAppVersion: string;
+  description: string;
+  author: string;
+}
+
 export class Plugin {
   app: App;
-  manifest: any;
+  manifest: PluginManifest;
   statusBarItem: HTMLElement | null = null;
 
-  constructor(app: App, manifest: any) {
+  constructor(app: App, manifest: PluginManifest) {
     this.app = app;
     this.manifest = manifest;
   }
@@ -15,7 +24,7 @@ export class Plugin {
     const item = document.createElement('div');
 
     // Add the setText method with proper typing
-    (item as any).setText = jest.fn();
+    (item as unknown as HTMLElement & { setText: jest.Mock }).setText = jest.fn();
 
     // Create a proper mock for classList that implements DOMTokenList
     const classList = new Set<string>();
@@ -52,7 +61,7 @@ export class Plugin {
       }),
       supports: jest.fn((token: string) => true),
       entries: jest.fn(() => Array.from(classList.entries())),
-      forEach: jest.fn((callback: (value: string, key: number, parent: any) => void) => {
+      forEach: jest.fn((callback: (value: string, key: number, parent: DOMTokenList) => void) => {
         Array.from(classList).forEach((value, index) => callback(value, index, mockClassList));
       }),
       keys: jest.fn(() => Array.from(classList.keys())),
@@ -79,7 +88,7 @@ export class Plugin {
     return item;
   }
 
-  registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (...args: any[]) => any) => {
+  registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (event: Event) => void) => {
     // Mock implementation that stores the calls for testing
   })
 
@@ -91,7 +100,7 @@ export class Plugin {
     return Promise.resolve({});
   }
 
-  async saveData(data: any) {
+  async saveData(data: Record<string, unknown>) {
     return Promise.resolve();
   }
 
@@ -135,9 +144,9 @@ export class Setting {
   setName(name: string) { return this; }
   setDesc(desc: string) { return this; }
 
-  addText(cb: (textComponent: any) => any) {
+  addText(cb: (textComponent: TextComponent) => TextComponent) {
     // Mock text component for chaining
-    const mockText = {
+    const mockText: TextComponent = {
       setPlaceholder: jest.fn().mockReturnThis(),
       setValue: jest.fn().mockReturnThis(),
       onChange: jest.fn((callback: (value: string) => Promise<void>) => {
@@ -163,7 +172,16 @@ export class Setting {
 }
 
 export interface App {
-  // Define minimal App properties/methods your plugin uses or mock them as needed
+  workspace?: unknown;
+  vault?: unknown;
+}
+
+interface TextComponent {
+  setPlaceholder: jest.Mock;
+  setValue: jest.Mock;
+  onChange: jest.Mock;
+  inputEl: HTMLInputElement;
+  simulateInput?: (value: string) => Promise<void>;
 }
 
 // Mock for document if running in Node without JSDOM (basic)
@@ -179,17 +197,19 @@ if (typeof document === 'undefined') {
       // Add other properties/methods your code might use on elements
     }),
     // Add other document properties/methods if needed
-  } as any;
+  } as Document & { createElement: (tagName: string) => Partial<HTMLElement> };
 }
 
 if (typeof window === 'undefined') {
   let intervalId = 1;
-  global.window = {
+  const mockWindow = {
     setInterval: jest.fn().mockImplementation(() => {
       return intervalId++;
     }),
     clearInterval: jest.fn(),
+    alert: jest.fn(),
     // Add other window properties if needed
-  } as any;
+  };
+  Object.assign(global, { window: mockWindow });
   global.alert = jest.fn();
 }
