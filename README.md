@@ -7,92 +7,82 @@ A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) s
 | Default View | ![screenshot-1](./screenshot-1.png) |
 | Running      | ![screenshot-2](./screenshot-2.png) |
 
-While learning to make Obsidian plugins, I thought it would be a good idea to make a Pomodoro timer that lives in the status bar. I use one all the time!
+## Features
 
-## ✨ Features
+- **Simple Status Bar Timer**: Clean, minimal interface that stays out of your way
+- **Flexible Durations**: 25-minute work sessions with 5 and 15-minute break options
+- **Easy Controls**:
+  - Left click: Start/stop timer
+  - Middle click: Cycle between durations (25/15/5 minutes)
+  - Right click: Reset timer (when paused)
+- **Automatic Cycling**: Seamlessly transitions between work and break periods
+- **Configurable Settings**: Customize timer durations and intervals
 
-- Clean and simple status bar timer
-- Default 25-minute Pomodoro sessions with 15 and 5-minute break options
-- Easy controls:
-  - Left click to start/stop the timer
-  - Middle click to cycle between 25/15/5 minute durations
-  - Right click to reset
-- Minimal interface that doesn't get in your way
+## Installation
 
-## 📦 Installation
+### From Obsidian Community Plugins
 
-1. Open Obsidian Settings
-2. Navigate to Community Plugins and disable Safe Mode
-3. Click Browse and search for "PomoBar"
-4. Install the plugin
-5. Enable the plugin in your Community Plugins list
+1. Open Obsidian Settings → Community Plugins
+2. Disable Safe Mode if enabled
+3. Browse and search for "PomoBar"
+4. Install and enable the plugin
 
-## 🛠️ Usage
+### Manual Installation
 
-1. Look for the timer in your status bar (shows as "25:00" when not started)
-2. Left click to start the timer
-3. Left click again to pause the timer
-4. Middle click to cycle between different durations (25/15/5 minutes)
-5. When paused, right click to reset to the current duration
-6. Timer will automatically stop when it reaches 00:00
+1. Download the latest release files (`main.js`, `manifest.json`, `styles.css`)
+2. Create folder `.obsidian/plugins/pomobar/` in your vault
+3. Copy the files to this folder
+4. Reload Obsidian and enable the plugin
 
-## 🧪 Testing
+## Usage
 
-This plugin now includes Jest tests to ensure reliability and functionality.
+The timer appears in your status bar showing "25:00" when inactive.
 
-### Running Tests
+- **Start/Pause**: Left click the timer
+- **Change Duration**: Middle click to cycle between 25/15/5 minutes
+- **Reset**: Right click when timer is paused
+- **Settings**: Configure durations in Plugin Settings
+
+## Development
+
+### Setup
 
 ```bash
 # Install dependencies
 pnpm install
 
-# Run all tests
-pnpm test
+# Start development build
+pnpm dev
 
-# Run tests in watch mode
-pnpm test --watch
-
-# Run tests with verbose output
-pnpm test --verbose
+# Build for production
+pnpm build
 ```
 
-### Test Coverage
+### Testing
 
-The test suite covers:
+```bash
+# Run tests
+pnpm test
 
-- **Settings Management**: Loading default and saved settings
-- **Timer Functionality**: Start, pause, reset operations
-- **Timer Cycling**: Automatic transitions between work and break periods
-- **Duration Management**: Cycling between 25/15/5 minute durations
-- **Status Bar Updates**: Proper display updates during timer operations
-- **Event Handling**: Mouse click interactions (left, middle, right)
+# Run with coverage
+pnpm test:coverage
 
-### Test Structure
+# Watch mode
+pnpm test:watch
+```
 
-Tests are located in `tests/main.test.ts` and use:
+The test suite includes 40+ tests covering timer functionality, settings management, UI interactions, and edge cases with 80%+ code coverage.
 
-- Jest for the testing framework
-- Mocked Obsidian API components (located in `tests/__mocks__/obsidian.ts`)
-- Fake timers for testing time-based functionality
-- Manual timer callback execution for precise control
+### Linting
 
-### 📁 Manual Installation
+```bash
+# Check code style
+pnpm lint
 
-1. Create a new folder `pomobar` in your vault's `.obsidian/plugins` folder
-2. Copy `main.js`, `manifest.json`, and `styles.css` to the new folder
-3. Reload Obsidian to load the plugin
+# Fix auto-fixable issues
+pnpm lint:fix
+```
 
-## Releasing new releases
-
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: <https://github.com/obsidianmd/obsidian-sample-plugin/releases>
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
-
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
-
-## 📜 License
+## License
 
 The code in this repository is available under the [MIT License](LICENSE).
