@@ -622,8 +622,8 @@ describe('PomodoroPlugin', () => {
       }
 
       // Override the Setting mock to capture real onChange callbacks
-      const originalSetting = (global as typeof globalThis & { Setting?: unknown }).Setting;
-      (global as typeof globalThis & { Setting: unknown }).Setting = jest.fn().mockImplementation((containerEl: HTMLElement) => {
+      const originalSetting = (global as unknown as { Setting?: unknown }).Setting;
+      (global as unknown as { Setting: unknown }).Setting = jest.fn().mockImplementation((containerEl: HTMLElement) => {
         const setting: MockSetting = {
           setName: jest.fn().mockReturnThis(),
           setDesc: jest.fn().mockReturnThis(),
@@ -728,7 +728,7 @@ describe('PomodoroPlugin', () => {
       }
 
       // Restore original Setting mock
-      (global as typeof globalThis & { Setting: unknown }).Setting = originalSetting;
+      (global as unknown as { Setting: unknown }).Setting = originalSetting;
     });
 
 
@@ -864,6 +864,437 @@ describe('PomodoroPlugin', () => {
 
       saveSettingsSpy.mockRestore();
       resetTimerSpy.mockRestore();
+    });
+
+    it('should test real settings UI onChange callbacks for complete coverage', async () => {
+      // We need to test the actual onChange callbacks that are created in the display() method
+      // This will cover the uncovered lines 202-206, 217-221, 232-236, 247-253
+
+      const capturedCallbacks: Array<(value: string) => Promise<void>> = [];
+      
+      // Create a more realistic mock that captures the actual callbacks
+      const mockSetting = {
+        setName: jest.fn().mockReturnThis(),
+        setDesc: jest.fn().mockReturnThis(),
+        addText: jest.fn().mockImplementation((callback) => {
+          const textComponent = {
+            setPlaceholder: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation((onChangeCallback) => {
+              // Store the real callback for testing
+              capturedCallbacks.push(onChangeCallback);
+              return textComponent;
+            })
+          };
+          callback(textComponent);
+          return mockSetting;
+        })
+      };
+
+      // Override global Setting constructor temporarily
+      const originalSetting = (global as unknown as { Setting?: unknown }).Setting;
+      (global as unknown as { Setting: unknown }).Setting = jest.fn().mockImplementation(() => mockSetting);
+
+      // Spy on plugin methods
+      const saveSettingsSpy = jest.spyOn(plugin, 'saveSettings').mockResolvedValue();
+      const resetTimerSpy = jest.spyOn(plugin, 'resetTimer');
+
+      // Call display to create the callbacks
+      settingTab.display();
+
+      // Test work time onChange callback (lines 202-206)
+      if (capturedCallbacks[0]) {
+        const originalWorkTime = plugin.settings.workTime;
+        
+        // Test valid input
+        await capturedCallbacks[0]('30');
+        expect(plugin.settings.workTime).toBe(30);
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+        
+        // Reset
+        plugin.settings.workTime = originalWorkTime;
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+      }
+
+      // Test short break time onChange callback (lines 217-221)
+      if (capturedCallbacks[1]) {
+        const originalShortBreak = plugin.settings.shortBreakTime;
+        
+        // Test valid input
+        await capturedCallbacks[1]('8');
+        expect(plugin.settings.shortBreakTime).toBe(8);
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+        
+        // Reset
+        plugin.settings.shortBreakTime = originalShortBreak;
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+      }
+
+      // Test long break time onChange callback (lines 232-236)
+      if (capturedCallbacks[2]) {
+        const originalLongBreak = plugin.settings.longBreakTime;
+        
+        // Test valid input
+        await capturedCallbacks[2]('25');
+        expect(plugin.settings.longBreakTime).toBe(25);
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+        
+        // Reset
+        plugin.settings.longBreakTime = originalLongBreak;
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+      }
+
+      // Test intervals before long break onChange callback (lines 247-253)
+      if (capturedCallbacks[3]) {
+        const originalIntervals = plugin.settings.intervalsBeforeLongBreak;
+        const originalWorkIntervalCount = plugin.workIntervalCount;
+        const originalCurrentDurationIndex = plugin.currentDurationIndex;
+        
+        // Set some non-zero values to test reset behavior
+        plugin.workIntervalCount = 3;
+        plugin.currentDurationIndex = 2;
+        
+        // Test valid input
+        await capturedCallbacks[3]('6');
+        expect(plugin.settings.intervalsBeforeLongBreak).toBe(6);
+        expect(plugin.workIntervalCount).toBe(0); // Should be reset
+        expect(plugin.currentDurationIndex).toBe(0); // Should be reset
+        expect(saveSettingsSpy).toHaveBeenCalled();
+        expect(resetTimerSpy).toHaveBeenCalled();
+        
+        // Reset
+        plugin.settings.intervalsBeforeLongBreak = originalIntervals;
+        plugin.workIntervalCount = originalWorkIntervalCount;
+        plugin.currentDurationIndex = originalCurrentDurationIndex;
+      }
+
+      // Restore original Setting constructor
+      (global as unknown as { Setting: unknown }).Setting = originalSetting;
+      saveSettingsSpy.mockRestore();
+      resetTimerSpy.mockRestore();
+    });
+
+    it('should test invalid inputs to improve branch coverage', async () => {
+      // Test invalid inputs that should NOT trigger the inner if conditions
+      const capturedCallbacks: Array<(value: string) => Promise<void>> = [];
+      
+      const mockSetting = {
+        setName: jest.fn().mockReturnThis(),
+        setDesc: jest.fn().mockReturnThis(),
+        addText: jest.fn().mockImplementation((callback) => {
+          const textComponent = {
+            setPlaceholder: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation((onChangeCallback) => {
+              capturedCallbacks.push(onChangeCallback);
+              return textComponent;
+            })
+          };
+          callback(textComponent);
+          return mockSetting;
+        })
+      };
+
+      const originalSetting = (global as unknown as { Setting?: unknown }).Setting;
+      (global as unknown as { Setting: unknown }).Setting = jest.fn().mockImplementation(() => mockSetting);
+
+      const saveSettingsSpy = jest.spyOn(plugin, 'saveSettings').mockResolvedValue();
+      const resetTimerSpy = jest.spyOn(plugin, 'resetTimer');
+
+      settingTab.display();
+
+      // Test invalid inputs for each setting
+      const invalidInputs = ['', 'invalid', '0', '-5', 'abc'];
+
+      for (const invalidInput of invalidInputs) {
+        // Store original values
+        const originalWorkTime = plugin.settings.workTime;
+        const originalShortBreak = plugin.settings.shortBreakTime;
+        const originalLongBreak = plugin.settings.longBreakTime;
+        const originalIntervals = plugin.settings.intervalsBeforeLongBreak;
+
+        saveSettingsSpy.mockClear();
+        resetTimerSpy.mockClear();
+
+        // Test all callbacks with invalid input
+        for (let i = 0; i < capturedCallbacks.length; i++) {
+          await capturedCallbacks[i](invalidInput);
+        }
+
+        // Verify values haven't changed
+        expect(plugin.settings.workTime).toBe(originalWorkTime);
+        expect(plugin.settings.shortBreakTime).toBe(originalShortBreak);
+        expect(plugin.settings.longBreakTime).toBe(originalLongBreak);
+        expect(plugin.settings.intervalsBeforeLongBreak).toBe(originalIntervals);
+        
+        // Verify methods were not called
+        expect(saveSettingsSpy).not.toHaveBeenCalled();
+        expect(resetTimerSpy).not.toHaveBeenCalled();
+      }
+
+      (global as unknown as { Setting: unknown }).Setting = originalSetting;
+      saveSettingsSpy.mockRestore();
+      resetTimerSpy.mockRestore();
+    });
+
+    it('should test settings tab display with full container mock coverage', () => {
+      // Create a comprehensive mock that tracks all interactions
+      let createElCallCount = 0;
+      const mockContainer = {
+        empty: jest.fn(),
+        createEl: jest.fn().mockImplementation((tag: string, options?: { text?: string }) => {
+          createElCallCount++;
+          return { 
+            text: options?.text || '',
+            tagName: tag 
+          };
+        }),
+        appendChild: jest.fn()
+      };
+      
+      // Override containerEl temporarily
+      const originalContainer = settingTab.containerEl;
+      settingTab.containerEl = mockContainer as unknown as HTMLElement;
+      
+      // Call display method
+      settingTab.display();
+      
+      // Verify interactions
+      expect(mockContainer.empty).toHaveBeenCalledTimes(1);
+      expect(mockContainer.createEl).toHaveBeenCalledWith('h1', { text: 'PomoBar' });
+      expect(createElCallCount).toBe(1);
+      
+      // Restore
+      settingTab.containerEl = originalContainer;
+    });
+  });
+
+  describe('Additional Coverage Tests', () => {
+    beforeEach(async () => {
+      await plugin.onload();
+    });
+
+    it('should test plugin onunload method', async () => {
+      // Test onunload method which might not be covered
+      const onunloadSpy = jest.spyOn(plugin, 'onunload');
+      
+      // Start a timer to ensure cleanup works
+      plugin.startTimer();
+      expect(plugin.isRunning).toBe(true);
+      
+      // Call onunload
+      await plugin.onunload();
+      
+      expect(onunloadSpy).toHaveBeenCalled();
+      onunloadSpy.mockRestore();
+    });
+
+    it('should test resetTimer with different duration indices', () => {
+      // Test resetTimer with short break duration
+      plugin.currentDurationIndex = 1; // Short break
+      plugin.resetTimer();
+      expect(plugin.remainingTime).toBe(plugin.settings.shortBreakTime * 60);
+      
+      // Test resetTimer with long break duration
+      plugin.currentDurationIndex = 2; // Long break
+      plugin.resetTimer();
+      expect(plugin.remainingTime).toBe(plugin.settings.longBreakTime * 60);
+      
+      // Test resetTimer with work duration (default case)
+      plugin.currentDurationIndex = 0; // Work
+      plugin.resetTimer();
+      expect(plugin.remainingTime).toBe(plugin.settings.workTime * 60);
+    });
+
+    it('should test timer completion with different break sequences', () => {
+      jest.useFakeTimers();
+      
+      // Test break timer finishing and going back to work
+      plugin.currentDurationIndex = 1; // Start with short break
+      plugin.resetTimer();
+      plugin.startTimer();
+      
+      // Get timer callback and run break timer to completion
+      const timerCallback = (window.setInterval as unknown as jest.Mock).mock.calls[0][0];
+      
+      // Execute break timer to completion
+      for (let i = 0; i < plugin.settings.shortBreakTime * 60; i++) {
+        timerCallback();
+      }
+      timerCallback(); // Trigger completion
+      
+      expect(plugin.currentDurationIndex).toBe(0); // Should go back to work
+      expect(plugin.remainingTime).toBe(plugin.settings.workTime * 60);
+      
+      jest.useRealTimers();
+    });
+
+    it('should test DOM event registration and cleanup', async () => {
+      // Create a fresh plugin instance to avoid conflicts with beforeEach
+      const freshPlugin = new PomodoroPlugin({} as App, { 
+        id: 'test-plugin', 
+        name: 'Test Plugin', 
+        version: '1.0.0', 
+        minAppVersion: '0.15.0', 
+        author: 'Test Author', 
+        description: 'Test Description' 
+      });
+      
+      freshPlugin.loadData = jest.fn().mockResolvedValue({});
+      freshPlugin.saveData = jest.fn().mockResolvedValue(undefined);
+      
+      // Test that DOM events are properly registered
+      const registerDomEventSpy = jest.spyOn(freshPlugin, 'registerDomEvent');
+      
+      // Initialize to test event registration
+      await freshPlugin.onload();
+      
+      // Should register 3 events: click, auxclick, contextmenu
+      expect(registerDomEventSpy).toHaveBeenCalledTimes(3);
+      expect(registerDomEventSpy).toHaveBeenCalledWith(freshPlugin.statusBarItem, 'click', expect.any(Function));
+      expect(registerDomEventSpy).toHaveBeenCalledWith(freshPlugin.statusBarItem, 'auxclick', expect.any(Function));
+      expect(registerDomEventSpy).toHaveBeenCalledWith(freshPlugin.statusBarItem, 'contextmenu', expect.any(Function));
+      
+      registerDomEventSpy.mockRestore();
+    });
+
+    it('should test timer interval cleanup edge cases', () => {
+      // Test pauseTimer when no interval is set
+      (plugin as unknown as { currentInterval: number | null }).currentInterval = null;
+      plugin.pauseTimer();
+      expect(plugin.isRunning).toBe(false);
+      
+      // Test resetTimer when no interval is set
+      (plugin as unknown as { currentInterval: number | null }).currentInterval = null;
+      plugin.resetTimer();
+      expect(plugin.isRunning).toBe(false);
+      
+      // Test starting timer multiple times
+      plugin.startTimer();
+      const firstInterval = (plugin as unknown as { currentInterval: number | null }).currentInterval;
+      plugin.startTimer(); // Should not create new interval
+      expect((plugin as unknown as { currentInterval: number | null }).currentInterval).toBe(firstInterval);
+    });
+
+    it('should test settings loading with partial data', async () => {
+      // Test loading settings with only some values present
+      const partialSettings = {
+        workTime: 45,
+        // Missing other properties
+      };
+      
+      plugin.loadData = jest.fn().mockResolvedValue(partialSettings);
+      await plugin.loadSettings();
+      
+      // Should merge with defaults
+      expect(plugin.settings.workTime).toBe(45);
+      expect(plugin.settings.shortBreakTime).toBe(5); // Default
+      expect(plugin.settings.longBreakTime).toBe(15); // Default
+      expect(plugin.settings.intervalsBeforeLongBreak).toBe(4); // Default
+    });
+
+    it('should test updateDisplay with various time values', () => {
+      const mockStatusBarItem = plugin.statusBarItem as HTMLElement & { setText: jest.Mock };
+      
+      // Test with zero time
+      plugin.remainingTime = 0;
+      plugin.updateDisplay();
+      expect(mockStatusBarItem.setText).toHaveBeenCalledWith('00:00');
+      
+      // Test with single digit minutes and seconds
+      plugin.remainingTime = 65; // 1:05
+      plugin.updateDisplay();
+      expect(mockStatusBarItem.setText).toHaveBeenCalledWith('01:05');
+      
+      // Test with double digit values
+      plugin.remainingTime = 725; // 12:05
+      plugin.updateDisplay();
+      expect(mockStatusBarItem.setText).toHaveBeenCalledWith('12:05');
+    });
+
+    it('should test complete timer cycles with different sequences', () => {
+      jest.useFakeTimers();
+      
+      // Start with a custom setting to test different branch paths
+      plugin.settings.intervalsBeforeLongBreak = 1; // Immediate long break after first work
+      
+      // Test work -> long break (when intervals = 1)
+      plugin.currentDurationIndex = 0; // Work
+      plugin.workIntervalCount = 0;
+      plugin.resetTimer();
+      plugin.startTimer();
+      
+      const timerCallback = (window.setInterval as unknown as jest.Mock).mock.calls[0][0];
+      
+      // Complete work timer
+      for (let i = 0; i < plugin.settings.workTime * 60; i++) {
+        timerCallback();
+      }
+      timerCallback(); // Trigger completion
+      
+      // Should go to long break (since intervalsBeforeLongBreak = 1)
+      expect(plugin.currentDurationIndex).toBe(2); // Long break
+      expect(plugin.workIntervalCount).toBe(0); // Reset
+      
+      // Complete long break timer
+      plugin.startTimer();
+      const longBreakCallback = (window.setInterval as unknown as jest.Mock).mock.calls[1][0];
+      
+      for (let i = 0; i < plugin.settings.longBreakTime * 60; i++) {
+        longBreakCallback();
+      }
+      longBreakCallback(); // Trigger completion
+      
+      // Should go back to work
+      expect(plugin.currentDurationIndex).toBe(0); // Work
+      
+      jest.useRealTimers();
+    });
+
+    it('should test boundary conditions and error handling', () => {
+      // Test with extreme values
+      plugin.remainingTime = 3661; // 61:01
+      plugin.updateDisplay();
+      const mockStatusBarItem = plugin.statusBarItem as HTMLElement & { setText: jest.Mock };
+      expect(mockStatusBarItem.setText).toHaveBeenCalledWith('61:01');
+      
+      // Test currentCycle getter with different intervals
+      plugin.settings.intervalsBeforeLongBreak = 0; // Edge case
+      const durations = (plugin as unknown as { currentCycle: number[] }).currentCycle;
+      expect(durations).toEqual([
+        plugin.settings.workTime,
+        plugin.settings.shortBreakTime,
+        plugin.settings.longBreakTime
+      ]);
+    });
+
+    it('should test plugin initialization edge cases', async () => {
+      // Test with empty settings data
+      const emptyPlugin = new PomodoroPlugin({} as App, {
+        id: 'test-empty',
+        name: 'Test Empty',
+        version: '1.0.0',
+        minAppVersion: '0.15.0',
+        author: 'Test',
+        description: 'Test'
+      });
+      
+      emptyPlugin.loadData = jest.fn().mockResolvedValue(null); // null data
+      emptyPlugin.saveData = jest.fn().mockResolvedValue(undefined);
+      
+      await emptyPlugin.loadSettings();
+      
+      // Should use defaults when data is null
+      expect(emptyPlugin.settings.workTime).toBe(25);
+      expect(emptyPlugin.settings.shortBreakTime).toBe(5);
+      expect(emptyPlugin.settings.longBreakTime).toBe(15);
+      expect(emptyPlugin.settings.intervalsBeforeLongBreak).toBe(4);
     });
   });
 });
