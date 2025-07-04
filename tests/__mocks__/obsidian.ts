@@ -200,6 +200,16 @@ export class Setting {
     return this;
   }
 
+  addToggle(cb: (toggleComponent: ToggleComponent) => ToggleComponent) {
+    // Mock toggle component for chaining
+    const mockToggle: ToggleComponent = {
+      setValue: jest.fn().mockReturnThis(),
+      onChange: jest.fn().mockReturnThis(),
+    };
+    cb(mockToggle);
+    return this;
+  }
+
   // Method to get the text component for testing
   getTextComponent() {
     return this.settingEl.querySelector('input');
@@ -217,6 +227,11 @@ interface TextComponent {
   onChange: jest.Mock;
   inputEl: HTMLInputElement;
   simulateInput?: (value: string) => Promise<void>;
+}
+
+interface ToggleComponent {
+  setValue: jest.Mock;
+  onChange: jest.Mock;
 }
 
 // Mock for document if running in Node without JSDOM (basic)

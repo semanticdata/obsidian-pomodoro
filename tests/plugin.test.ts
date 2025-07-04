@@ -93,6 +93,38 @@ describe('PomodoroPlugin', () => {
       plugin.resetTimer();
       // Should not throw
     });
+
+    it('should handle currentDurationIndex setter (compatibility)', () => {
+      // Test setter does nothing but doesn't throw
+      expect(() => {
+        plugin.currentDurationIndex = 1;
+      }).not.toThrow();
+      
+      // Getter should still work from timer, not affected by setter
+      expect(plugin.currentDurationIndex).toBe(0);
+    });
+
+    it('should handle workIntervalCount setter (compatibility)', () => {
+      // Test setter does nothing but doesn't throw
+      expect(() => {
+        plugin.workIntervalCount = 5;
+      }).not.toThrow();
+      
+      // Getter should still work from timer, not affected by setter
+      expect(plugin.workIntervalCount).toBe(0);
+    });
+
+    it('should handle resetTimer when timer is undefined', () => {
+      // Create a new plugin without timer initialization to test the null check
+      const mockAppForTest = {} as App;
+      const manifestForTest = { id: 'test', name: 'Test', version: '1.0.0', minAppVersion: '0.15.0', author: 'Test', description: 'Test' };
+      const testPlugin = new PomodoroPlugin(mockAppForTest, manifestForTest);
+      
+      // Should not throw even when timer is undefined (not initialized)
+      expect(() => {
+        testPlugin.resetTimer();
+      }).not.toThrow();
+    });
   });
 
   describe('Icon Integration', () => {
