@@ -9,7 +9,7 @@
 	border-radius: 4px;
 	cursor: pointer;
 	transition: background-color 0.3s ease, color 0.3s ease;
-	
+
 	/* Default state - inherits status bar text color */
 	color: var(--text-normal);
 }
@@ -45,7 +45,7 @@
 	fill: none;
 	stroke-width: 2;
 	transition: stroke 0.3s ease, opacity 0.2s ease, transform 0.2s ease;
-	
+
 	/* Default state - matches text color */
 	stroke: var(--text-normal);
 	opacity: 0.8;
@@ -129,10 +129,13 @@
 /* ============================================ */
 
 @keyframes pulse {
-	0%, 100% {
+
+	0%,
+	100% {
 		opacity: 1;
 		transform: scale(1);
 	}
+
 	50% {
 		opacity: 0.8;
 		transform: scale(0.95);
@@ -148,7 +151,7 @@
 	.pomodoro-timer.active .pomodoro-icon svg {
 		animation: none;
 	}
-	
+
 	.pomodoro-timer * {
 		transition: none;
 	}
@@ -160,7 +163,7 @@
 		stroke-width: 2.5;
 		opacity: 1;
 	}
-	
+
 	.pomodoro-timer.paused .pomodoro-icon svg {
 		opacity: 0.8;
 	}

@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting } from "obsidian";
-import type PomodoroPlugin from "./plugin";
+import type PomodoroPlugin from "../main";
+import { PLUGIN_NAME } from "../constants";
 
 export class PomodoroSettingTab extends PluginSettingTab {
 	plugin: PomodoroPlugin;
@@ -14,7 +15,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h1", { text: "PomoBar" });
+		containerEl.createEl("h1", { text: PLUGIN_NAME });
 
 		new Setting(containerEl)
 			.setName("Work Duration")

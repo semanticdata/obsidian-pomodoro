@@ -1,7 +1,7 @@
 import { Plugin } from "obsidian";
-import { PomodoroSettings, DEFAULT_SETTINGS } from "./settings";
-import { PomodoroSettingTab } from "./settings-tab";
-import { PomodoroTimer } from "./timer";
+import { PomodoroSettings, DEFAULT_SETTINGS } from "./types";
+import { PomodoroSettingTab } from "./components/SettingsTab";
+import { PomodoroTimer } from "./logic/timer";
 
 export default class PomodoroPlugin extends Plugin {
 	settings: PomodoroSettings;
@@ -36,7 +36,7 @@ export default class PomodoroPlugin extends Plugin {
 		return this.timer?.currentDuration ?? 0;
 	}
 
-	set currentDurationIndex(value: number) {
+	set currentDurationIndex(_value: number) {
 		// For compatibility with settings tab
 	}
 
@@ -44,7 +44,7 @@ export default class PomodoroPlugin extends Plugin {
 		return this.timer?.workCount ?? 0;
 	}
 
-	set workIntervalCount(value: number) {
+	set workIntervalCount(_value: number) {
 		// For compatibility with settings tab
 	}
 

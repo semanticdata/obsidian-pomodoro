@@ -34,7 +34,7 @@ export default defineConfig({
 
         // Tell Vite to build a library
         lib: {
-            entry: 'main.ts', // Your plugin's entry point
+            entry: 'src/main.ts', // Your plugin's entry point
             formats: ['cjs'],     // OBLIGATORY: Compile to CommonJS for Obsidian
             fileName: () => 'main.js', // OBLIGATORY: The output file name must be 'main.js'
         },
