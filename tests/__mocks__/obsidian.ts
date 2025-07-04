@@ -84,6 +84,32 @@ export class Plugin {
       value: mockClassList,
       configurable: true
     });
+
+    // Add appendChild and other DOM methods
+    Object.defineProperty(item, 'appendChild', {
+      value: jest.fn(),
+      writable: true,
+      configurable: true
+    });
+    Object.defineProperty(item, 'querySelector', {
+      value: jest.fn().mockReturnValue({
+        textContent: '',
+        innerHTML: ''
+      }),
+      writable: true,
+      configurable: true
+    });
+    Object.defineProperty(item, 'addEventListener', {
+      value: jest.fn(),
+      writable: true,
+      configurable: true
+    });
+    Object.defineProperty(item, 'innerHTML', {
+      value: '',
+      writable: true,
+      configurable: true
+    });
+
     // this.statusBarItem = item; // PomodoroPlugin will set its own instance member
     return item;
   }
@@ -194,6 +220,9 @@ if (typeof document === 'undefined') {
       appendChild: jest.fn(),
       empty: jest.fn(),
       remove: jest.fn(),
+      addEventListener: jest.fn(),
+      innerHTML: '',
+      textContent: '',
       // Add other properties/methods your code might use on elements
     }),
     // Add other document properties/methods if needed

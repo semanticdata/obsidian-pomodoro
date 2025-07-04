@@ -1,0 +1,13 @@
+export interface PomodoroSettings {
+	workTime: number;
+	shortBreakTime: number;
+	longBreakTime: number;
+	intervalsBeforeLongBreak: number;
+}
+
+export const DEFAULT_SETTINGS: PomodoroSettings = {
+	workTime: 25,
+	shortBreakTime: 5,
+	longBreakTime: 15,
+	intervalsBeforeLongBreak: 4,
+};
