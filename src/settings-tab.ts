@@ -77,5 +77,15 @@ export class PomodoroSettingTab extends PluginSettingTab {
 						this.plugin.resetTimer();
 					}
 				}));
+
+		new Setting(containerEl)
+			.setName("Show Timer Icon")
+			.setDesc("Display a timer icon next to the countdown in the status bar.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showIcon)
+				.onChange(async (value) => {
+					this.plugin.settings.showIcon = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 }

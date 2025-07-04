@@ -85,25 +85,54 @@ export class Plugin {
       configurable: true
     });
 
+    // Track child elements for querySelector
+    const childElements: HTMLElement[] = [];
+    
     // Add appendChild and other DOM methods
     Object.defineProperty(item, 'appendChild', {
-      value: jest.fn(),
-      writable: true,
-      configurable: true
-    });
-    Object.defineProperty(item, 'querySelector', {
-      value: jest.fn().mockReturnValue({
-        textContent: '',
-        innerHTML: ''
+      value: jest.fn((child: HTMLElement) => {
+        childElements.push(child);
+        return child;
       }),
       writable: true,
       configurable: true
     });
+    
+    Object.defineProperty(item, 'querySelector', {
+      value: jest.fn((selector: string) => {
+        // Simple mock querySelector for our specific needs
+        if (selector === '.pomodoro-icon') {
+          const iconEl = childElements.find(el => el.classList?.contains('pomodoro-icon'));
+          if (iconEl) return iconEl;
+          // Return a mock icon element if not found
+          return {
+            style: { display: '' },
+            removeAttribute: jest.fn(),
+            setAttribute: jest.fn(),
+            classList: { contains: jest.fn(() => true) }
+          };
+        }
+        if (selector === '.pomodoro-text') {
+          const textEl = childElements.find(el => el.classList?.contains('pomodoro-text'));
+          if (textEl) return textEl;
+          // Return a mock text element if not found
+          return {
+            textContent: '',
+            innerHTML: ''
+          };
+        }
+        return null;
+      }),
+      writable: true,
+      configurable: true
+    });
+    
     Object.defineProperty(item, 'addEventListener', {
       value: jest.fn(),
       writable: true,
       configurable: true
     });
+    
     Object.defineProperty(item, 'innerHTML', {
       value: '',
       writable: true,
@@ -215,7 +244,11 @@ if (typeof document === 'undefined') {
   global.document = {
     createElement: (tagName: string) => ({
       tagName,
-      classList: { add: jest.fn(), remove: jest.fn() },
+      classList: { 
+        add: jest.fn(), 
+        remove: jest.fn(),
+        contains: jest.fn(() => false)
+      },
       setText: jest.fn(), // if your mock needs it
       appendChild: jest.fn(),
       empty: jest.fn(),
@@ -223,6 +256,9 @@ if (typeof document === 'undefined') {
       addEventListener: jest.fn(),
       innerHTML: '',
       textContent: '',
+      style: { display: '' },
+      removeAttribute: jest.fn(),
+      setAttribute: jest.fn(),
       // Add other properties/methods your code might use on elements
     }),
     // Add other document properties/methods if needed

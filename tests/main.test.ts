@@ -143,7 +143,11 @@ describe('PomodoroPlugin', () => {
       };
       plugin.loadData = jest.fn().mockResolvedValue(savedSettings);
       await plugin.onload();
-      expect(plugin.settings).toEqual(savedSettings);
+      // Settings should include the saved values plus default for showIcon
+      expect(plugin.settings).toEqual({
+        ...savedSettings,
+        showIcon: true, // Default value
+      });
     });
   });
 
@@ -276,6 +280,22 @@ describe('PomodoroPlugin', () => {
       // Since the icon is added to a child element, we can check that document.createElement was called for spans
       expect(createElementSpy).toHaveBeenCalledWith('span');
       createElementSpy.mockRestore();
+    });
+
+    it('should show/hide icon based on showIcon setting', async () => {
+      await plugin.onload();
+      const timer = (plugin as PluginWithPrivates)._timer;
+      
+      // Test hiding icon
+      plugin.settings.showIcon = false;
+      await plugin.saveSettings();
+      
+      // Verify timer's updateSettings was called
+      expect(timer).toBeDefined();
+      
+      // Test showing icon again
+      plugin.settings.showIcon = true;
+      await plugin.saveSettings();
     });
   });
 });

@@ -23,15 +23,21 @@ export class PomodoroTimer {
 	private setupStatusBar() {
 		this.statusBarItem.classList.add("pomodoro-timer");
 		
+		// Create icon container - will be shown/hidden based on settings
 		const iconContainer = document.createElement("span");
 		iconContainer.classList.add("pomodoro-icon");
 		iconContainer.innerHTML = ICONS_MAP['pomobar-timer'];
 		this.statusBarItem.appendChild(iconContainer);
 		
+		// Create text container
 		const textContainer = document.createElement("span");
 		textContainer.classList.add("pomodoro-text");
 		this.statusBarItem.appendChild(textContainer);
 		
+		// Set initial icon visibility
+		this.updateIconVisibility();
+		
+		// Event listeners
 		this.statusBarItem.addEventListener('click', (e: MouseEvent) => {
 			if (e.button === 0) {
 				this.isRunning ? this.pauseTimer() : this.startTimer();
@@ -52,8 +58,30 @@ export class PomodoroTimer {
 		});
 	}
 
+	private updateIconVisibility() {
+		const iconContainer = this.statusBarItem.querySelector('.pomodoro-icon') as HTMLElement;
+		if (iconContainer) {
+			if (this.settings.showIcon) {
+				// Show icon
+				if (iconContainer.style) {
+					iconContainer.style.display = '';
+				}
+				iconContainer.removeAttribute('hidden');
+				this.statusBarItem.classList.remove('pomodoro-timer--no-icon');
+			} else {
+				// Hide icon
+				if (iconContainer.style) {
+					iconContainer.style.display = 'none';
+				}
+				iconContainer.setAttribute('hidden', '');
+				this.statusBarItem.classList.add('pomodoro-timer--no-icon');
+			}
+		}
+	}
+
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
+		this.updateIconVisibility();
 		this.resetTimer();
 	}
 
