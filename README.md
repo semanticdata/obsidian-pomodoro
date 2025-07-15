@@ -2,10 +2,12 @@
 
 A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer.
 
-| Description  |             Screenshots             |
-| ------------ | :---------------------------------: |
-| Default View | ![screenshot-1](./screenshot-1.png) |
-| Running      | ![screenshot-2](./screenshot-2.png) |
+| Description            | Screenshots                                              |
+| ---------------------- | :------------------------------------------------------: |
+| Default View           | ![screenshot-1](./screenshot/screenshot-1.png)           |
+| Running                | ![screenshot-2](./screenshot/screenshot-2.png)           |
+| Default (w /Icons)     | ![screenshot-icon-1](./screenshot/screenshot-icon-1.png) |
+| Running (w /Icons)     | ![screenshot-icon-2](./screenshot/screenshot-icon-2.png) |
 
 ## Features
 
