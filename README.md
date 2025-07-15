@@ -43,45 +43,9 @@ The timer appears in your status bar showing "25:00" when inactive.
 - **Reset**: Right click when timer is paused
 - **Settings**: Configure durations in Plugin Settings
 
-## Development
+## Contributing
 
-### Setup
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start development build
-pnpm dev
-
-# Build for production
-pnpm build
-```
-
-### Testing
-
-```bash
-# Run tests
-pnpm test
-
-# Run with coverage
-pnpm test:coverage
-
-# Watch mode
-pnpm test:watch
-```
-
-The test suite includes 40+ tests covering timer functionality, settings management, UI interactions, and edge cases with 80%+ code coverage.
-
-### Linting
-
-```bash
-# Check code style
-pnpm lint
-
-# Fix auto-fixable issues
-pnpm lint:fix
-```
+Interested in contributing? See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, testing, and contribution guidelines.
 
 ## License
 
