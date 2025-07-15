@@ -4,10 +4,10 @@ A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) s
 
 | Description            | Screenshots                                              |
 | ---------------------- | :------------------------------------------------------: |
-| Default View           | ![screenshot-1](./screenshot/screenshot-1.png)           |
-| Running                | ![screenshot-2](./screenshot/screenshot-2.png)           |
-| Default (w /Icons)     | ![screenshot-icon-1](./screenshot/screenshot-icon-1.png) |
-| Running (w /Icons)     | ![screenshot-icon-2](./screenshot/screenshot-icon-2.png) |
+| Default View           | ![screenshot-1](./screenshots/screenshot-1.png)           |
+| Running                | ![screenshot-2](./screenshots/screenshot-2.png)           |
+| Default (w /Icons)     | ![screenshot-icon-1](./screenshots/screenshot-icon-1.png) |
+| Running (w /Icons)     | ![screenshot-icon-2](./screenshots/screenshot-icon-2.png) |
 
 ## Features
 
