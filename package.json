@@ -5,8 +5,8 @@
 	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
 	"main": "main.js",
 	"scripts": {
-		"dev": "vite build --watch",
-		"build": "vite build",
+		"dev": "vite build --watch --mode development",
+		"build": "vite build --mode production",
 		"version": "node version-bump.mjs && git add manifest.json versions.json",
 		"lint": "npx eslint . --config eslint.config.mjs",
 		"lint:fix": "npx eslint . --config eslint.config.mjs --fix",

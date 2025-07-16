@@ -1,12 +1,8 @@
-/* https://docs.obsidian.md/Reference/CSS+variables/CSS+variables */
+/* Reference: https://docs.obsidian.md/Reference/CSS+variables/CSS+variables */
 
 /* Base timer container styles */
 .pomodoro-timer {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	padding: 4px 8px;
-	border-radius: 4px;
+	gap: 4px;
 	cursor: pointer;
 	transition: background-color 0.3s ease, color 0.3s ease;
 
@@ -16,16 +12,15 @@
 
 /* Icon container */
 .pomodoro-timer .pomodoro-icon {
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	line-height: 1;
 }
 
 /* Text container */
 .pomodoro-timer .pomodoro-text {
-	font-family: var(--font-monospace);
+	/* font-family: var(--font-monospace); */
 	font-size: var(--font-ui-smaller);
-	font-weight: 500;
 	line-height: 1;
 }
 
@@ -129,7 +124,6 @@
 /* ============================================ */
 
 @keyframes pulse {
-
 	0%,
 	100% {
 		opacity: 1;
