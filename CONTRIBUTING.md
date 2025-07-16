@@ -15,7 +15,7 @@ Thank you for your interest in contributing to PomoBar! This document provides g
 1. Fork and clone the repository:
 
    ```bash
-   git clone https://github.com/your-username/obsidian-pomodoro.git
+   git clone https://github.com/semanticdata/obsidian-pomodoro.git
    cd obsidian-pomodoro
    ```
 
@@ -150,20 +150,18 @@ obsidian-pomodoro/
 │   ├── settings.test.ts      # Settings logic tests
 │   ├── setup.ts              # Test setup configuration
 │   └── timer.test.ts         # Timer logic tests
-├── public/
-│   └── styles.css            # Status bar timer styling
-├── coverage/                 # Test coverage reports
-├── dist/                     # Built plugin files
-├── manifest.json             # Plugin metadata and version info
 ├── package.json              # Dependencies and scripts
+├── manifest.json             # Plugin metadata and version info
+├── styles.css                # Status bar timer styling
 ├── tsconfig.json             # TypeScript configuration
 ├── jest.config.mjs           # Jest testing configuration
 ├── vite.config.ts            # Vite build configuration
 ├── eslint.config.mjs         # ESLint configuration
 ├── version-bump.mjs          # Version management script
 ├── versions.json             # Version history
-├── CHANGELOG.md              # Change log
 ├── LICENSE                   # License information
+├── CONTRIBUTING.md           # Contribution guidelines
+├── CHANGELOG.md              # Change log
 └── README.md                 # Project documentation
 ```
 
@@ -187,7 +185,7 @@ obsidian-pomodoro/
 
 ## Getting Help
 
-- Check existing [issues](https://github.com/your-username/obsidian-pomodoro/issues) for similar problems
+- Check existing [issues](https://github.com/semanticdata/obsidian-pomodoro/issues) for similar problems
 - Create a new issue for bugs or feature requests
 - Join discussions in the issue tracker
 
