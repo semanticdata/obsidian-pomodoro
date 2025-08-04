@@ -1,234 +1,73 @@
-# Troubleshooting
+# Troubleshooting Guide
 
-## Common Issues
+This guide provides solutions to common issues with the PomoBar plugin. If you don't find an answer here, please report the issue.
 
-### Timer Not Appearing in Status Bar
+## Common Problems
 
-**Symptoms**: Plugin is enabled but no timer is visible in the status bar.
+### Timer Not Appearing
 
-**Solutions**:
+- **Symptom**: The timer is not visible in the status bar.
+- **Solution**:
+  1. **Enable the Plugin**: Go to `Settings > Community Plugins` and make sure "PomoBar" is toggled on.
+  2. **Check Settings**: In PomoBar's settings, ensure "Show Timer Icon" is enabled.
+  3. **Restart Obsidian**: Sometimes a simple restart resolves visibility issues.
 
-1. **Check Plugin Status**:
-   - Go to Settings → Community Plugins
-   - Verify "PomoBar" is enabled (toggle should be blue/on)
-   - Try disabling and re-enabling the plugin
+### Timer Not Responding
 
-2. **Reload Obsidian**:
-   - Press `Ctrl/Cmd + R` to reload Obsidian
-   - Or restart the application completely
-
-3. **Verify Installation**:
-   - Check that all plugin files exist in `.obsidian/plugins/pomobar/`
-   - Required files: `main.js`, `manifest.json`, `styles.css`
-
-### Timer Not Responding to Clicks
-
-**Symptoms**: Timer is visible but clicks don't start/stop/reset the timer.
-
-**Solutions**:
-
-1. **Check for Conflicting Plugins**:
-   - Disable other status bar plugins temporarily
-   - Test if the issue persists
-
-2. **Clear Plugin Data**:
-   - Go to Settings → Community Plugins → PomoBar → Reset to Defaults
-   - Or manually delete `.obsidian/plugins/pomobar/data.json`
-
-3. **Browser Console Errors**:
-   - Open Developer Tools (F12)
-   - Check Console tab for JavaScript errors
-   - Report errors to the plugin repository
+- **Symptom**: Clicking the timer (left, middle, or right) has no effect.
+- **Solution**:
+  1. **Check for Conflicts**: Disable other plugins one by one to see if another plugin is interfering with PomoBar.
+  2. **Re-enable Plugin**: Disable and then re-enable PomoBar in the Community Plugins settings.
+  3. **Check Console**: Open the developer console (`Ctrl+Shift+I` or `Cmd+Option+I`) and look for error messages related to PomoBar.
 
 ### Settings Not Saving
 
-**Symptoms**: Changes in settings don't persist or take effect.
+- **Symptom**: Changes to timer durations or other settings are not applied.
+- **Solution**:
+  1. **Enter Valid Numbers**: Ensure you are entering positive integers for all timer durations.
+  2. **Reload Obsidian**: After changing settings, reload Obsidian to ensure they are correctly applied.
+  3. **Check File Permissions**: Make sure Obsidian has permission to write to its configuration files.
 
-**Solutions**:
+### Incorrect Time Display
 
-1. **Validate Input Values**:
-   - Ensure all duration fields contain positive integers
-   - Invalid values are automatically rejected
+- **Symptom**: The timer shows the wrong time or doesn't update.
+- **Solution**:
+  1. **Reset the Timer**: Right-click the timer to reset it to its default state.
+  2. **Check System Clock**: Ensure your computer's clock is accurate.
 
-2. **File Permissions**:
-   - Check that Obsidian can write to the vault directory
-   - Verify `.obsidian/plugins/pomobar/data.json` is writable
-
-3. **Settings Reset**:
-   - Try resetting settings to defaults
-   - Manually edit `data.json` if necessary
-
-### Timer Shows Incorrect Time
-
-**Symptoms**: Timer displays wrong duration or doesn't count down properly.
-
-**Solutions**:
-
-1. **Reset Timer**:
-   - Right-click the timer when paused to reset
-   - Or change settings to force a reset
-
-2. **Check Settings**:
-   - Verify duration settings are configured correctly
-   - Ensure values are in minutes, not seconds
-
-3. **Plugin Restart**:
-   - Disable and re-enable the plugin
-   - This reinitializes the timer state
-
-## Plugin Performance Issues
+## Performance Issues
 
 ### High CPU Usage
 
-**Symptoms**: Obsidian becomes slow or unresponsive when timer is running.
-
-**Solutions**:
-
-1. **Update Plugin**:
-   - Ensure you're using the latest version
-   - Check for updates in Community Plugins
-
-2. **Other Plugin Conflicts**:
-   - Disable other plugins to isolate the issue
-   - Re-enable one by one to identify conflicts
+- **Symptom**: Obsidian becomes slow or unresponsive when the timer is running.
+- **Solution**:
+  1. **Disable and Re-enable**: Try turning the plugin off and on again.
+  2. **Report the Issue**: If the problem persists, open an issue on GitHub with details about your setup.
 
 ### Memory Leaks
 
-**Symptoms**: Obsidian memory usage increases over time.
-
-**Solutions**:
-
-1. **Restart Obsidian Regularly**:
-   - Close and reopen Obsidian periodically
-   - This clears any accumulated memory issues
-
-2. **Report the Issue**:
-   - If memory usage consistently grows, report to developers
-   - Include system information and reproduction steps
-
-## Installation Problems
-
-### Manual Installation Fails
-
-**Symptoms**: Plugin doesn't appear after manual installation.
-
-**Solutions**:
-
-1. **Verify File Locations**:
-
-   ```text
-   .obsidian/plugins/pomobar/
-   ├── main.js
-   ├── manifest.json
-   └── styles.css
-   ```
-
-2. **Check File Integrity**:
-   - Re-download files from the latest release
-   - Verify files aren't corrupted or empty
-
-3. **Folder Permissions**:
-   - Ensure `.obsidian/plugins/` directory exists
-   - Check that you have write permissions
-
-### Community Plugin Installation Fails
-
-**Symptoms**: Plugin doesn't install from Community Plugins browser.
-
-**Solutions**:
-
-1. **Check Internet Connection**:
-   - Verify you can access other community plugins
-   - Try refreshing the plugin list
-
-2. **Safe Mode**:
-   - Ensure Safe Mode is disabled
-   - Go to Settings → Community Plugins → Turn off Safe Mode
-
-3. **Clear Plugin Cache**:
-   - Close Obsidian
-   - Delete `.obsidian/plugins/.gitignore` if it exists
-   - Restart Obsidian and try again
+- **Symptom**: Obsidian's memory usage grows over time when PomoBar is active.
+- **Solution**: This is a serious issue. Please report it on GitHub immediately, including as much detail as possible.
 
 ## Advanced Troubleshooting
 
-### Debug Mode
+### Enabling Debug Mode
 
-Enable debug logging by:
-
-1. Open Developer Tools (F12)
-2. Go to Console tab
-3. Look for PomoBar-related messages
-4. Note any error messages or warnings
-
-### Plugin Conflicts
-
-Common conflicts occur with:
-
-- Other status bar plugins
-- Timer/productivity plugins
-- Theme plugins that modify status bar styling
-
-To isolate conflicts:
-
-1. Disable all other plugins
-2. Test PomoBar functionality
-3. Re-enable plugins one by one
-4. Identify which plugin causes the conflict
+- **How to Enable**: (Instructions on enabling debug mode, if available)
+- **What to Look For**: (Details on what information to gather in debug mode)
 
 ### Data Recovery
 
-If settings are lost:
+- **Problem**: Your settings were reset or lost.
+- **Solution**: PomoBar stores its settings in Obsidian's data files. You may be able to recover them from a backup if you have one.
 
-1. Check `.obsidian/plugins/pomobar/data.json`
-2. Restore from backup if available
-3. Manually recreate settings if necessary
+## Reporting Bugs
 
-Example `data.json` structure:
+If you've tried these steps and are still having trouble, please open an issue on our [GitHub repository](https://github.com/semanticdata/obsidian-pomodoro/issues).
 
-```json
-{
-    "workTime": 25,
-    "shortBreakTime": 5,
-    "longBreakTime": 15,
-    "intervalsBeforeLongBreak": 4,
-    "showIcon": true
-}
-```
+When reporting a bug, please include:
 
-## Getting Help
-
-### Before Reporting Issues
-
-1. **Update Everything**:
-   - Update Obsidian to the latest version
-   - Update PomoBar to the latest version
-   - Update your operating system
-
-2. **Gather Information**:
-   - Obsidian version
-   - PomoBar version
-   - Operating system
-   - List of other enabled plugins
-   - Steps to reproduce the issue
-
-3. **Try Safe Mode**:
-   - Test in a clean vault with only PomoBar enabled
-   - This helps isolate plugin-specific issues
-
-### Reporting Bugs
-
-Create an issue at the [GitHub repository](https://github.com/semanticdata/obsidian-pomodoro/issues) with:
-
-- **Clear description** of the problem
-- **Steps to reproduce** the issue
-- **Expected behavior** vs. actual behavior
-- **System information** (OS, Obsidian version, plugin version)
-- **Console errors** if any (from Developer Tools)
-- **Screenshots** if relevant
-
-### Community Support
-
-- Check existing issues on GitHub first
-- Search the Obsidian community forums
-- Ask questions in the Obsidian Discord server
+- A clear description of the problem.
+- Steps to reproduce the issue.
+- Any error messages from the developer console.
+- Your Obsidian version and PomoBar plugin version.

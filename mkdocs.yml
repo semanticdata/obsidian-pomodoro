@@ -42,14 +42,18 @@ theme:
 plugins:
     - search
 nav:
-    - "index.md"
-    - "installation.md"
-    - "usage.md"
-    - "configuration.md"
-    - "customization.md"
-    - "troubleshooting.md"
-    - "development.md"
-    - "api.md"
+    - "Getting Started":
+        - "Introduction": index.md
+        - "Installation": installation.md
+    - "Guides":
+        - "Usage": usage.md
+        - "Configuration": configuration.md
+        - "Customization": customization.md
+        - "Troubleshooting": troubleshooting.md
+    - "Development":
+        - "Contributing": development.md
+        - "API": api.md
+
 markdown_extensions:
     - pymdownx.superfences
     - pymdownx.tabbed:

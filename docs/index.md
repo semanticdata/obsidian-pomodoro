@@ -1,6 +1,8 @@
-# PomoBar Documentation
+# Introduction
 
-Welcome to the official documentation for **PomoBar**, a minimalist Pomodoro timer plugin for [Obsidian](https://obsidian.md). This plugin provides a clean, unobtrusive timer that lives in your status bar, helping you maintain focus and productivity using the Pomodoro Technique.
+Welcome to the documentation for PomoBar, a Pomodoro timer plugin for Obsidian.
+
+This plugin is designed to help you focus and be more productive by integrating a Pomodoro timer directly into your Obsidian workspace.
 
 ![PomoBar Screenshots](https://raw.githubusercontent.com/semanticdata/obsidian-pomodoro/master/screenshots/screenshot-1.png)
 

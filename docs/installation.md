@@ -1,22 +1,19 @@
 # Installation
 
-## From Obsidian Community Plugins (Recommended)
+To install PomoBar, you can either use the Obsidian Community Plugins browser or install it manually.
 
-1. Open Obsidian Settings → Community Plugins
-2. Disable Safe Mode if enabled
-3. Browse and search for "PomoBar"
-4. Install and enable the plugin
+## Installing from the Community Plugins Browser
+
+1. Open the Obsidian settings.
+2. Go to the "Community plugins" tab.
+3. Click "Browse" and search for "PomoBar".
+4. Click "Install" and then "Enable".
 
 ## Manual Installation
 
-1. Download the latest release files from the [GitHub releases page](https://github.com/semanticdata/obsidian-pomodoro/releases):
-   - `main.js`
-   - `manifest.json`
-   - `styles.css`
-2. Create a new folder in your vault: `.obsidian/plugins/pomobar/`
-3. Copy all three files to this folder
-4. Reload Obsidian (Ctrl/Cmd + R)
-5. Go to Settings → Community Plugins and enable "PomoBar"
+1. Download the latest release from the [GitHub releases page](https://github.com/semanticdata/obsidian-pomodoro/releases).
+2. Extract the downloaded zip file into your Obsidian vault's `.obsidian/plugins` directory.
+3. Reload Obsidian and enable the plugin in the settings.
 
 ## Verification
 
