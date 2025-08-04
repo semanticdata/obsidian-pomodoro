@@ -24,3 +24,7 @@ data.json
 
 # vite
 dist
+
+# Python files
+.venv/
+site/
