@@ -28,14 +28,15 @@ PomoBar is designed to be the simplest possible Pomodoro timer for Obsidian user
 
 This documentation covers everything you need to know about PomoBar:
 
-| Section | Description |
-|---------|-------------|
-| **[Installation](installation.md)** | Step-by-step installation from Community Plugins or manual setup |
-| **[Usage Guide](usage.md)** | Complete guide to controls, timer states, and workflow |
-| **[Configuration](configuration.md)** | All available settings with examples and use cases |
-| **[Troubleshooting](troubleshooting.md)** | Solutions for common issues and advanced debugging |
-| **[Development](development.md)** | Developer setup, architecture, and contribution guidelines |
-| **[API Reference](api.md)** | Technical documentation for developers and advanced users |
+| Section                                       | Description                                                      |
+| --------------------------------------------- | ---------------------------------------------------------------- |
+| **[Installation](installation.md)**           | Step-by-step installation from Community Plugins or manual setup |
+| **[Usage Guide](usage.md)**                   | Complete guide to controls, timer states, and workflow           |
+| **[Configuration](configuration.md)**         | All available settings with examples and use cases               |
+| **[Customization](customization.md)**         | Advanced customization for timer behavior and appearance         |
+| **[Troubleshooting](troubleshooting.md)**     | Solutions for common issues and advanced debugging               |
+| **[Development](development.md)**             | Developer setup, architecture, and contribution guidelines       |
+| **[API Reference](api.md)**                   | Technical documentation for developers and advanced users        |
 
 ## The Pomodoro Technique
 

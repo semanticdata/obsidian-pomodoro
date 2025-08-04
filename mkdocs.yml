@@ -2,8 +2,10 @@ site_name: PomoBar
 site_url: https://semanticdata.github.io/obsidian-pomodoro/
 site_description: Documentation for the PomoBar plugin for Obsidian.
 repo_url: https://github.com/semanticdata/obsidian-pomodoro
-# repo_name: semanticdata/obsidian-pomodoro
-# edit_uri: edit/main/docs/
+repo_name: PomoBar
+# edit_uri: edit/master/docs/
+site_author: Miguel Pimentel
+copyright: Copyright &copy; 2025 <a href="https://github.com/semanticdata" target="_blank" rel="noopener">Miguel Pimentel</a>
 theme:
     name: material
     font:
@@ -36,19 +38,24 @@ theme:
         - search.highlight
         - navigation.footer
         - content.action.edit
+        - content.tabs.link
 plugins:
     - search
 nav:
-    - Home: index.md
-    - Installation: installation.md
-    - Usage: usage.md
-    - Configuration: configuration.md
-    - Troubleshooting: troubleshooting.md
-    - Development: development.md
-    - API Reference: api.md
+    - "index.md"
+    - "installation.md"
+    - "usage.md"
+    - "configuration.md"
+    - "customization.md"
+    - "troubleshooting.md"
+    - "development.md"
+    - "api.md"
+markdown_extensions:
+    - pymdownx.superfences
+    - pymdownx.tabbed:
+          alternate_style: true
 extra:
     social:
         - icon: fontawesome/brands/github
-          link: https://github.com/semanticdata/obsidian-pomodoro
-          name: PomoBar on GitHub
-copyright: Copyright &copy; 2024 Miguel Pimentel
+          link: https://github.com/semanticdata/
+          name: semanticdata on GitHub

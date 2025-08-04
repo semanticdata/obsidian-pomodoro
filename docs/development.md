@@ -12,39 +12,71 @@
 
 1. **Clone the repository**:
 
-   ```bash
-   git clone https://github.com/semanticdata/obsidian-pomodoro.git
-   cd obsidian-pomodoro
-   ```
+```bash
+git clone https://github.com/semanticdata/obsidian-pomodoro.git
+cd obsidian-pomodoro
+```
 
 2. **Install dependencies**:
 
-   ```bash
-   pnpm install
-   ```
+=== "PNPM"
 
-3. **Start development mode**:
+    ```bash
+    pnpm install
+    ```
 
-   ```bash
-   pnpm run dev
-   ```
+=== "NPM"
+
+    ```bash
+    npm install
+    ```
+
+1. **Start development mode**:
+
+=== "PNPM"
+
+    ```bash
+    pnpm run dev
+    ```
+
+=== "NPM"
+
+    ```bash
+    npm run dev
+    ```
 
 ## Project Structure
 
-```text
-├── src/
-│   ├── components/
-│   │   └── SettingsTab.ts     # Plugin settings UI
-│   ├── logic/
-│   │   └── timer.ts           # Core timer functionality
-│   ├── constants.ts           # Application constants
-│   ├── icons.ts              # SVG icon definitions
-│   ├── main.ts               # Main plugin class
-│   └── types.ts              # TypeScript interfaces
-├── tests/                    # Jest test files
-├── docs/                     # MkDocs documentation
-└── styles.css               # Plugin styles
-```
+- `CONTRIBUTING.md`: Guidelines for contributing to the project.
+- `CHANGELOG.md`: A log of changes made to the project.
+- `README.md`: The main README file for the project.
+- `package.json`: Defines the project's dependencies and scripts.
+- `pyproject.toml`: Configuration file for Python projects.
+- `docs/`: Contains the documentation files for the project.
+  - `api.md`: Documentation for the project's API.
+  - `configuration.md`: Documentation for the project's configuration.
+  - `development.md`: Documentation for developers.
+  - `index.md`: The main documentation file.
+  - `installation.md`: Documentation for installing the project.
+  - `troubleshooting.md`: Documentation for troubleshooting the project.
+  - `usage.md`: Documentation for using the project.
+- `src/`: Contains the source code for the project.
+  - `components/`: Contains the project's components.
+    - `SettingsTab.ts`: The settings tab component.
+  - `constants.ts`: Contains the project's constants.
+  - `icons.ts`: Contains the project's icons.
+  - `logic/`: Contains the project's logic.
+    - `timer.ts`: The timer logic.
+  - `main.ts`: The main entry point for the project.
+  - `types.ts`: Contains the project's types.
+- `tests/`: Contains the tests for the project.
+  - `__mocks__/`: Contains mocks for the tests.
+    - `obsidian.ts`: Mocks for the Obsidian API.
+  - `plugin.test.ts`: Tests for the plugin.
+  - `settings-tab.test.ts`: Tests for the settings tab.
+  - `settings.test.ts`: Tests for the settings.
+  - `setup.ts`: Setup for the tests.
+  - `timer.test.ts`: Tests for the timer.
 
 ## Available Scripts
 
@@ -133,17 +165,33 @@ describe('PomodoroTimer', () => {
 
 ### Development Build
 
-```bash
-pnpm run dev
-```
+=== "PNPM"
+
+    ```bash
+    pnpm run dev
+    ```
+
+=== "NPM"
+
+    ```bash
+    npm run dev
+    ```
 
 Builds the plugin with development settings and watches for file changes.
 
 ### Production Build
 
-```bash
-pnpm run build
-```
+=== "PNPM"
+
+    ```bash
+    pnpm run build
+    ```
+
+=== "NPM"
+
+    ```bash
+    npm run build
+    ```
 
 Creates optimized build files:
 
