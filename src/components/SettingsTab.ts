@@ -25,7 +25,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.workTime.toString())
 				.onChange(async (value) => {
 					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0) {
+					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
 						this.plugin.settings.workTime = duration;
 						await this.plugin.saveSettings();
 						this.plugin.resetTimer();
@@ -40,7 +40,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.shortBreakTime.toString())
 				.onChange(async (value) => {
 					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0) {
+					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
 						this.plugin.settings.shortBreakTime = duration;
 						await this.plugin.saveSettings();
 						this.plugin.resetTimer();
@@ -55,7 +55,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.longBreakTime.toString())
 				.onChange(async (value) => {
 					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0) {
+					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
 						this.plugin.settings.longBreakTime = duration;
 						await this.plugin.saveSettings();
 						this.plugin.resetTimer();
@@ -70,12 +70,10 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.intervalsBeforeLongBreak.toString())
 				.onChange(async (value) => {
 					const intervals = parseInt(value.trim());
-					if (!isNaN(intervals) && intervals > 0) {
+					if (!isNaN(intervals) && intervals > 0 && Number.isInteger(Number(value.trim()))) {
 						this.plugin.settings.intervalsBeforeLongBreak = intervals;
 						await this.plugin.saveSettings();
-						this.plugin.workIntervalCount = 0;
-						this.plugin.currentDurationIndex = 0;
-						this.plugin.resetTimer();
+						this.plugin.resetTimerState();
 					}
 				}));
 

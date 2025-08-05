@@ -17,6 +17,12 @@ export default class PomodoroPlugin extends Plugin {
 		this.addSettingTab(new PomodoroSettingTab(this.app, this));
 	}
 
+	onunload() {
+		if (this.timer) {
+			this.timer.cleanup();
+		}
+	}
+
 	async loadSettings() {
 		this.settings = Object.assign(
 			{},
@@ -37,7 +43,7 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	set currentDurationIndex(_value: number) {
-		// For compatibility with settings tab
+		// For compatibility with settings tab - setter does nothing
 	}
 
 	get workIntervalCount() {
@@ -45,7 +51,13 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	set workIntervalCount(_value: number) {
-		// For compatibility with settings tab
+		// For compatibility with settings tab - setter does nothing
+	}
+
+	resetTimerState() {
+		if (this.timer) {
+			this.timer.resetToWorkState();
+		}
 	}
 
 	resetTimer() {

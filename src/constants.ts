@@ -12,7 +12,7 @@ export const CSS_CLASSES = {
 	TIMER: "pomodoro-timer",
 	ICON: "pomodoro-icon",
 	TEXT: "pomodoro-text",
-	ACTIVE: "active",
-	PAUSED: "paused",
+	ACTIVE: "pomodoro-active",
+	PAUSED: "pomodoro-paused",
 	NO_ICON: "pomodoro-timer--no-icon",
 } as const;

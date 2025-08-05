@@ -61,10 +61,17 @@ and this project tries to adhere to [Semantic Versioning](https://semver.org/spe
 
 ### 🐛 **Bug Fixes**
 
+- **MAJOR**: Fixed timer state inconsistency in manual duration cycling that could break pomodoro progression
+- **MAJOR**: Eliminated direct state manipulation from settings tab that bypassed proper timer management
+- **MAJOR**: Fixed memory leak risk by implementing proper interval cleanup with tracking and onunload handler
+- **MAJOR**: Replaced browser alert() with Obsidian's Notice API for better user experience
 - Fixed TypeScript casting errors in timer implementation
 - Improved event registration using Obsidian's proper API
 - Better handling of edge cases in timer state transitions
-- Fixed potential memory leaks in interval management
+- Added proper integer validation for duration settings (prevents decimal values)
+- Updated manifest description to reflect configurable durations instead of hardcoded values
+- Standardized CSS class naming conventions (kebab-case with pomodoro- prefix)
+- Simplified icon visibility logic by removing redundant DOM manipulation
 
 ## [1.1.0] - 2025-06-11
 

@@ -1,4 +1,4 @@
-import { Plugin } from "obsidian";
+import { Plugin, Notice } from "obsidian";
 import { PomodoroSettings } from "../types";
 import { ICONS_MAP } from "../icons";
 import { TIMER_STATES, TIMER_INTERVAL_MS, CSS_CLASSES } from "../constants";
@@ -12,6 +12,7 @@ export class PomodoroTimer {
 	private currentDurationIndex = 0;
 	private workIntervalCount = 0;
 	private currentInterval: number | null = null;
+	private registeredIntervals: Set<number> = new Set();
 
 	constructor(plugin: Plugin, settings: PomodoroSettings, statusBarItem: HTMLElement) {
 		this.plugin = plugin;
@@ -63,18 +64,10 @@ export class PomodoroTimer {
 		const iconContainer = this.statusBarItem.querySelector(`.${CSS_CLASSES.ICON}`) as HTMLElement;
 		if (iconContainer) {
 			if (this.settings.showIcon) {
-				// Show icon
-				if (iconContainer.style) {
-					iconContainer.style.display = '';
-				}
-				iconContainer.removeAttribute('hidden');
+				iconContainer.style.display = '';
 				this.statusBarItem.classList.remove(CSS_CLASSES.NO_ICON);
 			} else {
-				// Hide icon
-				if (iconContainer.style) {
-					iconContainer.style.display = 'none';
-				}
-				iconContainer.setAttribute('hidden', '');
+				iconContainer.style.display = 'none';
 				this.statusBarItem.classList.add(CSS_CLASSES.NO_ICON);
 			}
 		}
@@ -97,7 +90,7 @@ export class PomodoroTimer {
 					this.remainingTime--;
 					this.updateDisplay();
 				} else {
-					alert("PomoBar: Time's up! Your most recent timer has finished.");
+					new Notice("PomoBar: Time's up! Your most recent timer has finished.", 5000);
 
 					if (this.currentDurationIndex === TIMER_STATES.WORK) {
 						this.workIntervalCount++;
@@ -116,6 +109,7 @@ export class PomodoroTimer {
 			}, TIMER_INTERVAL_MS);
 
 			this.currentInterval = intervalId;
+			this.registeredIntervals.add(intervalId);
 			this.plugin.registerInterval(intervalId);
 		}
 	}
@@ -123,6 +117,7 @@ export class PomodoroTimer {
 	pauseTimer() {
 		if (this.currentInterval) {
 			window.clearInterval(this.currentInterval);
+			this.registeredIntervals.delete(this.currentInterval);
 			this.currentInterval = null;
 		}
 		this.isRunning = false;
@@ -133,6 +128,7 @@ export class PomodoroTimer {
 	resetTimer() {
 		if (this.currentInterval) {
 			window.clearInterval(this.currentInterval);
+			this.registeredIntervals.delete(this.currentInterval);
 			this.currentInterval = null;
 		}
 		this.isRunning = false;
@@ -162,7 +158,7 @@ export class PomodoroTimer {
 		} else {
 			this.currentDurationIndex = TIMER_STATES.WORK;
 		}
-		this.workIntervalCount = 0;
+		// Don't reset work interval count when manually cycling - preserve pomodoro session state
 		this.resetTimer();
 	}
 
@@ -189,5 +185,24 @@ export class PomodoroTimer {
 
 	get timeRemaining() {
 		return this.remainingTime;
+	}
+
+	resetToWorkState() {
+		this.pauseTimer();
+		this.currentDurationIndex = TIMER_STATES.WORK;
+		this.workIntervalCount = 0;
+		this.resetTimer();
+	}
+
+	cleanup() {
+		// Clean up any remaining intervals
+		this.registeredIntervals.forEach(intervalId => {
+			window.clearInterval(intervalId);
+		});
+		this.registeredIntervals.clear();
+		if (this.currentInterval) {
+			window.clearInterval(this.currentInterval);
+			this.currentInterval = null;
+		}
 	}
 }

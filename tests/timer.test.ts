@@ -38,8 +38,8 @@ describe('PomodoroTimer', () => {
 
       timer.startTimer();
       expect(timer.running).toBe(true);
-      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('active');
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('paused');
+      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-active');
+      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-paused');
       expect(window.setInterval).toHaveBeenCalledTimes(1);
 
       jest.useRealTimers();
@@ -55,8 +55,8 @@ describe('PomodoroTimer', () => {
       timer.startTimer();
       timer.pauseTimer();
       expect(timer.running).toBe(false);
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('active');
-      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('paused');
+      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-active');
+      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-paused');
       expect(window.clearInterval).toHaveBeenCalledTimes(1);
     });
 
@@ -190,13 +190,14 @@ describe('PomodoroTimer', () => {
       expect(timer['currentDurationIndex']).toBe(0);
     });
 
-    it('should reset work interval count when cycling duration', () => {
+    it('should preserve work interval count when cycling duration', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
       
       timer['workIntervalCount'] = 3;
       timer.cycleDuration();
       
-      expect(timer.workCount).toBe(0);
+      // Work interval count should be preserved to maintain pomodoro session state
+      expect(timer.workCount).toBe(3);
     });
 
     it('should handle icon visibility updates', () => {
@@ -213,7 +214,7 @@ describe('PomodoroTimer', () => {
       timer.updateSettings(plugin.settings);
       
       expect(iconEl.style.display).toBe('none');
-      expect(iconEl.setAttribute).toHaveBeenCalledWith('hidden', '');
+      // Icon visibility is now controlled only by style.display, no hidden attribute
       expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-timer--no-icon');
       
       // Test showing icon
@@ -221,7 +222,7 @@ describe('PomodoroTimer', () => {
       timer.updateSettings(plugin.settings);
       
       expect(iconEl.style.display).toBe('');
-      expect(iconEl.removeAttribute).toHaveBeenCalledWith('hidden');
+      // Icon visibility is now controlled only by style.display, no hidden attribute removal
       expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-timer--no-icon');
     });
   });

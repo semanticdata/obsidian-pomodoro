@@ -76,6 +76,7 @@ describe('PomodoroSettingTab', () => {
     mockPlugin.saveData = jest.fn().mockResolvedValue(undefined);
     mockPlugin.saveSettings = jest.fn().mockResolvedValue(undefined);
     mockPlugin.resetTimer = jest.fn();
+    mockPlugin.resetTimerState = jest.fn();
 
     await mockPlugin.onload();
 
@@ -232,7 +233,7 @@ describe('PomodoroSettingTab', () => {
 
       expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(3);
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
-      expect(mockPlugin.resetTimer).toHaveBeenCalled();
+      expect(mockPlugin.resetTimerState).toHaveBeenCalled();
       expect(mockPlugin.workIntervalCount).toBe(0);
       expect(mockPlugin.currentDurationIndex).toBe(0);
     });
