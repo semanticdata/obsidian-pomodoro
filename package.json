@@ -1,7 +1,7 @@
 {
 	"type": "module",
-	"name": "obsidian-pomodoro",
-	"version": "1.1.0",
+	"name": "pomobar",
+	"version": "1.2.0",
 	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
 	"main": "main.js",
 	"scripts": {
@@ -16,8 +16,11 @@
 	},
 	"keywords": [
 		"obsidian",
+		"obsidian-plugin",
 		"pomodoro",
-		"status bar",
+		"pomodoro-timer",
+		"obsidian=pomodoro",
+		"status-bar",
 		"timer"
 	],
 	"author": "Miguel Pimentel",
