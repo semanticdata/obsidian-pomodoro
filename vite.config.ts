@@ -1,6 +1,5 @@
 // vite.config.ts
 import { defineConfig } from 'vite';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig(({ command, mode }) => {
@@ -8,7 +7,7 @@ export default defineConfig(({ command, mode }) => {
     const outDir = isProduction ? 'dist' : '.';
 
     // Only use viteStaticCopy in production
-    const plugins = [svelte()];
+    const plugins = [];
     if (isProduction) {
         plugins.push(
             viteStaticCopy({
