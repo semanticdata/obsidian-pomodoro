@@ -37,10 +37,18 @@ theme:
         - search.suggest
         - search.highlight
         - navigation.footer
-        - content.action.edit
         - content.tabs.link
+        # - content.action.edit
+        # - content.action.view
 plugins:
     - search
+    - minify:
+          minify_html: true
+          minify_js: true
+          minify_css: true
+          htmlmin_opts:
+              remove_comments: true
+          cache_safe: true
 nav:
     - "Getting Started":
           - "Introduction": index.md
