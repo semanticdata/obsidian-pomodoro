@@ -5,9 +5,11 @@ repo_url: https://github.com/semanticdata/obsidian-pomodoro
 repo_name: PomoBar
 # edit_uri: edit/master/docs/
 site_author: Miguel Pimentel
-copyright: Copyright &copy; 2025 <a href="https://github.com/semanticdata" target="_blank" rel="noopener">Miguel Pimentel</a>
+copyright: Copyright &copy; 2025 Miguel Pimentel
 theme:
     name: material
+    icon:
+        logo: material/timer
     font:
         text: Roboto
         code: Roboto Mono
@@ -17,38 +19,34 @@ theme:
           toggle:
               icon: material/brightness-auto
               name: Switch to light mode
-
         # Palette toggle for light mode
         - media: "(prefers-color-scheme: light)"
           scheme: default
+          primary: deep orange
+          accent: indigo
           toggle:
               icon: material/brightness-7
               name: Switch to dark mode
-
         # Palette toggle for dark mode
         - media: "(prefers-color-scheme: dark)"
           scheme: slate
-          primary: deep purple
-          accent: indigo
+          primary: indigo
+          accent: deep orange
           toggle:
               icon: material/brightness-4
               name: Switch to system preference
     features:
         - search.suggest
         - search.highlight
-        - navigation.footer
         - content.tabs.link
+        - navigation.footer
+        - navigation.instant
+        - navigation.instant.progress
+        - navigation.sections
+        - navigation.top
+        # - navigation.expand
         # - content.action.edit
         # - content.action.view
-plugins:
-    - search
-    - minify:
-          minify_html: true
-          minify_js: true
-          minify_css: true
-          htmlmin_opts:
-              remove_comments: true
-          cache_safe: true
 nav:
     - "Getting Started":
           - "Introduction": index.md
@@ -64,7 +62,19 @@ nav:
           - "Contributing": development.md
           - "API Reference": api.md
     - "Changelog": changelog.md
-
+plugins:
+    - search
+    - minify:
+          minify_html: true
+          minify_js: true
+          minify_css: true
+          htmlmin_opts:
+              remove_comments: true
+          cache_safe: true
+    - git-authors:
+          enabled: false
+          show_email_address: true
+          href: "https://github.com/semanticdata/"
 markdown_extensions:
     - pymdownx.superfences
     - pymdownx.snippets
@@ -75,3 +85,6 @@ extra:
         - icon: fontawesome/brands/github
           link: https://github.com/semanticdata/
           name: semanticdata on GitHub
+        # - icon: fontawesome/brands/codepen
+        #   link: https://codepen.io/semanticdata
+        #   name: semanticdata on Codepen
