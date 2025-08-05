@@ -53,7 +53,7 @@ describe('PomodoroPlugin', () => {
       // Settings should include the saved values plus default for showIcon
       expect(plugin.settings).toEqual({
         ...savedSettings,
-        showIcon: true, // Default value
+        showIcon: false, // Default value
       });
     });
   });
