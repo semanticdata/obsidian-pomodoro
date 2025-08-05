@@ -276,3 +276,17 @@ if (typeof window === 'undefined') {
   Object.assign(global, { window: mockWindow });
   global.alert = jest.fn();
 }
+
+export class Notice {
+  message: string;
+  timeout?: number;
+
+  constructor(message: string, timeout?: number) {
+    this.message = message;
+    this.timeout = timeout;
+  }
+
+  hide() {
+    // Mock implementation
+  }
+}

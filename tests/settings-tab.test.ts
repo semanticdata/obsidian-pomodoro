@@ -1,4 +1,3 @@
-
 import './setup';
 import { PomodoroSettingTab } from '../src/components/SettingsTab';
 import PomodoroPlugin from '../src/main';
@@ -8,7 +7,7 @@ import { PLUGIN_NAME } from '../src/constants';
 // Mock the Setting class
 jest.mock('obsidian', () => {
   const original = jest.requireActual('obsidian');
-  
+
   return {
     ...original,
     Setting: jest.fn().mockImplementation(() => {
@@ -111,7 +110,7 @@ describe('PomodoroSettingTab', () => {
       // Simulate text change for work time
       const workTimeSetting = settings[0].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
-      const textComponent = { 
+      const textComponent = {
         setPlaceholder: jest.fn(),
         setValue: jest.fn(),
         onChange: jest.fn(),
@@ -138,7 +137,7 @@ describe('PomodoroSettingTab', () => {
 
       const workTimeSetting = settings[0].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
-      const textComponent = { 
+      const textComponent = {
         setPlaceholder: jest.fn(),
         setValue: jest.fn(),
         onChange: jest.fn(),
@@ -164,7 +163,7 @@ describe('PomodoroSettingTab', () => {
 
       const shortBreakTimeSetting = settings[1].value;
       const shortBreakTimeOnChange = shortBreakTimeSetting.addText.mock.calls[0][0];
-      const textComponent = { 
+      const textComponent = {
         setPlaceholder: jest.fn(),
         setValue: jest.fn(),
         onChange: jest.fn(),
@@ -190,7 +189,7 @@ describe('PomodoroSettingTab', () => {
 
       const longBreakTimeSetting = settings[2].value;
       const longBreakTimeOnChange = longBreakTimeSetting.addText.mock.calls[0][0];
-      const textComponent = { 
+      const textComponent = {
         setPlaceholder: jest.fn(),
         setValue: jest.fn(),
         onChange: jest.fn(),
@@ -216,7 +215,7 @@ describe('PomodoroSettingTab', () => {
 
       const intervalsSetting = settings[3].value;
       const intervalsOnChange = intervalsSetting.addText.mock.calls[0][0];
-      const textComponent = { 
+      const textComponent = {
         setPlaceholder: jest.fn(),
         setValue: jest.fn(),
         onChange: jest.fn(),
@@ -244,7 +243,7 @@ describe('PomodoroSettingTab', () => {
 
       const showIconSetting = settings[4].value;
       const showIconOnChange = showIconSetting.addToggle.mock.calls[0][0];
-      const toggleComponent = { 
+      const toggleComponent = {
         setValue: jest.fn(),
         onChange: jest.fn(),
       };
@@ -257,6 +256,184 @@ describe('PomodoroSettingTab', () => {
 
       expect(mockPlugin.settings.showIcon).toBe(true);
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
+    });
+  });
+
+  describe('Input Validation Edge Cases', () => {
+    let getOnChangeCallback: (settingIndex: number) => (value: string) => Promise<void>;
+
+    beforeEach(() => {
+      settingTab.display();
+      getOnChangeCallback = (settingIndex: number) => {
+        const settings = (Setting as jest.Mock).mock.results;
+        const setting = settings[settingIndex].value;
+        const onChangeHandler = setting.addText.mock.calls[0][0];
+        const textComponent = {
+          setPlaceholder: jest.fn().mockReturnThis(),
+          setValue: jest.fn().mockReturnThis(),
+          onChange: jest.fn().mockReturnThis(),
+          onInput: jest.fn().mockReturnThis(),
+        };
+        onChangeHandler(textComponent);
+        return textComponent.onChange.mock.calls[0][0];
+      };
+    });
+
+    describe('Work Time Validation', () => {
+      it('should not update on zero value', async () => {
+        const initialValue = mockPlugin.settings.workTime;
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('0');
+
+        expect(mockPlugin.settings.workTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on negative value', async () => {
+        const initialValue = mockPlugin.settings.workTime;
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('-5');
+
+        expect(mockPlugin.settings.workTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on decimal value', async () => {
+        const initialValue = mockPlugin.settings.workTime;
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('25.5');
+
+        expect(mockPlugin.settings.workTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on empty string', async () => {
+        const initialValue = mockPlugin.settings.workTime;
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('');
+
+        expect(mockPlugin.settings.workTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on whitespace-only string', async () => {
+        const initialValue = mockPlugin.settings.workTime;
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('   ');
+
+        expect(mockPlugin.settings.workTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should handle value with leading/trailing whitespace', async () => {
+        const onChangeCallback = getOnChangeCallback(0);
+
+        await onChangeCallback('  30  ');
+
+        expect(mockPlugin.settings.workTime).toBe(30);
+        expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      });
+    });
+
+    describe('Short Break Time Validation', () => {
+      it('should not update on zero value', async () => {
+        const initialValue = mockPlugin.settings.shortBreakTime;
+        const onChangeCallback = getOnChangeCallback(1);
+
+        await onChangeCallback('0');
+
+        expect(mockPlugin.settings.shortBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on negative value', async () => {
+        const initialValue = mockPlugin.settings.shortBreakTime;
+        const onChangeCallback = getOnChangeCallback(1);
+
+        await onChangeCallback('-3');
+
+        expect(mockPlugin.settings.shortBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on decimal value', async () => {
+        const initialValue = mockPlugin.settings.shortBreakTime;
+        const onChangeCallback = getOnChangeCallback(1);
+
+        await onChangeCallback('5.7');
+
+        expect(mockPlugin.settings.shortBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Long Break Time Validation', () => {
+      it('should not update on zero value', async () => {
+        const initialValue = mockPlugin.settings.longBreakTime;
+        const onChangeCallback = getOnChangeCallback(2);
+
+        await onChangeCallback('0');
+
+        expect(mockPlugin.settings.longBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on negative value', async () => {
+        const initialValue = mockPlugin.settings.longBreakTime;
+        const onChangeCallback = getOnChangeCallback(2);
+
+        await onChangeCallback('-10');
+
+        expect(mockPlugin.settings.longBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on decimal value', async () => {
+        const initialValue = mockPlugin.settings.longBreakTime;
+        const onChangeCallback = getOnChangeCallback(2);
+
+        await onChangeCallback('15.3');
+
+        expect(mockPlugin.settings.longBreakTime).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Intervals Before Long Break Validation', () => {
+      it('should not update on zero value', async () => {
+        const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
+        const onChangeCallback = getOnChangeCallback(3);
+
+        await onChangeCallback('0');
+
+        expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on negative value', async () => {
+        const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
+        const onChangeCallback = getOnChangeCallback(3);
+
+        await onChangeCallback('-2');
+
+        expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
+
+      it('should not update on decimal value', async () => {
+        const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
+        const onChangeCallback = getOnChangeCallback(3);
+
+        await onChangeCallback('4.5');
+
+        expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(initialValue);
+        expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      });
     });
   });
 });
