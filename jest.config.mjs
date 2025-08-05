@@ -13,4 +13,4 @@ export default {
     'src/logic/**/*.ts',
     'src/components/**/*.ts',
   ],
-}; 
+};
