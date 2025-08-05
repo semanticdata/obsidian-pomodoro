@@ -1,8 +1,56 @@
+
 import './setup';
 import { PomodoroSettingTab } from '../src/components/SettingsTab';
 import PomodoroPlugin from '../src/main';
-import { App } from 'obsidian';
+import { App, Setting } from 'obsidian';
 import { PLUGIN_NAME } from '../src/constants';
+
+// Mock the Setting class
+jest.mock('obsidian', () => {
+  const original = jest.requireActual('obsidian');
+  
+  return {
+    ...original,
+    Setting: jest.fn().mockImplementation(() => {
+      const setDesc = jest.fn().mockReturnThis();
+      const setName = jest.fn().mockReturnThis();
+      const addText = jest.fn().mockImplementation(cb => {
+        const textComponent = {
+          setPlaceholder: jest.fn().mockReturnThis(),
+          setValue: jest.fn().mockReturnThis(),
+          onChange: jest.fn().mockImplementation(onChangeCb => {
+            // Store the callback to be triggered later
+            textComponent.onChangeCallback = onChangeCb;
+            return textComponent;
+          }),
+          onInput: jest.fn().mockReturnThis(),
+        };
+        cb(textComponent);
+        return this;
+      });
+      const addToggle = jest.fn().mockImplementation(cb => {
+        const toggleComponent = {
+          setValue: jest.fn().mockReturnThis(),
+          onChange: jest.fn().mockImplementation(onChangeCb => {
+            // Store the callback
+            toggleComponent.onChangeCallback = onChangeCb;
+            return toggleComponent;
+          }),
+        };
+        cb(toggleComponent);
+        return this;
+      });
+
+      return {
+        setName,
+        setDesc,
+        addText,
+        addToggle,
+        onChangeCallback: null, // To store the onChange callback
+      };
+    }),
+  };
+});
 
 describe('PomodoroSettingTab', () => {
   let settingTab: PomodoroSettingTab;
@@ -14,28 +62,28 @@ describe('PomodoroSettingTab', () => {
     jest.clearAllMocks();
 
     mockApp = {} as App;
-    const manifest = { 
-      id: 'test-plugin', 
-      name: 'Test Plugin', 
-      version: '1.0.0', 
-      minAppVersion: '0.15.0', 
-      author: 'Test Author', 
-      description: 'Test Description' 
+    const manifest = {
+      id: 'test-plugin',
+      name: 'Test Plugin',
+      version: '1.0.0',
+      minAppVersion: '0.15.0',
+      author: 'Test Author',
+      description: 'Test Description',
     };
 
     mockPlugin = new PomodoroPlugin(mockApp, manifest);
     mockPlugin.loadData = jest.fn().mockResolvedValue({});
     mockPlugin.saveData = jest.fn().mockResolvedValue(undefined);
+    mockPlugin.saveSettings = jest.fn().mockResolvedValue(undefined);
     mockPlugin.resetTimer = jest.fn();
 
     await mockPlugin.onload();
 
-    // Mock container element
     mockContainerEl = {
       empty: jest.fn(),
       createEl: jest.fn().mockReturnValue({
         textContent: '',
-        innerHTML: ''
+        innerHTML: '',
       }),
       appendChild: jest.fn(),
     } as unknown as HTMLElement;
@@ -45,221 +93,169 @@ describe('PomodoroSettingTab', () => {
   });
 
   describe('Display', () => {
-    it('should create plugin name header', () => {
+    it('should create plugin name header and settings', () => {
       settingTab.display();
-      
+
       expect(mockContainerEl.empty).toHaveBeenCalled();
       expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: PLUGIN_NAME });
-    });
-
-    it('should instantiate settings', () => {
-      // Just verify the display method runs without errors
-      expect(() => settingTab.display()).not.toThrow();
-    });
-
-    it('should have plugin reference', () => {
-      expect(settingTab.plugin).toBe(mockPlugin);
-      expect(settingTab.app).toBe(mockApp);
+      expect(Setting).toHaveBeenCalledTimes(5);
     });
   });
 
-  describe('Settings Integration', () => {
-    it('should save settings when work time changes', async () => {
+  describe('Settings Interactions', () => {
+    it('should update workTime on valid input', async () => {
       settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      (mockPlugin.resetTimer as jest.Mock).mockClear();
-      
-      // Simulate setting change
-      mockPlugin.settings.workTime = 45;
-      await mockPlugin.saveSettings();
-      
-      expect(mockPlugin.saveData).toHaveBeenCalledWith(mockPlugin.settings);
-      // resetTimer is called via timer.updateSettings, which we can't easily test here
-    });
+      const settings = (Setting as jest.Mock).mock.results;
 
-    it('should save settings when short break time changes', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      
-      // Simulate setting change
-      mockPlugin.settings.shortBreakTime = 10;
-      await mockPlugin.saveSettings();
-      
-      expect(mockPlugin.saveData).toHaveBeenCalledWith(mockPlugin.settings);
-    });
+      // Simulate text change for work time
+      const workTimeSetting = settings[0].value;
+      const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
+      const textComponent = { 
+        setPlaceholder: jest.fn(),
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+        onInput: jest.fn(),
+      };
+      textComponent.setPlaceholder = jest.fn().mockReturnValue(textComponent);
+      textComponent.setValue = jest.fn().mockReturnValue(textComponent);
+      textComponent.onChange = jest.fn().mockReturnValue(textComponent);
+      textComponent.onInput = jest.fn().mockReturnValue(textComponent);
+      workTimeOnChange(textComponent);
+      const onChangeCallback = textComponent.onChange.mock.calls[0][0];
 
-    it('should save settings when long break time changes', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      
-      // Simulate setting change
-      mockPlugin.settings.longBreakTime = 20;
-      await mockPlugin.saveSettings();
-      
-      expect(mockPlugin.saveData).toHaveBeenCalledWith(mockPlugin.settings);
-    });
+      await onChangeCallback('30');
 
-    it('should save settings when intervals before long break changes', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      
-      // Simulate setting change
-      mockPlugin.settings.intervalsBeforeLongBreak = 3;
-      await mockPlugin.saveSettings();
-      
-      expect(mockPlugin.saveData).toHaveBeenCalledWith(mockPlugin.settings);
-    });
-
-    it('should save settings when show icon setting changes', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      
-      // Simulate setting change
-      mockPlugin.settings.showIcon = false;
-      await mockPlugin.saveSettings();
-      
-      expect(mockPlugin.saveData).toHaveBeenCalledWith(mockPlugin.settings);
-    });
-  });
-
-  describe('Constructor', () => {
-    it('should initialize with correct app and plugin references', () => {
-      const newSettingTab = new PomodoroSettingTab(mockApp, mockPlugin);
-      expect(newSettingTab.app).toBe(mockApp);
-      expect(newSettingTab.plugin).toBe(mockPlugin);
-    });
-  });
-
-  describe('Input Validation', () => {
-    it('should handle invalid work time input', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      (mockPlugin.resetTimer as jest.Mock).mockClear();
-      
-      // Test invalid input (should not save)
-      const initialWorkTime = mockPlugin.settings.workTime;
-      
-      // Simulate invalid inputs
-      const invalidInputs = ['', '0', '-5', 'abc', 'NaN'];
-      
-      for (const invalidInput of invalidInputs) {
-        const duration = parseInt(invalidInput.trim());
-        if (!isNaN(duration) && duration > 0) {
-          // This branch should not execute for invalid inputs
-          mockPlugin.settings.workTime = duration;
-          await mockPlugin.saveSettings();
-          mockPlugin.resetTimer();
-        }
-      }
-      
-      // Settings should remain unchanged
-      expect(mockPlugin.settings.workTime).toBe(initialWorkTime);
-      expect(mockPlugin.saveData).not.toHaveBeenCalled();
-    });
-
-    it('should handle valid work time input', async () => {
-      settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      (mockPlugin.resetTimer as jest.Mock).mockClear();
-      
-      // Simulate valid input
-      const validInput = '30';
-      const duration = parseInt(validInput.trim());
-      if (!isNaN(duration) && duration > 0) {
-        mockPlugin.settings.workTime = duration;
-        await mockPlugin.saveSettings();
-        mockPlugin.resetTimer();
-      }
-      
       expect(mockPlugin.settings.workTime).toBe(30);
-      expect(mockPlugin.saveData).toHaveBeenCalled();
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
       expect(mockPlugin.resetTimer).toHaveBeenCalled();
     });
 
-    it('should handle invalid short break time input', async () => {
+    it('should not update workTime on invalid input', async () => {
       settingTab.display();
-      
-      const initialShortBreakTime = mockPlugin.settings.shortBreakTime;
-      
-      // Simulate invalid input
-      const invalidInput = 'invalid';
-      const duration = parseInt(invalidInput.trim());
-      if (!isNaN(duration) && duration > 0) {
-        // Should not execute
-        mockPlugin.settings.shortBreakTime = duration;
-      }
-      
-      expect(mockPlugin.settings.shortBreakTime).toBe(initialShortBreakTime);
+      const settings = (Setting as jest.Mock).mock.results;
+      const initialWorkTime = mockPlugin.settings.workTime;
+
+      const workTimeSetting = settings[0].value;
+      const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
+      const textComponent = { 
+        setPlaceholder: jest.fn(),
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+        onInput: jest.fn(),
+      };
+      textComponent.setPlaceholder = jest.fn().mockReturnValue(textComponent);
+      textComponent.setValue = jest.fn().mockReturnValue(textComponent);
+      textComponent.onChange = jest.fn().mockReturnValue(textComponent);
+      textComponent.onInput = jest.fn().mockReturnValue(textComponent);
+      workTimeOnChange(textComponent);
+      const onChangeCallback = textComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback('invalid');
+
+      expect(mockPlugin.settings.workTime).toBe(initialWorkTime);
+      expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+      expect(mockPlugin.resetTimer).not.toHaveBeenCalled();
     });
 
-    it('should handle invalid long break time input', async () => {
+    it('should update shortBreakTime on valid input', async () => {
       settingTab.display();
-      
-      const initialLongBreakTime = mockPlugin.settings.longBreakTime;
-      
-      // Simulate invalid input
-      const invalidInput = '0';
-      const duration = parseInt(invalidInput.trim());
-      if (!isNaN(duration) && duration > 0) {
-        // Should not execute for zero
-        mockPlugin.settings.longBreakTime = duration;
-      }
-      
-      expect(mockPlugin.settings.longBreakTime).toBe(initialLongBreakTime);
+      const settings = (Setting as jest.Mock).mock.results;
+
+      const shortBreakTimeSetting = settings[1].value;
+      const shortBreakTimeOnChange = shortBreakTimeSetting.addText.mock.calls[0][0];
+      const textComponent = { 
+        setPlaceholder: jest.fn(),
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+        onInput: jest.fn(),
+      };
+      textComponent.setPlaceholder = jest.fn().mockReturnValue(textComponent);
+      textComponent.setValue = jest.fn().mockReturnValue(textComponent);
+      textComponent.onChange = jest.fn().mockReturnValue(textComponent);
+      textComponent.onInput = jest.fn().mockReturnValue(textComponent);
+      shortBreakTimeOnChange(textComponent);
+      const onChangeCallback = textComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback('10');
+
+      expect(mockPlugin.settings.shortBreakTime).toBe(10);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.resetTimer).toHaveBeenCalled();
     });
 
-    it('should handle invalid intervals before long break input', async () => {
+    it('should update longBreakTime on valid input', async () => {
       settingTab.display();
-      
-      const initialIntervals = mockPlugin.settings.intervalsBeforeLongBreak;
-      
-      // Simulate invalid input
-      const invalidInput = '-1';
-      const intervals = parseInt(invalidInput.trim());
-      if (!isNaN(intervals) && intervals > 0) {
-        // Should not execute for negative numbers
-        mockPlugin.settings.intervalsBeforeLongBreak = intervals;
-      }
-      
-      expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(initialIntervals);
+      const settings = (Setting as jest.Mock).mock.results;
+
+      const longBreakTimeSetting = settings[2].value;
+      const longBreakTimeOnChange = longBreakTimeSetting.addText.mock.calls[0][0];
+      const textComponent = { 
+        setPlaceholder: jest.fn(),
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+        onInput: jest.fn(),
+      };
+      textComponent.setPlaceholder = jest.fn().mockReturnValue(textComponent);
+      textComponent.setValue = jest.fn().mockReturnValue(textComponent);
+      textComponent.onChange = jest.fn().mockReturnValue(textComponent);
+      textComponent.onInput = jest.fn().mockReturnValue(textComponent);
+      longBreakTimeOnChange(textComponent);
+      const onChangeCallback = textComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback('20');
+
+      expect(mockPlugin.settings.longBreakTime).toBe(20);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+      expect(mockPlugin.resetTimer).toHaveBeenCalled();
     });
 
-    it('should handle valid intervals before long break input', async () => {
+    it('should update intervalsBeforeLongBreak on valid input', async () => {
       settingTab.display();
-      
-      // Clear mock calls from setup
-      (mockPlugin.saveData as jest.Mock).mockClear();
-      (mockPlugin.resetTimer as jest.Mock).mockClear();
-      
-      // Simulate valid input and the full onChange logic
-      const validInput = '3';
-      const intervals = parseInt(validInput.trim());
-      if (!isNaN(intervals) && intervals > 0) {
-        mockPlugin.settings.intervalsBeforeLongBreak = intervals;
-        await mockPlugin.saveSettings();
-        // Simulate the specific logic in the intervals onChange
-        mockPlugin.workIntervalCount = 0;
-        mockPlugin.currentDurationIndex = 0;
-        mockPlugin.resetTimer();
-      }
-      
+      const settings = (Setting as jest.Mock).mock.results;
+
+      const intervalsSetting = settings[3].value;
+      const intervalsOnChange = intervalsSetting.addText.mock.calls[0][0];
+      const textComponent = { 
+        setPlaceholder: jest.fn(),
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+        onInput: jest.fn(),
+      };
+      textComponent.setPlaceholder = jest.fn().mockReturnValue(textComponent);
+      textComponent.setValue = jest.fn().mockReturnValue(textComponent);
+      textComponent.onChange = jest.fn().mockReturnValue(textComponent);
+      textComponent.onInput = jest.fn().mockReturnValue(textComponent);
+      intervalsOnChange(textComponent);
+      const onChangeCallback = textComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback('3');
+
       expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(3);
-      expect(mockPlugin.saveData).toHaveBeenCalled();
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
       expect(mockPlugin.resetTimer).toHaveBeenCalled();
+      expect(mockPlugin.workIntervalCount).toBe(0);
+      expect(mockPlugin.currentDurationIndex).toBe(0);
+    });
+
+    it('should update showIcon on toggle', async () => {
+      settingTab.display();
+      const settings = (Setting as jest.Mock).mock.results;
+
+      const showIconSetting = settings[4].value;
+      const showIconOnChange = showIconSetting.addToggle.mock.calls[0][0];
+      const toggleComponent = { 
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+      };
+      toggleComponent.setValue = jest.fn().mockReturnValue(toggleComponent);
+      toggleComponent.onChange = jest.fn().mockReturnValue(toggleComponent);
+      showIconOnChange(toggleComponent);
+      const onChangeCallback = toggleComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback(true);
+
+      expect(mockPlugin.settings.showIcon).toBe(true);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
     });
   });
 });
