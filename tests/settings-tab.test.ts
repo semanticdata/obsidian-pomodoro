@@ -20,7 +20,7 @@ jest.mock('obsidian', () => {
           setValue: jest.fn().mockReturnThis(),
           onChange: jest.fn().mockImplementation(onChangeCb => {
             // Store the callback to be triggered later
-            textComponent.onChangeCallback = onChangeCb;
+            (textComponent as typeof textComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
             return textComponent;
           }),
           onInput: jest.fn().mockReturnThis(),
@@ -33,7 +33,7 @@ jest.mock('obsidian', () => {
           setValue: jest.fn().mockReturnThis(),
           onChange: jest.fn().mockImplementation(onChangeCb => {
             // Store the callback
-            toggleComponent.onChangeCallback = onChangeCb;
+            (toggleComponent as typeof toggleComponent & { onChangeCallback?: (value: boolean) => void }).onChangeCallback = onChangeCb;
             return toggleComponent;
           }),
         };

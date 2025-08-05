@@ -235,13 +235,13 @@ describe('PomodoroTimer', () => {
       
       // Simulate left click (button 0)
       const clickEvent = new MouseEvent('click', { button: 0 });
-      mockStatusBarItem.addEventListener.mock.calls[0][1](clickEvent);
+      (mockStatusBarItem.addEventListener as jest.Mock).mock.calls[0][1](clickEvent);
       
       expect(startSpy).toHaveBeenCalled();
       
       // Timer is now running, click again to pause
       timer['isRunning'] = true;
-      mockStatusBarItem.addEventListener.mock.calls[0][1](clickEvent);
+      (mockStatusBarItem.addEventListener as jest.Mock).mock.calls[0][1](clickEvent);
       
       expect(pauseSpy).toHaveBeenCalled();
     });
@@ -252,7 +252,7 @@ describe('PomodoroTimer', () => {
       
       // Simulate middle click (button 1) via auxclick
       const auxClickEvent = new MouseEvent('auxclick', { button: 1 });
-      mockStatusBarItem.addEventListener.mock.calls[1][1](auxClickEvent);
+      (mockStatusBarItem.addEventListener as jest.Mock).mock.calls[1][1](auxClickEvent);
       
       expect(cycleSpy).toHaveBeenCalled();
     });
@@ -268,7 +268,7 @@ describe('PomodoroTimer', () => {
       const contextMenuEvent = new MouseEvent('contextmenu');
       const preventDefaultSpy = jest.spyOn(contextMenuEvent, 'preventDefault');
       
-      mockStatusBarItem.addEventListener.mock.calls[2][1](contextMenuEvent);
+      (mockStatusBarItem.addEventListener as jest.Mock).mock.calls[2][1](contextMenuEvent);
       
       expect(preventDefaultSpy).toHaveBeenCalled();
       expect(resetSpy).toHaveBeenCalled();
@@ -283,7 +283,7 @@ describe('PomodoroTimer', () => {
       
       // Simulate right click via contextmenu
       const contextMenuEvent = new MouseEvent('contextmenu');
-      mockStatusBarItem.addEventListener.mock.calls[2][1](contextMenuEvent);
+      (mockStatusBarItem.addEventListener as jest.Mock).mock.calls[2][1](contextMenuEvent);
       
       expect(resetSpy).not.toHaveBeenCalled();
     });

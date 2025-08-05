@@ -61,7 +61,7 @@ global.document = {
         textContent: '',
         innerHTML: ''
       }),
-      addEventListener: jest.fn(),
+      addEventListener: jest.fn() as jest.Mock,
       style: { display: '' },
       removeAttribute: jest.fn(),
       setAttribute: jest.fn(),

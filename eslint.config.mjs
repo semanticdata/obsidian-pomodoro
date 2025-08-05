@@ -1,6 +1,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import globals from 'globals';
+import jest from 'eslint-plugin-jest';
 
 export default tseslint.config(
 	{
@@ -25,6 +26,19 @@ export default tseslint.config(
 			'no-prototype-builtins': 'off',
 			'@typescript-eslint/no-empty-function': 'off',
 			'@typescript-eslint/no-unused-expressions': 'off',
+		},
+	},
+	{
+		files: ['**/*.test.ts'],
+		...jest.configs['flat/recommended'],
+		rules: {
+			...jest.configs['flat/recommended'].rules,
+			'jest/prefer-expect-assertions': 'off',
+		},
+		languageOptions: {
+			globals: {
+				...globals.jest,
+			},
 		},
 	},
 );
