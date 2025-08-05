@@ -10,6 +10,25 @@ export class PomodoroSettingTab extends PluginSettingTab {
 		this.plugin = plugin;
 	}
 
+	private validateAndUpdateSetting(
+		value: string,
+		settingProperty: 'workTime' | 'shortBreakTime' | 'longBreakTime' | 'intervalsBeforeLongBreak',
+		resetAction: 'resetTimer' | 'resetPomodoroSession'
+	): boolean {
+		const numValue = parseInt(value.trim());
+		if (!isNaN(numValue) && numValue > 0 && Number.isInteger(Number(value.trim()))) {
+			this.plugin.settings[settingProperty] = numValue;
+			this.plugin.saveSettings();
+			if (resetAction === 'resetTimer') {
+				this.plugin.resetTimer();
+			} else {
+				this.plugin.resetPomodoroSession();
+			}
+			return true;
+		}
+		return false;
+	}
+
 	display(): void {
 		const { containerEl } = this;
 
@@ -24,12 +43,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setPlaceholder("e.g., 25")
 				.setValue(this.plugin.settings.workTime.toString())
 				.onChange(async (value) => {
-					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
-						this.plugin.settings.workTime = duration;
-						await this.plugin.saveSettings();
-						this.plugin.resetTimer();
-					}
+					await this.validateAndUpdateSetting(value, 'workTime', 'resetTimer');
 				}));
 
 		new Setting(containerEl)
@@ -39,12 +53,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setPlaceholder("e.g., 5")
 				.setValue(this.plugin.settings.shortBreakTime.toString())
 				.onChange(async (value) => {
-					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
-						this.plugin.settings.shortBreakTime = duration;
-						await this.plugin.saveSettings();
-						this.plugin.resetTimer();
-					}
+					await this.validateAndUpdateSetting(value, 'shortBreakTime', 'resetTimer');
 				}));
 
 		new Setting(containerEl)
@@ -54,12 +63,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setPlaceholder("e.g., 15")
 				.setValue(this.plugin.settings.longBreakTime.toString())
 				.onChange(async (value) => {
-					const duration = parseInt(value.trim());
-					if (!isNaN(duration) && duration > 0 && Number.isInteger(Number(value.trim()))) {
-						this.plugin.settings.longBreakTime = duration;
-						await this.plugin.saveSettings();
-						this.plugin.resetTimer();
-					}
+					await this.validateAndUpdateSetting(value, 'longBreakTime', 'resetTimer');
 				}));
 
 		new Setting(containerEl)
@@ -69,12 +73,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setPlaceholder("e.g., 4")
 				.setValue(this.plugin.settings.intervalsBeforeLongBreak.toString())
 				.onChange(async (value) => {
-					const intervals = parseInt(value.trim());
-					if (!isNaN(intervals) && intervals > 0 && Number.isInteger(Number(value.trim()))) {
-						this.plugin.settings.intervalsBeforeLongBreak = intervals;
-						await this.plugin.saveSettings();
-						this.plugin.resetTimerState();
-					}
+					await this.validateAndUpdateSetting(value, 'intervalsBeforeLongBreak', 'resetPomodoroSession');
 				}));
 
 		new Setting(containerEl)

@@ -54,7 +54,7 @@ export default class PomodoroPlugin extends Plugin {
 		// For compatibility with settings tab - setter does nothing
 	}
 
-	resetTimerState() {
+	resetPomodoroSession() {
 		if (this.timer) {
 			this.timer.resetToWorkState();
 		}

@@ -1,7 +1,7 @@
 import { Plugin, Notice } from "obsidian";
 import { PomodoroSettings } from "../types";
 import { ICONS_MAP } from "../icons";
-import { TIMER_STATES, TIMER_INTERVAL_MS, CSS_CLASSES } from "../constants";
+import { TIMER_STATES, TIMER_INTERVAL_MS, CSS_CLASSES, MOUSE_BUTTONS } from "../constants";
 
 export class PomodoroTimer {
 	private plugin: Plugin;
@@ -40,19 +40,19 @@ export class PomodoroTimer {
 		this.updateIconVisibility();
 
 		// Event listeners
-		this.statusBarItem.addEventListener('click', (e: MouseEvent) => {
-			if (e.button === 0) {
+		this.plugin.registerDomEvent(this.statusBarItem, 'click', (e: MouseEvent) => {
+			if (e.button === MOUSE_BUTTONS.LEFT_CLICK) {
 				this.isRunning ? this.pauseTimer() : this.startTimer();
 			}
 		});
 
-		this.statusBarItem.addEventListener('auxclick', (e: MouseEvent) => {
-			if (e.button === 1) {
+		this.plugin.registerDomEvent(this.statusBarItem, 'auxclick', (e: MouseEvent) => {
+			if (e.button === MOUSE_BUTTONS.MIDDLE_CLICK) {
 				this.cycleDuration();
 			}
 		});
 
-		this.statusBarItem.addEventListener('contextmenu', (e: MouseEvent) => {
+		this.plugin.registerDomEvent(this.statusBarItem, 'contextmenu', (e: MouseEvent) => {
 			e.preventDefault();
 			if (!this.isRunning) {
 				this.resetTimer();
@@ -114,23 +114,23 @@ export class PomodoroTimer {
 		}
 	}
 
-	pauseTimer() {
+	private clearCurrentInterval() {
 		if (this.currentInterval) {
 			window.clearInterval(this.currentInterval);
 			this.registeredIntervals.delete(this.currentInterval);
 			this.currentInterval = null;
 		}
+	}
+
+	pauseTimer() {
+		this.clearCurrentInterval();
 		this.isRunning = false;
 		this.statusBarItem.classList.remove(CSS_CLASSES.ACTIVE);
 		this.statusBarItem.classList.add(CSS_CLASSES.PAUSED);
 	}
 
 	resetTimer() {
-		if (this.currentInterval) {
-			window.clearInterval(this.currentInterval);
-			this.registeredIntervals.delete(this.currentInterval);
-			this.currentInterval = null;
-		}
+		this.clearCurrentInterval();
 		this.isRunning = false;
 
 		if (this.currentDurationIndex === TIMER_STATES.WORK) {

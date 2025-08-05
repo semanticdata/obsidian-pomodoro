@@ -16,3 +16,9 @@ export const CSS_CLASSES = {
 	PAUSED: "pomodoro-paused",
 	NO_ICON: "pomodoro-timer--no-icon",
 } as const;
+
+export const MOUSE_BUTTONS = {
+	LEFT_CLICK: 0,
+	MIDDLE_CLICK: 1,
+	RIGHT_CLICK: 2,
+} as const;

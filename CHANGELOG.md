@@ -10,12 +10,17 @@ All notable changes to this project will be documented in this file.
 - Refactored the codebase for better organization and maintainability.
 - Improved timer state management for more reliable operation.
 - Standardized CSS class names for consistency.
+- Extracted repetitive input validation logic into reusable helper functions.
+- Refactored timer methods to eliminate code duplication in interval management.
 
 ### Added
 
-- New icon for the plugin.
+- New opt-in status bar icon for the plugin.
+- Documentation site built with MkDocs.
+- CHANGELOG with all plugin release notes.
 - Increased test coverage for the plugin lifecycle, timer logic, and settings.
-- New documentation site built with MkDocs.
+  - Robust input validation tests for the settings tab.
+  - Edge case testing for the timer and other components.
 
 ### Fixed
 
@@ -23,6 +28,9 @@ All notable changes to this project will be documented in this file.
 - A memory leak that occurred when the plugin was unloaded.
 - A bug that allowed settings to be changed in an unsafe way.
 - Replaced browser alerts with Obsidian's native `Notice` API.
+- Improved DOM event listener management to prevent memory leaks on plugin reload.
+- Replaced magic numbers with named constants for MouseEvent.button values.
+- Renamed `resetTimerState` to `resetPomodoroSession` for better clarity.
 - Minor bugs related to type errors, event handling, and input validation.
 
 ## [1.1.0] - 2025-06-11
