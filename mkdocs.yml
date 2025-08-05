@@ -43,19 +43,23 @@ plugins:
     - search
 nav:
     - "Getting Started":
-        - "Introduction": index.md
-        - "Installation": installation.md
+          - "Introduction": index.md
+          - "Installation": installation.md
     - "Guides":
-        - "Usage": usage.md
-        - "Configuration": configuration.md
-        - "Customization": customization.md
-        - "Troubleshooting": troubleshooting.md
+          - "Usage": usage.md
+          - "Configuration": configuration.md
+          - "Customization": customization.md
+          - "Troubleshooting": troubleshooting.md
+          - "Use Cases & Workflows": use-cases.md
+          - "FAQ": faq.md
     - "Development":
-        - "Contributing": development.md
-        - "API": api.md
+          - "Contributing": development.md
+          - "API Reference": api.md
+    - "Changelog": changelog.md
 
 markdown_extensions:
     - pymdownx.superfences
+    - pymdownx.snippets
     - pymdownx.tabbed:
           alternate_style: true
 extra:

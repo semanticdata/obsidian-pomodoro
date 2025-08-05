@@ -148,7 +148,7 @@ pnpm run test:coverage
 
 ### Writing Tests
 
-```typescript
+```typescript title="tests/new-test.test.ts"
 import { PomodoroTimer } from '../src/logic/timer';
 import { mockPlugin, mockSettings } from './__mocks__/obsidian';
 
