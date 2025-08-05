@@ -5,7 +5,7 @@
 *.iml
 .idea
 
-# npm
+# npm / pnpm
 node_modules
 coverage
 
@@ -16,15 +16,12 @@ main.js
 # Exclude sourcemaps
 *.map
 
-# obsidian
+# Obsidian
 data.json
 
 # Exclude macOS Finder (System Explorer) View States
 .DS_Store
 
-# vite
-dist
-
-# Python files
+# Python files from documentation
 .venv/
 site/
