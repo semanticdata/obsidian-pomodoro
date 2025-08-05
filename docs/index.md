@@ -4,7 +4,11 @@ Welcome to the documentation for PomoBar, a Pomodoro timer plugin for Obsidian.
 
 This plugin is designed to help you focus and be more productive by integrating a Pomodoro timer directly into your Obsidian workspace.
 
-![PomoBar Screenshots](https://raw.githubusercontent.com/semanticdata/obsidian-pomodoro/master/screenshots/screenshot-1.png)
+|                       Default View                        |                       Running View                        |
+| :-------------------------------------------------------: | :-------------------------------------------------------: |
+|      ![screenshot-1](./screenshots/screenshot-1.png)      |      ![screenshot-2](./screenshots/screenshot-2.png)      |
+|               *Also available with icons!*                |            *...and they change when running!*             |
+| ![screenshot-icon-1](./screenshots/screenshot-icon-1.png) | ![screenshot-icon-2](./screenshots/screenshot-icon-2.png) |
 
 ## What is PomoBar?
 
