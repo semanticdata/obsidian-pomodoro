@@ -221,10 +221,13 @@ export interface App {
   vault?: unknown;
 }
 
+type OnChangeCallback = (value: string) => Promise<void>;
+type OnChangeFunc = (callback: OnChangeCallback) => TextComponent;
+
 interface TextComponent {
   setPlaceholder: jest.Mock;
   setValue: jest.Mock;
-  onChange: jest.Mock;
+  onChange: jest.Mock<OnChangeFunc>;
   inputEl: HTMLInputElement;
   simulateInput?: (value: string) => Promise<void>;
 }

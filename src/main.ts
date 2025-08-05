@@ -4,9 +4,9 @@ import { PomodoroSettingTab } from "./components/SettingsTab";
 import { PomodoroTimer } from "./logic/timer";
 
 export default class PomodoroPlugin extends Plugin {
-	settings: PomodoroSettings;
-	private timer: PomodoroTimer;
-	private statusBarItem: HTMLElement;
+	settings!: PomodoroSettings;
+	private timer!: PomodoroTimer;
+	private statusBarItem!: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
