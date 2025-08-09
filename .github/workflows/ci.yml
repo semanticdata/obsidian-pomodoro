@@ -1,0 +1,43 @@
+name: CI
+
+on:
+    # These should be uncommented once the workflow is manually tested and validated.
+    # push:
+    #   branches:
+    #     - main
+    pull_request:
+    workflow_dispatch:
+
+jobs:
+    build-and-test:
+        name: Build and Test
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                node-version: [20.x, 22.x]
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Use pnpm
+              uses: pnpm/action-setup@v4
+              with:
+                  version: 10
+
+            - name: Use Node.js ${{ matrix.node-version }}
+              uses: actions/setup-node@v4
+              with:
+                  node-version: ${{ matrix.node-version }}
+                  cache: "pnpm"
+
+            - name: Install dependencies
+              run: pnpm install
+
+            - name: Lint code
+              run: pnpm lint
+
+            - name: Run tests
+              run: pnpm test
+
+            - name: Build project
+              run: pnpm build

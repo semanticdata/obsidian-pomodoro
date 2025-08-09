@@ -1,9 +1,9 @@
 {
 	"id": "pomobar",
 	"name": "PomoBar",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"minAppVersion": "0.15.0",
-	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused, middle click to cycle between 25/15/5 minute durations.",
+	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused, middle click to cycle between work/break durations.",
 	"author": "Miguel Pimentel",
 	"authorUrl": "https://github.com/semanticdata",
 	"fundingUrl": "https://github.com/sponsors/semanticdata",

@@ -11,5 +11,5 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
 	shortBreakTime: 5,
 	longBreakTime: 15,
 	intervalsBeforeLongBreak: 4,
-	showIcon: true,
+	showIcon: false,
 };

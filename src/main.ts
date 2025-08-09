@@ -1,12 +1,12 @@
 import { Plugin } from "obsidian";
-import { PomodoroSettings, DEFAULT_SETTINGS } from "./settings";
-import { PomodoroSettingTab } from "./settings-tab";
-import { PomodoroTimer } from "./timer";
+import { PomodoroSettings, DEFAULT_SETTINGS } from "./types";
+import { PomodoroSettingTab } from "./components/SettingsTab";
+import { PomodoroTimer } from "./logic/timer";
 
 export default class PomodoroPlugin extends Plugin {
-	settings: PomodoroSettings;
-	private timer: PomodoroTimer;
-	private statusBarItem: HTMLElement;
+	settings!: PomodoroSettings;
+	private timer!: PomodoroTimer;
+	private statusBarItem!: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
@@ -15,6 +15,12 @@ export default class PomodoroPlugin extends Plugin {
 		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem);
 
 		this.addSettingTab(new PomodoroSettingTab(this.app, this));
+	}
+
+	onunload() {
+		if (this.timer) {
+			this.timer.cleanup();
+		}
 	}
 
 	async loadSettings() {
@@ -36,16 +42,22 @@ export default class PomodoroPlugin extends Plugin {
 		return this.timer?.currentDuration ?? 0;
 	}
 
-	set currentDurationIndex(value: number) {
-		// For compatibility with settings tab
+	set currentDurationIndex(_value: number) {
+		// For compatibility with settings tab - setter does nothing
 	}
 
 	get workIntervalCount() {
 		return this.timer?.workCount ?? 0;
 	}
 
-	set workIntervalCount(value: number) {
-		// For compatibility with settings tab
+	set workIntervalCount(_value: number) {
+		// For compatibility with settings tab - setter does nothing
+	}
+
+	resetPomodoroSession() {
+		if (this.timer) {
+			this.timer.resetToWorkState();
+		}
 	}
 
 	resetTimer() {

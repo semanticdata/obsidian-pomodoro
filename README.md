@@ -1,88 +1,48 @@
-# 🌟 PomoBar
+# PomoBar: The Minimalist Pomodoro Timer for Obsidian
 
-A minimalist Pomodoro timer that lives in your [Obsidian](https://obsidian.md) status bar. Focus on your work while keeping track of time with this unobtrusive timer.
+Boost your productivity and maintain focus without ever leaving your notes. PomoBar is a sleek, unobtrusive Pomodoro timer that lives in your Obsidian status bar, helping you seamlessly integrate the Pomodoro Technique into your workflow.
 
-| Description  |             Screenshots             |
-| ------------ | :---------------------------------: |
-| Default View | ![screenshot-1](./screenshot-1.png) |
-| Running      | ![screenshot-2](./screenshot-2.png) |
+|                       Default View                        |                       Running View                        |
+| :-------------------------------------------------------: | :-------------------------------------------------------: |
+|      ![screenshot-1](./docs/screenshots/screenshot-1.png)      |      ![screenshot-2](./docs/screenshots/screenshot-2.png)      |
+|               *Also available with icons!*                |            *...and they change when running!*             |
+| ![screenshot-icon-1](./docs/screenshots/screenshot-icon-1.png) | ![screenshot-icon-2](./docs/screenshots/screenshot-icon-2.png) |
 
-## Features
+## Why Choose PomoBar?
 
-- **Simple Status Bar Timer**: Clean, minimal interface that stays out of your way
-- **Flexible Durations**: 25-minute work sessions with 5 and 15-minute break options
-- **Easy Controls**:
-  - Left click: Start/stop timer
-  - Middle click: Cycle between durations (25/15/5 minutes)
-  - Right click: Reset timer (when paused)
-- **Automatic Cycling**: Seamlessly transitions between work and break periods
-- **Configurable Settings**: Customize timer durations and intervals
+* 🧘 **Stay Focused, Not Distracted:** PomoBar lives in your status bar, providing a constant but subtle reminder of your work session without cluttering your workspace.
+* 🖱️ **Intuitive & Quick Controls:** Manage your timers with simple clicks—no need to open new windows or type commands.
+* 🔄 **Automated Flow:** Automatically cycles between work and break periods, so you can keep your momentum going.
+* ⚙️ **Fully Customizable:** Head to the settings to adjust the duration of your work sessions and breaks to fit your personal workflow perfectly.
+
+## How It Works
+
+The timer appears in your status bar. Here’s how to use it:
+
+* **Left-click:** Start or pause the timer.
+* **Middle-click:** Instantly cycle between work, short break, and long break timers.
+* **Right-click:** Reset the current timer (when paused).
 
 ## Installation
 
-### From Obsidian Community Plugins
+### From Obsidian Community Plugins (Recommended)
 
-1. Open Obsidian Settings → Community Plugins
-2. Disable Safe Mode if enabled
-3. Browse and search for "PomoBar"
-4. Install and enable the plugin
+1. Open **Settings** → **Community Plugins** in Obsidian.
+2. Disable **Safe Mode** if it's enabled.
+3. Click **Browse** and search for "PomoBar".
+4. Click **Install**, and then **Enable** the plugin.
 
 ### Manual Installation
 
-1. Download the latest release files (`main.js`, `manifest.json`, `styles.css`)
-2. Create folder `.obsidian/plugins/pomobar/` in your vault
-3. Copy the files to this folder
-4. Reload Obsidian and enable the plugin
+1. Download the latest release files (`main.js`, `manifest.json`, `styles.css`) from the [releases page](https://github.com/your-repo/obsidian-pomodoro/releases).
+2. Create a new folder named `pomobar` inside your vault's `.obsidian/plugins/` directory.
+3. Copy the downloaded files into this new folder.
+4. Reload Obsidian (Ctrl/Cmd + R) and enable the plugin in the settings.
 
-## Usage
+## Community & Contributions
 
-The timer appears in your status bar showing "25:00" when inactive.
+PomoBar is a free and open-source project built for the Obsidian community. We believe in the power of collaboration and welcome contributions of all kinds. Whether you're a developer, a designer, or just an enthusiastic user, you can help shape the future of this plugin.
 
-- **Start/Pause**: Left click the timer
-- **Change Duration**: Middle click to cycle between 25/15/5 minutes
-- **Reset**: Right click when timer is paused
-- **Settings**: Configure durations in Plugin Settings
-
-## Development
-
-### Setup
-
-```bash
-# Install dependencies
-pnpm install
-
-# Start development build
-pnpm dev
-
-# Build for production
-pnpm build
-```
-
-### Testing
-
-```bash
-# Run tests
-pnpm test
-
-# Run with coverage
-pnpm test:coverage
-
-# Watch mode
-pnpm test:watch
-```
-
-The test suite includes 40+ tests covering timer functionality, settings management, UI interactions, and edge cases with 80%+ code coverage.
-
-### Linting
-
-```bash
-# Check code style
-pnpm lint
-
-# Fix auto-fixable issues
-pnpm lint:fix
-```
-
-## License
-
-The code in this repository is available under the [MIT License](LICENSE).
+* **Source Code:** The complete source code is available on [GitHub](https://github.com/your-repo/obsidian-pomodoro).
+* **Contribute:** Have an idea or a bug fix? See our [contribution guidelines](CONTRIBUTING.md) to get started.
+* **License:** The project is licensed under the [MIT License](LICENSE).

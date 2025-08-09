@@ -20,12 +20,6 @@ export class Plugin {
   }
 
   addStatusBarItem(): HTMLElement {
-    // Create a more complete mock element that includes our custom properties
-    const item = document.createElement('div');
-
-    // Add the setText method with proper typing
-    (item as unknown as HTMLElement & { setText: jest.Mock }).setText = jest.fn();
-
     // Create a proper mock for classList that implements DOMTokenList
     const classList = new Set<string>();
     const mockClassList = {
@@ -80,29 +74,22 @@ export class Plugin {
       get: () => Array.from(classList).join(' ')
     });
 
-    Object.defineProperty(item, 'classList', {
-      value: mockClassList,
-      configurable: true
-    });
-
     // Track child elements for querySelector
     const childElements: HTMLElement[] = [];
-    
-    // Add appendChild and other DOM methods
-    Object.defineProperty(item, 'appendChild', {
-      value: jest.fn((child: HTMLElement) => {
+
+    // Create a complete mock element
+    const item = {
+      tagName: 'DIV',
+      classList: mockClassList,
+      setText: jest.fn(),
+      appendChild: jest.fn((child: HTMLElement) => {
         childElements.push(child);
         return child;
       }),
-      writable: true,
-      configurable: true
-    });
-    
-    Object.defineProperty(item, 'querySelector', {
-      value: jest.fn((selector: string) => {
+      querySelector: jest.fn((selector: string) => {
         // Simple mock querySelector for our specific needs
         if (selector === '.pomodoro-icon') {
-          const iconEl = childElements.find(el => el.classList?.contains('pomodoro-icon'));
+          const iconEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-icon'));
           if (iconEl) return iconEl;
           // Return a mock icon element if not found
           return {
@@ -113,7 +100,7 @@ export class Plugin {
           };
         }
         if (selector === '.pomodoro-text') {
-          const textEl = childElements.find(el => el.classList?.contains('pomodoro-text'));
+          const textEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-text'));
           if (textEl) return textEl;
           // Return a mock text element if not found
           return {
@@ -123,24 +110,17 @@ export class Plugin {
         }
         return null;
       }),
-      writable: true,
-      configurable: true
-    });
-    
-    Object.defineProperty(item, 'addEventListener', {
-      value: jest.fn(),
-      writable: true,
-      configurable: true
-    });
-    
-    Object.defineProperty(item, 'innerHTML', {
-      value: '',
-      writable: true,
-      configurable: true
-    });
+      addEventListener: jest.fn(),
+      innerHTML: '',
+      textContent: '',
+      style: { display: '' },
+      removeAttribute: jest.fn(),
+      setAttribute: jest.fn(),
+      remove: jest.fn(),
+    };
 
     // this.statusBarItem = item; // PomodoroPlugin will set its own instance member
-    return item;
+    return item as unknown as HTMLElement;
   }
 
   registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (event: Event) => void) => {
@@ -220,6 +200,16 @@ export class Setting {
     return this;
   }
 
+  addToggle(cb: (toggleComponent: ToggleComponent) => ToggleComponent) {
+    // Mock toggle component for chaining
+    const mockToggle: ToggleComponent = {
+      setValue: jest.fn().mockReturnThis(),
+      onChange: jest.fn().mockReturnThis(),
+    };
+    cb(mockToggle);
+    return this;
+  }
+
   // Method to get the text component for testing
   getTextComponent() {
     return this.settingEl.querySelector('input');
@@ -231,12 +221,20 @@ export interface App {
   vault?: unknown;
 }
 
+type OnChangeCallback = (value: string) => Promise<void>;
+type OnChangeFunc = (callback: OnChangeCallback) => TextComponent;
+
 interface TextComponent {
   setPlaceholder: jest.Mock;
   setValue: jest.Mock;
-  onChange: jest.Mock;
+  onChange: jest.Mock<OnChangeFunc>;
   inputEl: HTMLInputElement;
   simulateInput?: (value: string) => Promise<void>;
+}
+
+interface ToggleComponent {
+  setValue: jest.Mock;
+  onChange: jest.Mock;
 }
 
 // Mock for document if running in Node without JSDOM (basic)
@@ -244,8 +242,8 @@ if (typeof document === 'undefined') {
   global.document = {
     createElement: (tagName: string) => ({
       tagName,
-      classList: { 
-        add: jest.fn(), 
+      classList: {
+        add: jest.fn(),
         remove: jest.fn(),
         contains: jest.fn(() => false)
       },
@@ -277,4 +275,18 @@ if (typeof window === 'undefined') {
   };
   Object.assign(global, { window: mockWindow });
   global.alert = jest.fn();
+}
+
+export class Notice {
+  message: string;
+  timeout?: number;
+
+  constructor(message: string, timeout?: number) {
+    this.message = message;
+    this.timeout = timeout;
+  }
+
+  hide() {
+    // Mock implementation
+  }
 }
