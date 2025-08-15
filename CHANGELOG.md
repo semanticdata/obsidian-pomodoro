@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 ## 1.3.0 - Unreleased
 
+### Changed
+
+- Adjusted colors to more closely match other status bar elements
+
 ### Added
 
 - New Obsidian command to toggle status bar visibility.
