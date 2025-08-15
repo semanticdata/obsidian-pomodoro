@@ -25,6 +25,13 @@ describe('PomodoroPlugin', () => {
   });
 
   afterEach(async () => {
+    // Clean up any running timers
+    const timer = (plugin as PluginWithPrivates)?._timer;
+    if (timer) {
+      timer.pauseTimer(); // Stop any running timers
+      timer.cleanup(); // Clean up intervals
+    }
+    
     // Ensure plugin is unloaded if onload was called
     if (plugin.onunload) {
       await plugin.onunload();
@@ -150,6 +157,194 @@ describe('PomodoroPlugin', () => {
       // Test showing icon again
       plugin.settings.showIcon = true;
       await plugin.saveSettings();
+    });
+  });
+
+  describe('Command Integration', () => {
+    beforeEach(async () => {
+      await plugin.onload();
+    });
+
+    describe('Toggle Timer Command', () => {
+      it('should start timer when not running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        expect(timer.running).toBe(false);
+
+        // Find and execute the toggle-timer command
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const toggleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-timer');
+        expect(toggleCommand).toBeDefined();
+
+        // Execute the command callback
+        jest.spyOn(timer, 'startTimer');
+        toggleCommand[0].callback();
+
+        expect(timer.startTimer).toHaveBeenCalled();
+      });
+
+      it('should pause timer when running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        
+        // Start the timer first
+        timer.startTimer();
+        expect(timer.running).toBe(true);
+
+        // Execute toggle command
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const toggleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-timer');
+        
+        jest.spyOn(timer, 'pauseTimer');
+        toggleCommand[0].callback();
+
+        expect(timer.pauseTimer).toHaveBeenCalled();
+      });
+
+      it('should handle timer being undefined', () => {
+        // Create plugin with undefined timer
+        const testPlugin = new PomodoroPlugin({} as App, { 
+          id: 'test', name: 'Test', version: '1.0.0', minAppVersion: '0.15.0', author: 'Test', description: 'Test' 
+        });
+        
+        // Load the plugin to register commands but don't initialize timer
+        testPlugin.onload();
+        
+        const mockAddCommand = testPlugin.addCommand as jest.Mock;
+        const toggleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-timer');
+        
+        // Should not throw when timer is undefined
+        expect(() => {
+          if (toggleCommand) {
+            toggleCommand[0].callback();
+          }
+        }).not.toThrow();
+      });
+    });
+
+    describe('Reset Timer Command', () => {
+      it('should reset timer when not running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        expect(timer.running).toBe(false);
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const resetCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'reset-timer');
+        
+        jest.spyOn(timer, 'resetTimer');
+        resetCommand[0].callback();
+
+        expect(timer.resetTimer).toHaveBeenCalled();
+      });
+
+      it('should not reset timer when running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        timer.startTimer();
+        expect(timer.running).toBe(true);
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const resetCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'reset-timer');
+        
+        jest.spyOn(timer, 'resetTimer');
+        resetCommand[0].callback();
+
+        expect(timer.resetTimer).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Cycle Timer Command', () => {
+      it('should cycle timer when not running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        expect(timer.running).toBe(false);
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const cycleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'cycle-timer');
+        
+        jest.spyOn(timer, 'cycleDuration');
+        cycleCommand[0].callback();
+
+        expect(timer.cycleDuration).toHaveBeenCalled();
+      });
+
+      it('should not cycle timer when running', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+        timer.startTimer();
+        expect(timer.running).toBe(true);
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const cycleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'cycle-timer');
+        
+        jest.spyOn(timer, 'cycleDuration');
+        cycleCommand[0].callback();
+
+        expect(timer.cycleDuration).not.toHaveBeenCalled();
+      });
+    });
+
+    describe('Toggle Icon Visibility Command', () => {
+      it('should toggle icon visibility and save settings', async () => {
+        plugin.settings.showIcon = false;
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const toggleIconCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-icon-visibility');
+        
+        jest.spyOn(plugin, 'saveSettings');
+        toggleIconCommand[0].callback();
+
+        expect(plugin.settings.showIcon).toBe(true);
+        expect(plugin.saveSettings).toHaveBeenCalled();
+      });
+    });
+
+    describe('Toggle Status Bar Command', () => {
+      it('should toggle status bar visibility and save settings', async () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const toggleStatusCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-status-bar');
+        
+        jest.spyOn(timer, 'toggleStatusBarVisibility');
+        jest.spyOn(plugin, 'saveSettings');
+        toggleStatusCommand[0].callback();
+
+        expect(timer.toggleStatusBarVisibility).toHaveBeenCalled();
+        expect(plugin.saveSettings).toHaveBeenCalled();
+      });
+    });
+
+    describe('Command Registration', () => {
+      it('should register all expected commands', async () => {
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        
+        const expectedCommands = [
+          'toggle-timer',
+          'reset-timer', 
+          'cycle-timer',
+          'toggle-icon-visibility',
+          'toggle-status-bar'
+        ];
+
+        const registeredCommandIds = mockAddCommand.mock.calls.map(call => call[0].id);
+        
+        expectedCommands.forEach(commandId => {
+          expect(registeredCommandIds).toContain(commandId);
+        });
+      });
+
+      it('should register commands with proper names', async () => {
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        
+        const expectedCommandNames = {
+          'toggle-timer': 'Start/Pause timer',
+          'reset-timer': 'Reset current timer',
+          'cycle-timer': 'Cycle to next timer duration',
+          'toggle-icon-visibility': 'Toggle timer icon visibility',
+          'toggle-status-bar': 'Toggle status bar visibility'
+        };
+
+        Object.entries(expectedCommandNames).forEach(([id, name]) => {
+          const command = mockAddCommand.mock.calls.find(call => call[0].id === id);
+          expect(command).toBeDefined();
+          expect(command[0].name).toBe(name);
+        });
+      });
     });
   });
 });

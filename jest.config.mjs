@@ -11,7 +11,6 @@ export default {
     '\\.svg$': '<rootDir>/tests/__mocks__/svg-mock.ts',
   },
   collectCoverageFrom: [
-    'src/logic/**/*.ts',
-    'src/components/**/*.ts',
+    'src/**/*.ts',
   ],
 };

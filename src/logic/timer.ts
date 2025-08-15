@@ -255,4 +255,41 @@ export class PomodoroTimer {
 			this.currentInterval = null;
 		}
 	}
+
+	// Test accessors - only used for testing private properties
+	get _isRunning() {
+		return this.isRunning;
+	}
+
+	set _isRunning(value: boolean) {
+		this.isRunning = value;
+	}
+
+	get _currentDurationIndex() {
+		return this.currentDurationIndex;
+	}
+
+	set _currentDurationIndex(value: number) {
+		this.currentDurationIndex = value;
+	}
+
+	get _workIntervalCount() {
+		return this.workIntervalCount;
+	}
+
+	set _workIntervalCount(value: number) {
+		this.workIntervalCount = value;
+	}
+
+	get _remainingTime() {
+		return this.remainingTime;
+	}
+
+	set _remainingTime(value: number) {
+		this.remainingTime = value;
+	}
+
+	_isAtDefaultDuration() {
+		return this.isAtDefaultDuration();
+	}
 }

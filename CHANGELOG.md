@@ -11,14 +11,27 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
-- New Obsidian command to toggle status bar visibility.
-- New Obsidian command to toggle icon visibility.
-- New Obsidian command to toggle the timer (play/pause).
-- New Obsidian command to reset timer.
-- New Obsidian command to cycle timer to next phase.
+- New Obsidian commands:
+  - Toggle status bar visibility.
+  - Toggle icon visibility.
+  - Toggle the timer (play/pause).
+  - Reset timer.
+  - Cycle timer to next phase.
 - New dependency to handle SVG icons `esbuild-plugin-svg`.
-- New Timer Paused icon used when the timer is paused.
-- New Timer Play icon used whent he timer is running.
+- New icon logic:
+  - New Paused icon used when the timer is paused.
+  - New Play icon used when the timer is running.
+  - Timer icon used when inactive.
+- Comprehensive test coverage improvements:
+  - Added command integration tests for all new keyboard shortcuts.
+  - Added icon state transition tests for new icon switching logic.
+  - Added timer completion flow tests for work/break transitions.
+
+### Fixed
+
+- Resolved test hanging issues caused by mock timer implementation using real `setTimeout`.
+- Added proper test cleanup in `afterEach` hooks to prevent timer leaks.
+- Fixed mock interval implementation to avoid creating real timers during testing.
 
 ## 1.2.0 - 2025-08-08
 
