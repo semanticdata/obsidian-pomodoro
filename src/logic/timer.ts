@@ -36,9 +36,10 @@ export class PomodoroTimer {
 		textContainer.classList.add(CSS_CLASSES.TEXT);
 		this.statusBarItem.appendChild(textContainer);
 
-		// Set initial visibility
+		// Set initial visibility and icon
 		this.updateIconVisibility();
 		this.updateStatusBarVisibility();
+		this.updateIcon();
 
 		// Event listeners
 		this.plugin.registerDomEvent(this.statusBarItem, 'click', (e: MouseEvent) => {
@@ -82,10 +83,41 @@ export class PomodoroTimer {
 		}
 	}
 
+	private isAtDefaultDuration(): boolean {
+		// Check if the timer is at its fresh/default duration for the current state
+		if (this.currentDurationIndex === TIMER_STATES.WORK) {
+			return this.remainingTime === this.settings.workTime * 60;
+		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
+			return this.remainingTime === this.settings.shortBreakTime * 60;
+		} else {
+			return this.remainingTime === this.settings.longBreakTime * 60;
+		}
+	}
+
+	private updateIcon() {
+		const iconContainer = this.statusBarItem.querySelector(`.${CSS_CLASSES.ICON}`) as HTMLElement;
+		if (iconContainer) {
+			let iconKey = 'pomobar-timer';
+			
+			if (this.isRunning) {
+				iconKey = 'pomobar-timer-play'; // Running state - play icon
+			} else if (this.remainingTime === 0) {
+				iconKey = 'pomobar-timer-off'; // Timer finished
+			} else if (this.isAtDefaultDuration()) {
+				iconKey = 'pomobar-timer'; // Fresh timer at default duration - timer icon
+			} else {
+				iconKey = 'pomobar-timer-pause'; // Paused while running - pause icon
+			}
+			
+			iconContainer.innerHTML = ICONS_MAP[iconKey];
+		}
+	}
+
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
 		this.updateIconVisibility();
 		this.updateStatusBarVisibility();
+		this.updateIcon();
 		this.resetTimer();
 	}
 
@@ -94,6 +126,7 @@ export class PomodoroTimer {
 			this.isRunning = true;
 			this.statusBarItem.classList.add(CSS_CLASSES.ACTIVE);
 			this.statusBarItem.classList.remove(CSS_CLASSES.PAUSED);
+			this.updateIcon();
 
 			const intervalId = window.setInterval(() => {
 				if (this.remainingTime > 0) {
@@ -137,6 +170,7 @@ export class PomodoroTimer {
 		this.isRunning = false;
 		this.statusBarItem.classList.remove(CSS_CLASSES.ACTIVE);
 		this.statusBarItem.classList.add(CSS_CLASSES.PAUSED);
+		this.updateIcon();
 	}
 
 	resetTimer() {
@@ -154,6 +188,7 @@ export class PomodoroTimer {
 		this.statusBarItem.classList.remove(CSS_CLASSES.ACTIVE);
 		this.statusBarItem.classList.remove(CSS_CLASSES.PAUSED);
 		this.updateDisplay();
+		this.updateIcon();
 	}
 
 	cycleDuration() {

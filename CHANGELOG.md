@@ -6,11 +6,15 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
-- Adjusted colors to more closely match other status bar elements
+- Adjusted colors to more closely match other status bar elements.
+- Moved from inline SVG icons to separate files.
 
 ### Added
 
 - New Obsidian command to toggle status bar visibility.
+- New dependency to handle SVG icons `esbuild-plugin-svg`.
+- New Timer Paused icon used when the timer is paused.
+- New Timer Play icon used whent he timer is running.
 
 ## 1.2.0 - 2025-08-08
 
