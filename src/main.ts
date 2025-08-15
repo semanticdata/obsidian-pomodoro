@@ -15,6 +15,16 @@ export default class PomodoroPlugin extends Plugin {
 		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem);
 
 		this.addSettingTab(new PomodoroSettingTab(this.app, this));
+
+		// Add command to toggle status bar visibility
+		this.addCommand({
+			id: 'toggle-status-bar',
+			name: 'Toggle status bar visibility',
+			callback: () => {
+				this.timer.toggleStatusBarVisibility();
+				this.saveSettings(); // Save the updated setting
+			}
+		});
 	}
 
 	onunload() {

@@ -2,7 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - 2025-08-08
+## 1.3.0 - Unreleased
+
+### Added
+
+- New Obsidian command to toggle status bar visibility.
+
+## 1.2.0 - 2025-08-08
 
 ### Changed
 
@@ -33,7 +39,7 @@ All notable changes to this project will be documented in this file.
 - Renamed `resetTimerState` to `resetPomodoroSession` for better clarity.
 - Minor bugs related to type errors, event handling, and input validation.
 
-## [1.1.0] - 2025-06-11
+## 1.1.0 - 2025-06-11
 
 ### Added
 
@@ -45,7 +51,7 @@ All notable changes to this project will be documented in this file.
 - `pnpm` and `ESLint` to the development workflow.
 - README and CHANGELOG files.
 
-## [1.0.0] - 2025-01-30
+## 1.0.0 - 2025-01-30
 
 ### Added
 

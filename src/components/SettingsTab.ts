@@ -85,5 +85,15 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					this.plugin.settings.showIcon = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName("Show in Status Bar")
+			.setDesc("Toggle the timer's visibility in the status bar. You can also use the 'Toggle status bar visibility' command.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.showInStatusBar)
+				.onChange(async (value) => {
+					this.plugin.settings.showInStatusBar = value;
+					await this.plugin.saveSettings();
+				}));
 	}
 }

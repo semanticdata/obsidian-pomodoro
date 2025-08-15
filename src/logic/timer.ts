@@ -36,8 +36,9 @@ export class PomodoroTimer {
 		textContainer.classList.add(CSS_CLASSES.TEXT);
 		this.statusBarItem.appendChild(textContainer);
 
-		// Set initial icon visibility
+		// Set initial visibility
 		this.updateIconVisibility();
+		this.updateStatusBarVisibility();
 
 		// Event listeners
 		this.plugin.registerDomEvent(this.statusBarItem, 'click', (e: MouseEvent) => {
@@ -73,9 +74,18 @@ export class PomodoroTimer {
 		}
 	}
 
+	private updateStatusBarVisibility() {
+		if (this.settings.showInStatusBar) {
+			this.statusBarItem.style.display = '';
+		} else {
+			this.statusBarItem.style.display = 'none';
+		}
+	}
+
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
 		this.updateIconVisibility();
+		this.updateStatusBarVisibility();
 		this.resetTimer();
 	}
 
@@ -192,6 +202,11 @@ export class PomodoroTimer {
 		this.currentDurationIndex = TIMER_STATES.WORK;
 		this.workIntervalCount = 0;
 		this.resetTimer();
+	}
+
+	toggleStatusBarVisibility() {
+		this.settings.showInStatusBar = !this.settings.showInStatusBar;
+		this.updateStatusBarVisibility();
 	}
 
 	cleanup() {

@@ -50,10 +50,11 @@ describe('PomodoroPlugin', () => {
       };
       plugin.loadData = jest.fn().mockResolvedValue(savedSettings);
       await plugin.onload();
-      // Settings should include the saved values plus default for showIcon
+      // Settings should include the saved values plus defaults
       expect(plugin.settings).toEqual({
         ...savedSettings,
         showIcon: false, // Default value
+        showInStatusBar: true, // Default value
       });
     });
   });
