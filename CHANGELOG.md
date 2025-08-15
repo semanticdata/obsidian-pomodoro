@@ -12,6 +12,10 @@ All notable changes to this project will be documented in this file.
 ### Added
 
 - New Obsidian command to toggle status bar visibility.
+- New Obsidian command to toggle icon visibility.
+- New Obsidian command to toggle the timer (play/pause).
+- New Obsidian command to reset timer.
+- New Obsidian command to cycle timer to next phase.
 - New dependency to handle SVG icons `esbuild-plugin-svg`.
 - New Timer Paused icon used when the timer is paused.
 - New Timer Play icon used whent he timer is running.
