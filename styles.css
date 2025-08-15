@@ -53,12 +53,11 @@
 /* 1. DEFAULT STATE (no classes) */
 .pomodoro-timer {
 	background-color: transparent;
-	color: var(--text-normal);
+	color: var(--text-muted);
 }
 
 .pomodoro-timer .pomodoro-icon svg {
-	stroke: var(--text-normal);
-	opacity: 0.8;
+	stroke: var(--text-muted);
 }
 
 /* 2. DEFAULT HOVER */
@@ -104,7 +103,6 @@
 
 .pomodoro-timer.paused .pomodoro-icon svg {
 	stroke: var(--text-muted);
-	opacity: 0.6;
 	animation: none;
 }
 
@@ -116,7 +114,6 @@
 
 .pomodoro-timer.paused:hover .pomodoro-icon svg {
 	stroke: var(--text-normal);
-	opacity: 0.9;
 }
 
 /* ============================================ */

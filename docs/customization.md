@@ -14,19 +14,29 @@ You can override the default Pomodoro timer durations (25, 5, and 15 minutes) to
 
 The `workIntervals` setting determines how many work sessions you complete before a long break. The default is 4, following the traditional Pomodoro Technique.
 
-## Extra Time
-
-The `extraTime` option allows you to add a few extra minutes to timers, which can be useful for accommodating brief interruptions without fully pausing the timer.
-
 ## Status Bar Appearance
 
-You can customize the appearance of the status bar icon with the following settings:
+You can customize the appearance of the status bar timer to minimize distractions or to match your aesthetic preferences.
 
-- **Use Icon**: Display a tomato icon next to the timer for better visibility.
-- **Custom Status Bar Text**: Define custom templates for the status bar text using placeholders like `{time}` and `{status}`.
+- **Toggle Status Bar**: If you prefer a completely clean status bar, you can hide the timer entirely. This is useful when you want to focus on writing without any visual clutter. You can still control the timer using commands.
+- **Toggle Icon**: You can hide the timer icon if you prefer a more minimalist look. The timer will still be visible, but it will take up less space in the status bar.
 
-## Notifications
+## Icons
 
-Customize the notification messages for timer completion to provide specific instructions or reminders.
+The timer icon changes dynamically to provide at-a-glance information about the timer's state:
 
-By adjusting these settings, you can create a personalized time management system that perfectly fits your needs.
+- **Timer Icon**: Indicates the timer is inactive and ready to start.
+- **Play Icon**: Appears when the timer is running.
+- **Pause Icon**: Shows when the timer is paused.
+
+These icons ensure you can quickly check the timer's status without interrupting your workflow.
+
+## Color Scheme
+
+The timer's color scheme is designed to be consistent with Obsidian's native UI. The colors are subtle and should blend in with your current theme.
+
+- **Inactive**: The timer is displayed in the default text color of your theme.
+- **Running**: The timer is displayed in a slightly brighter color to indicate that it is active.
+- **Paused**: The timer is displayed in a muted color to indicate that it is paused.
+
+By adjusting these settings and leveraging the visual cues, you can create a personalized time management system that perfectly fits your needs.

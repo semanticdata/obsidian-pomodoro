@@ -98,7 +98,7 @@ describe('PomodoroSettingTab', () => {
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
       expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: PLUGIN_NAME });
-      expect(Setting).toHaveBeenCalledTimes(5);
+      expect(Setting).toHaveBeenCalledTimes(6);
     });
   });
 

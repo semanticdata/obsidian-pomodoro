@@ -143,6 +143,11 @@ export class Plugin {
     // Mock implementation
   }
 
+  addCommand = jest.fn((command: { id: string; name: string; callback: () => void }) => {
+    // Mock implementation that stores the command
+    return command;
+  })
+
   onunload() {
     // Mock implementation
     if (this.statusBarItem) {

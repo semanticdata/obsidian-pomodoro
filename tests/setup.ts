@@ -69,13 +69,25 @@ global.document = {
   }),
 } as Document & { createElement: jest.Mock };
 
-// Mock the global window object for setInterval/clearInterval if not already handled by JSDOM or similar
+// Mock the global window object for setInterval/clearInterval 
+// Use fake timers instead of real ones to prevent hanging
+let mockIntervalCounter = 1;
+const activeIntervals = new Map<number, NodeJS.Timeout>();
+
 export const mockSetInterval = jest.fn().mockImplementation((callback: TimerHandler, delay?: number, ...args: unknown[]) => {
-  return Number(setTimeout(callback as TimerHandler, delay, ...args));
+  const id = mockIntervalCounter++;
+  // Don't actually set real intervals in tests - just return an ID
+  // Real timer behavior should be tested differently
+  return id;
 });
 
 export const mockClearInterval = jest.fn().mockImplementation((id: number) => {
-  clearTimeout(id);
+  // Clear from our tracking
+  const timeout = activeIntervals.get(id);
+  if (timeout) {
+    clearTimeout(timeout);
+    activeIntervals.delete(id);
+  }
 });
 
 interface MockMouseEventOptions {

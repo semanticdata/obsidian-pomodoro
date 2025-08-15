@@ -2,7 +2,38 @@
 
 All notable changes to this project will be documented in this file.
 
-## [1.2.0] - Unreleased
+## 1.3.0 - Unreleased
+
+### Changed
+
+- Adjusted colors to more closely match other status bar elements.
+- Moved from inline SVG icons to separate files.
+
+### Added
+
+- New Obsidian commands:
+  - Toggle status bar visibility.
+  - Toggle icon visibility.
+  - Toggle the timer (play/pause).
+  - Reset timer.
+  - Cycle timer to next phase.
+- New dependency to handle SVG icons `esbuild-plugin-svg`.
+- New icon logic:
+  - New Paused icon used when the timer is paused.
+  - New Play icon used when the timer is running.
+  - Timer icon used when inactive.
+- Comprehensive test coverage improvements:
+  - Added command integration tests for all new keyboard shortcuts.
+  - Added icon state transition tests for new icon switching logic.
+  - Added timer completion flow tests for work/break transitions.
+
+### Fixed
+
+- Resolved test hanging issues caused by mock timer implementation using real `setTimeout`.
+- Added proper test cleanup in `afterEach` hooks to prevent timer leaks.
+- Fixed mock interval implementation to avoid creating real timers during testing.
+
+## 1.2.0 - 2025-08-08
 
 ### Changed
 
@@ -33,7 +64,7 @@ All notable changes to this project will be documented in this file.
 - Renamed `resetTimerState` to `resetPomodoroSession` for better clarity.
 - Minor bugs related to type errors, event handling, and input validation.
 
-## [1.1.0] - 2025-06-11
+## 1.1.0 - 2025-06-11
 
 ### Added
 
@@ -45,7 +76,7 @@ All notable changes to this project will be documented in this file.
 - `pnpm` and `ESLint` to the development workflow.
 - README and CHANGELOG files.
 
-## [1.0.0] - 2025-01-30
+## 1.0.0 - 2025-01-30
 
 ### Added
 

@@ -4,6 +4,7 @@ export interface PomodoroSettings {
 	longBreakTime: number;
 	intervalsBeforeLongBreak: number;
 	showIcon: boolean;
+	showInStatusBar: boolean;
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -12,4 +13,5 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
 	longBreakTime: 15,
 	intervalsBeforeLongBreak: 4,
 	showIcon: false,
+	showInStatusBar: true,
 };

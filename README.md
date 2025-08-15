@@ -34,7 +34,7 @@ The timer appears in your status bar. Here’s how to use it:
 
 ### Manual Installation
 
-1. Download the latest release files (`main.js`, `manifest.json`, `styles.css`) from the [releases page](https://github.com/your-repo/obsidian-pomodoro/releases).
+1. Download the latest release files (`main.js`, `manifest.json`, `styles.css`) from the [releases page](https://github.com/semanticdata/obsidian-pomodoro/releases).
 2. Create a new folder named `pomobar` inside your vault's `.obsidian/plugins/` directory.
 3. Copy the downloaded files into this new folder.
 4. Reload Obsidian (Ctrl/Cmd + R) and enable the plugin in the settings.
@@ -43,6 +43,6 @@ The timer appears in your status bar. Here’s how to use it:
 
 PomoBar is a free and open-source project built for the Obsidian community. We believe in the power of collaboration and welcome contributions of all kinds. Whether you're a developer, a designer, or just an enthusiastic user, you can help shape the future of this plugin.
 
-* **Source Code:** The complete source code is available on [GitHub](https://github.com/your-repo/obsidian-pomodoro).
-* **Contribute:** Have an idea or a bug fix? See our [contribution guidelines](CONTRIBUTING.md) to get started.
-* **License:** The project is licensed under the [MIT License](LICENSE).
+* **Source Code:** The complete source code is available on [GitHub](https://github.com/semanticdata/obsidian-pomodoro).
+* **Contribute:** Have an idea or a bug fix? See our [contribution guidelines](./CONTRIBUTING.md) to get started.
+* **License:** The project is licensed under the [MIT License](./LICENSE).
