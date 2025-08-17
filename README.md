@@ -1,4 +1,6 @@
-# PomoBar: The Minimalist Pomodoro Timer for Obsidian
+# 🍅 PomoBar
+
+***The Minimalist Pomodoro Timer for Obsidian.***
 
 Boost your productivity and maintain focus without ever leaving your notes. PomoBar is a sleek, unobtrusive Pomodoro timer that lives in your Obsidian status bar, helping you seamlessly integrate the Pomodoro Technique into your workflow.
 
