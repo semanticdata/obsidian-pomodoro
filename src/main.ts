@@ -15,6 +15,59 @@ export default class PomodoroPlugin extends Plugin {
 		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem);
 
 		this.addSettingTab(new PomodoroSettingTab(this.app, this));
+
+		// Add commands for keyboard shortcuts
+		this.addCommand({
+			id: 'toggle-timer',
+			name: 'Start/Pause timer',
+			callback: () => {
+				if (this.timer) {
+					if (this.timer.running) {
+						this.timer.pauseTimer();
+					} else {
+						this.timer.startTimer();
+					}
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'reset-timer',
+			name: 'Reset current timer',
+			callback: () => {
+				if (this.timer && !this.timer.running) {
+					this.timer.resetTimer();
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'cycle-timer',
+			name: 'Cycle to next timer duration',
+			callback: () => {
+				if (this.timer && !this.timer.running) {
+					this.timer.cycleDuration();
+				}
+			}
+		});
+
+		this.addCommand({
+			id: 'toggle-icon-visibility',
+			name: 'Toggle timer icon visibility',
+			callback: () => {
+				this.settings.showIcon = !this.settings.showIcon;
+				this.saveSettings();
+			}
+		});
+
+		this.addCommand({
+			id: 'toggle-status-bar',
+			name: 'Toggle status bar visibility',
+			callback: () => {
+				this.timer.toggleStatusBarVisibility();
+				this.saveSettings(); // Save the updated setting
+			}
+		});
 	}
 
 	onunload() {
