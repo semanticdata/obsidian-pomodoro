@@ -62,6 +62,9 @@ describe('PomodoroPlugin', () => {
         ...savedSettings,
         showIcon: false, // Default value
         showInStatusBar: true, // Default value
+        soundEnabled: false, // Default value
+        selectedSound: "chime.wav", // Default value  
+        soundVolume: 0.5, // Default value
       });
     });
   });

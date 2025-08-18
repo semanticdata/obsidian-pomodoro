@@ -183,6 +183,7 @@ export class Setting {
 
   setName(name: string) { return this; }
   setDesc(desc: string) { return this; }
+  setHeading() { return this; }
 
   addText(cb: (textComponent: TextComponent) => TextComponent) {
     // Mock text component for chaining

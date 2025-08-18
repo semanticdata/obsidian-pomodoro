@@ -2,7 +2,7 @@ import './setup';
 import { PomodoroSettingTab } from '../src/components/SettingsTab';
 import PomodoroPlugin from '../src/main';
 import { App, Setting } from 'obsidian';
-import { PLUGIN_NAME } from '../src/constants';
+import { SoundManager } from '../src/logic/soundManager';
 
 // Mock the Setting class
 jest.mock('obsidian', () => {
@@ -11,42 +11,84 @@ jest.mock('obsidian', () => {
   return {
     ...original,
     Setting: jest.fn().mockImplementation(() => {
-      const setDesc = jest.fn().mockReturnThis();
-      const setName = jest.fn().mockReturnThis();
-      const addText = jest.fn().mockImplementation(cb => {
-        const textComponent = {
-          setPlaceholder: jest.fn().mockReturnThis(),
-          setValue: jest.fn().mockReturnThis(),
-          onChange: jest.fn().mockImplementation(onChangeCb => {
-            // Store the callback to be triggered later
-            (textComponent as typeof textComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
-            return textComponent;
-          }),
-          onInput: jest.fn().mockReturnThis(),
-        };
-        cb(textComponent);
-        return this;
-      });
-      const addToggle = jest.fn().mockImplementation(cb => {
-        const toggleComponent = {
-          setValue: jest.fn().mockReturnThis(),
-          onChange: jest.fn().mockImplementation(onChangeCb => {
-            // Store the callback
-            (toggleComponent as typeof toggleComponent & { onChangeCallback?: (value: boolean) => void }).onChangeCallback = onChangeCb;
-            return toggleComponent;
-          }),
-        };
-        cb(toggleComponent);
-        return this;
+      const settingInstance = {
+        setName: jest.fn().mockReturnThis(),
+        setDesc: jest.fn().mockReturnThis(),
+        setHeading: jest.fn().mockReturnThis(),
+        settingEl: {
+          style: { display: '' }
+        },
+        addText: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const textComponent = {
+            setPlaceholder: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (textComponent as typeof textComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
+              return textComponent;
+            }),
+            onInput: jest.fn().mockReturnThis(),
+          };
+          cb(textComponent);
+          return this;
+        }),
+        addToggle: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const toggleComponent = {
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (toggleComponent as typeof toggleComponent & { onChangeCallback?: (value: boolean) => void }).onChangeCallback = onChangeCb;
+              return toggleComponent;
+            }),
+          };
+          cb(toggleComponent);
+          return this;
+        }),
+        addDropdown: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const dropdownComponent = {
+            addOption: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (dropdownComponent as typeof dropdownComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
+              return dropdownComponent;
+            }),
+          };
+          cb(dropdownComponent);
+          return this;
+        }),
+        addSlider: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const sliderComponent = {
+            setLimits: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            setDynamicTooltip: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (sliderComponent as typeof sliderComponent & { onChangeCallback?: (value: number) => void }).onChangeCallback = onChangeCb;
+              return sliderComponent;
+            }),
+          };
+          cb(sliderComponent);
+          return this;
+        }),
+        addButton: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const buttonComponent = {
+            setButtonText: jest.fn().mockReturnThis(),
+            onClick: jest.fn().mockImplementation(onClickCb => {
+              (buttonComponent as typeof buttonComponent & { onClickCallback?: () => void }).onClickCallback = onClickCb;
+              return buttonComponent;
+            }),
+          };
+          cb(buttonComponent);
+          return this;
+        }),
+        onChangeCallback: null,
+      };
+
+      // Make all methods reference the same instance for chaining
+      Object.values(settingInstance).forEach(method => {
+        if (typeof method === 'function' && 'mockReturnThis' in method && typeof method.mockReturnThis === 'function') {
+          method.mockReturnValue(settingInstance);
+        }
       });
 
-      return {
-        setName,
-        setDesc,
-        addText,
-        addToggle,
-        onChangeCallback: null, // To store the onChange callback
-      };
+      return settingInstance;
     }),
   };
 });
@@ -88,7 +130,14 @@ describe('PomodoroSettingTab', () => {
       appendChild: jest.fn(),
     } as unknown as HTMLElement;
 
-    settingTab = new PomodoroSettingTab(mockApp, mockPlugin);
+    const mockSoundManager = {
+      getBuiltInSounds: jest.fn().mockReturnValue(['chime.wav', 'ding.wav']),
+      previewSound: jest.fn().mockResolvedValue(undefined),
+      updateSettings: jest.fn(),
+      cleanup: jest.fn(),
+    };
+
+    settingTab = new PomodoroSettingTab(mockApp, mockPlugin, mockSoundManager as unknown as SoundManager);
     settingTab.containerEl = mockContainerEl;
   });
 
@@ -97,8 +146,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
-      expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: PLUGIN_NAME });
-      expect(Setting).toHaveBeenCalledTimes(6);
+      expect(Setting).toHaveBeenCalledTimes(12);
     });
   });
 
@@ -108,7 +156,7 @@ describe('PomodoroSettingTab', () => {
       const settings = (Setting as jest.Mock).mock.results;
 
       // Simulate text change for work time
-      const workTimeSetting = settings[0].value;
+      const workTimeSetting = settings[1].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -135,7 +183,7 @@ describe('PomodoroSettingTab', () => {
       const settings = (Setting as jest.Mock).mock.results;
       const initialWorkTime = mockPlugin.settings.workTime;
 
-      const workTimeSetting = settings[0].value;
+      const workTimeSetting = settings[1].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -161,7 +209,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const shortBreakTimeSetting = settings[1].value;
+      const shortBreakTimeSetting = settings[2].value;
       const shortBreakTimeOnChange = shortBreakTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -187,7 +235,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const longBreakTimeSetting = settings[2].value;
+      const longBreakTimeSetting = settings[3].value;
       const longBreakTimeOnChange = longBreakTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -213,7 +261,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const intervalsSetting = settings[3].value;
+      const intervalsSetting = settings[4].value;
       const intervalsOnChange = intervalsSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -241,7 +289,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const showIconSetting = settings[4].value;
+      const showIconSetting = settings[5].value;
       const showIconOnChange = showIconSetting.addToggle.mock.calls[0][0];
       const toggleComponent = {
         setValue: jest.fn(),
@@ -282,7 +330,7 @@ describe('PomodoroSettingTab', () => {
     describe('Work Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('0');
 
@@ -292,7 +340,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('-5');
 
@@ -302,7 +350,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('25.5');
 
@@ -312,7 +360,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on empty string', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('');
 
@@ -322,7 +370,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on whitespace-only string', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('   ');
 
@@ -331,7 +379,7 @@ describe('PomodoroSettingTab', () => {
       });
 
       it('should handle value with leading/trailing whitespace', async () => {
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('  30  ');
 
@@ -343,7 +391,7 @@ describe('PomodoroSettingTab', () => {
     describe('Short Break Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('0');
 
@@ -353,7 +401,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('-3');
 
@@ -363,7 +411,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('5.7');
 
@@ -375,7 +423,7 @@ describe('PomodoroSettingTab', () => {
     describe('Long Break Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('0');
 
@@ -385,7 +433,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('-10');
 
@@ -395,7 +443,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('15.3');
 
@@ -407,7 +455,7 @@ describe('PomodoroSettingTab', () => {
     describe('Intervals Before Long Break Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('0');
 
@@ -417,7 +465,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('-2');
 
@@ -427,7 +475,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('4.5');
 

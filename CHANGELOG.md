@@ -2,7 +2,28 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.3.0 - Unreleased
+## 1.4.0 - Unreleased
+
+### Changed
+
+- Simplified audio loading logic by removing complex local file path resolution.
+- Updated all dependencies to latest versions.
+- Replaced Settings Headings with proper `setHeading()` method for Obsidian plugin guidelines compliance.
+
+### Fixed
+
+- Updated test mocks to support new `setHeading()` method.
+- Corrected test expectations and setting indices after settings UI restructure.
+- Fixed lint errors in sound manager.
+
+### Added
+
+- New optional notification sound at the end of the timer.
+  - Audio notifications load from CDN for improved reliability and cross-platform compatibility.
+  - Option to use Custom URL or File instead of the default options.
+- New Obsidian command to toggle Sound Notifications on and off.
+
+## 1.3.0 - 2025-08-17
 
 ### Changed
 
