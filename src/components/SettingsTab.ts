@@ -44,7 +44,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-		containerEl.createEl("h1", { text: PLUGIN_NAME });
+		new Setting(containerEl).setName(PLUGIN_NAME).setHeading();
 
 		new Setting(containerEl)
 			.setName("Work Duration")
@@ -106,7 +106,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		containerEl.createEl("h2", { text: "Sound Settings" });
+		new Setting(containerEl).setName("Sound").setHeading();
 
 		new Setting(containerEl)
 			.setName("Enable Sound Notifications")
