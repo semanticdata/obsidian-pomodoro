@@ -5,6 +5,10 @@ export interface PomodoroSettings {
 	intervalsBeforeLongBreak: number;
 	showIcon: boolean;
 	showInStatusBar: boolean;
+	soundEnabled: boolean;
+	selectedSound: string;
+	soundVolume: number;
+	customSoundUrl?: string;
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -14,4 +18,7 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
 	intervalsBeforeLongBreak: 4,
 	showIcon: false,
 	showInStatusBar: true,
+	soundEnabled: false,
+	selectedSound: "chime.wav",
+	soundVolume: 0.5,
 };

@@ -2,19 +2,22 @@ import { Plugin } from "obsidian";
 import { PomodoroSettings, DEFAULT_SETTINGS } from "./types";
 import { PomodoroSettingTab } from "./components/SettingsTab";
 import { PomodoroTimer } from "./logic/timer";
+import { SoundManager } from "./logic/soundManager";
 
 export default class PomodoroPlugin extends Plugin {
 	settings!: PomodoroSettings;
 	private timer!: PomodoroTimer;
+	private soundManager!: SoundManager;
 	private statusBarItem!: HTMLElement;
 
 	async onload() {
 		await this.loadSettings();
 
 		this.statusBarItem = this.addStatusBarItem();
-		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem);
+		this.soundManager = new SoundManager(this, this.settings);
+		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem, this.soundManager);
 
-		this.addSettingTab(new PomodoroSettingTab(this.app, this));
+		this.addSettingTab(new PomodoroSettingTab(this.app, this, this.soundManager));
 
 		// Add commands for keyboard shortcuts
 		this.addCommand({
