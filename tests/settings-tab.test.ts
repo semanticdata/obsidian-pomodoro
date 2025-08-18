@@ -2,7 +2,6 @@ import './setup';
 import { PomodoroSettingTab } from '../src/components/SettingsTab';
 import PomodoroPlugin from '../src/main';
 import { App, Setting } from 'obsidian';
-import { PLUGIN_NAME } from '../src/constants';
 import { SoundManager } from '../src/logic/soundManager';
 
 // Mock the Setting class
@@ -15,6 +14,7 @@ jest.mock('obsidian', () => {
       const settingInstance = {
         setName: jest.fn().mockReturnThis(),
         setDesc: jest.fn().mockReturnThis(),
+        setHeading: jest.fn().mockReturnThis(),
         settingEl: {
           style: { display: '' }
         },
@@ -146,8 +146,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
-      expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: PLUGIN_NAME });
-      expect(Setting).toHaveBeenCalledTimes(10);
+      expect(Setting).toHaveBeenCalledTimes(12);
     });
   });
 
@@ -157,7 +156,7 @@ describe('PomodoroSettingTab', () => {
       const settings = (Setting as jest.Mock).mock.results;
 
       // Simulate text change for work time
-      const workTimeSetting = settings[0].value;
+      const workTimeSetting = settings[1].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -184,7 +183,7 @@ describe('PomodoroSettingTab', () => {
       const settings = (Setting as jest.Mock).mock.results;
       const initialWorkTime = mockPlugin.settings.workTime;
 
-      const workTimeSetting = settings[0].value;
+      const workTimeSetting = settings[1].value;
       const workTimeOnChange = workTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -210,7 +209,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const shortBreakTimeSetting = settings[1].value;
+      const shortBreakTimeSetting = settings[2].value;
       const shortBreakTimeOnChange = shortBreakTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -236,7 +235,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const longBreakTimeSetting = settings[2].value;
+      const longBreakTimeSetting = settings[3].value;
       const longBreakTimeOnChange = longBreakTimeSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -262,7 +261,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const intervalsSetting = settings[3].value;
+      const intervalsSetting = settings[4].value;
       const intervalsOnChange = intervalsSetting.addText.mock.calls[0][0];
       const textComponent = {
         setPlaceholder: jest.fn(),
@@ -290,7 +289,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const showIconSetting = settings[4].value;
+      const showIconSetting = settings[5].value;
       const showIconOnChange = showIconSetting.addToggle.mock.calls[0][0];
       const toggleComponent = {
         setValue: jest.fn(),
@@ -331,7 +330,7 @@ describe('PomodoroSettingTab', () => {
     describe('Work Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('0');
 
@@ -341,7 +340,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('-5');
 
@@ -351,7 +350,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('25.5');
 
@@ -361,7 +360,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on empty string', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('');
 
@@ -371,7 +370,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on whitespace-only string', async () => {
         const initialValue = mockPlugin.settings.workTime;
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('   ');
 
@@ -380,7 +379,7 @@ describe('PomodoroSettingTab', () => {
       });
 
       it('should handle value with leading/trailing whitespace', async () => {
-        const onChangeCallback = getOnChangeCallback(0);
+        const onChangeCallback = getOnChangeCallback(1);
 
         await onChangeCallback('  30  ');
 
@@ -392,7 +391,7 @@ describe('PomodoroSettingTab', () => {
     describe('Short Break Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('0');
 
@@ -402,7 +401,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('-3');
 
@@ -412,7 +411,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.shortBreakTime;
-        const onChangeCallback = getOnChangeCallback(1);
+        const onChangeCallback = getOnChangeCallback(2);
 
         await onChangeCallback('5.7');
 
@@ -424,7 +423,7 @@ describe('PomodoroSettingTab', () => {
     describe('Long Break Time Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('0');
 
@@ -434,7 +433,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('-10');
 
@@ -444,7 +443,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.longBreakTime;
-        const onChangeCallback = getOnChangeCallback(2);
+        const onChangeCallback = getOnChangeCallback(3);
 
         await onChangeCallback('15.3');
 
@@ -456,7 +455,7 @@ describe('PomodoroSettingTab', () => {
     describe('Intervals Before Long Break Validation', () => {
       it('should not update on zero value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('0');
 
@@ -466,7 +465,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on negative value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('-2');
 
@@ -476,7 +475,7 @@ describe('PomodoroSettingTab', () => {
 
       it('should not update on decimal value', async () => {
         const initialValue = mockPlugin.settings.intervalsBeforeLongBreak;
-        const onChangeCallback = getOnChangeCallback(3);
+        const onChangeCallback = getOnChangeCallback(4);
 
         await onChangeCallback('4.5');
 

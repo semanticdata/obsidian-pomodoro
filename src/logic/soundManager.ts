@@ -72,7 +72,7 @@ export class SoundManager {
 				: this.settings.selectedSound;
 
 			await this.playSound(soundToPlay);
-		} catch (error) {
+		} catch {
 			// Silently handle audio playback errors
 		}
 	}
@@ -85,16 +85,12 @@ export class SoundManager {
 
 
 	async previewSound(soundName?: string): Promise<void> {
-		try {
-			const soundToPreview = soundName || 
-				(this.settings.customSoundUrl && this.settings.customSoundUrl.trim() !== "" 
-					? this.settings.customSoundUrl.trim()
-					: this.settings.selectedSound);
+		const soundToPreview = soundName || 
+			(this.settings.customSoundUrl && this.settings.customSoundUrl.trim() !== "" 
+				? this.settings.customSoundUrl.trim()
+				: this.settings.selectedSound);
 
-			await this.playSound(soundToPreview);
-		} catch (error) {
-			throw error;
-		}
+		await this.playSound(soundToPreview);
 	}
 
 	stopCurrentAudio(): void {
