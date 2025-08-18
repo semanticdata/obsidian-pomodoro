@@ -3,6 +3,7 @@ import { PomodoroSettingTab } from '../src/components/SettingsTab';
 import PomodoroPlugin from '../src/main';
 import { App, Setting } from 'obsidian';
 import { PLUGIN_NAME } from '../src/constants';
+import { SoundManager } from '../src/logic/soundManager';
 
 // Mock the Setting class
 jest.mock('obsidian', () => {
@@ -11,42 +12,83 @@ jest.mock('obsidian', () => {
   return {
     ...original,
     Setting: jest.fn().mockImplementation(() => {
-      const setDesc = jest.fn().mockReturnThis();
-      const setName = jest.fn().mockReturnThis();
-      const addText = jest.fn().mockImplementation(cb => {
-        const textComponent = {
-          setPlaceholder: jest.fn().mockReturnThis(),
-          setValue: jest.fn().mockReturnThis(),
-          onChange: jest.fn().mockImplementation(onChangeCb => {
-            // Store the callback to be triggered later
-            (textComponent as typeof textComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
-            return textComponent;
-          }),
-          onInput: jest.fn().mockReturnThis(),
-        };
-        cb(textComponent);
-        return this;
-      });
-      const addToggle = jest.fn().mockImplementation(cb => {
-        const toggleComponent = {
-          setValue: jest.fn().mockReturnThis(),
-          onChange: jest.fn().mockImplementation(onChangeCb => {
-            // Store the callback
-            (toggleComponent as typeof toggleComponent & { onChangeCallback?: (value: boolean) => void }).onChangeCallback = onChangeCb;
-            return toggleComponent;
-          }),
-        };
-        cb(toggleComponent);
-        return this;
+      const settingInstance = {
+        setName: jest.fn().mockReturnThis(),
+        setDesc: jest.fn().mockReturnThis(),
+        settingEl: {
+          style: { display: '' }
+        },
+        addText: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const textComponent = {
+            setPlaceholder: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (textComponent as typeof textComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
+              return textComponent;
+            }),
+            onInput: jest.fn().mockReturnThis(),
+          };
+          cb(textComponent);
+          return this;
+        }),
+        addToggle: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const toggleComponent = {
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (toggleComponent as typeof toggleComponent & { onChangeCallback?: (value: boolean) => void }).onChangeCallback = onChangeCb;
+              return toggleComponent;
+            }),
+          };
+          cb(toggleComponent);
+          return this;
+        }),
+        addDropdown: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const dropdownComponent = {
+            addOption: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (dropdownComponent as typeof dropdownComponent & { onChangeCallback?: (value: string) => void }).onChangeCallback = onChangeCb;
+              return dropdownComponent;
+            }),
+          };
+          cb(dropdownComponent);
+          return this;
+        }),
+        addSlider: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const sliderComponent = {
+            setLimits: jest.fn().mockReturnThis(),
+            setValue: jest.fn().mockReturnThis(),
+            setDynamicTooltip: jest.fn().mockReturnThis(),
+            onChange: jest.fn().mockImplementation(onChangeCb => {
+              (sliderComponent as typeof sliderComponent & { onChangeCallback?: (value: number) => void }).onChangeCallback = onChangeCb;
+              return sliderComponent;
+            }),
+          };
+          cb(sliderComponent);
+          return this;
+        }),
+        addButton: jest.fn().mockImplementation(function(this: unknown, cb) {
+          const buttonComponent = {
+            setButtonText: jest.fn().mockReturnThis(),
+            onClick: jest.fn().mockImplementation(onClickCb => {
+              (buttonComponent as typeof buttonComponent & { onClickCallback?: () => void }).onClickCallback = onClickCb;
+              return buttonComponent;
+            }),
+          };
+          cb(buttonComponent);
+          return this;
+        }),
+        onChangeCallback: null,
+      };
+
+      // Make all methods reference the same instance for chaining
+      Object.values(settingInstance).forEach(method => {
+        if (typeof method === 'function' && 'mockReturnThis' in method && typeof method.mockReturnThis === 'function') {
+          method.mockReturnValue(settingInstance);
+        }
       });
 
-      return {
-        setName,
-        setDesc,
-        addText,
-        addToggle,
-        onChangeCallback: null, // To store the onChange callback
-      };
+      return settingInstance;
     }),
   };
 });
@@ -88,7 +130,14 @@ describe('PomodoroSettingTab', () => {
       appendChild: jest.fn(),
     } as unknown as HTMLElement;
 
-    settingTab = new PomodoroSettingTab(mockApp, mockPlugin);
+    const mockSoundManager = {
+      getBuiltInSounds: jest.fn().mockReturnValue(['chime.wav', 'ding.wav']),
+      previewSound: jest.fn().mockResolvedValue(undefined),
+      updateSettings: jest.fn(),
+      cleanup: jest.fn(),
+    };
+
+    settingTab = new PomodoroSettingTab(mockApp, mockPlugin, mockSoundManager as unknown as SoundManager);
     settingTab.containerEl = mockContainerEl;
   });
 
@@ -98,7 +147,7 @@ describe('PomodoroSettingTab', () => {
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
       expect(mockContainerEl.createEl).toHaveBeenCalledWith('h1', { text: PLUGIN_NAME });
-      expect(Setting).toHaveBeenCalledTimes(6);
+      expect(Setting).toHaveBeenCalledTimes(10);
     });
   });
 
