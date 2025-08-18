@@ -71,6 +71,15 @@ export default class PomodoroPlugin extends Plugin {
 				this.saveSettings(); // Save the updated setting
 			}
 		});
+
+		this.addCommand({
+			id: 'toggle-sound-notifications',
+			name: 'Toggle sound notifications',
+			callback: () => {
+				this.settings.soundEnabled = !this.settings.soundEnabled;
+				this.saveSettings();
+			}
+		});
 	}
 
 	onunload() {
