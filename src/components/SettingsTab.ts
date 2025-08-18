@@ -106,7 +106,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					await this.plugin.saveSettings();
 				}));
 
-		new Setting(containerEl).setName("Sound").setHeading();
+		new Setting(containerEl).setName("Sound Notifications").setHeading();
 
 		new Setting(containerEl)
 			.setName("Enable Sound Notifications")
