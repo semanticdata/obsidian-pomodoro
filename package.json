@@ -1,7 +1,7 @@
 {
 	"type": "module",
 	"name": "pomobar",
-	"version": "1.3.0",
+	"version": "1.4.0",
 	"description": "A simple Pomodoro timer that lives in your status bar. Left click to start/stop, right click to reset when paused.",
 	"main": "main.js",
 	"scripts": {
