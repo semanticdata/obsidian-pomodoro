@@ -38,6 +38,7 @@ You can also control the timer using Obsidian's command palette. This allows you
 | **Cycle Timer** | Switches to the next phase in the Pomodoro cycle. |
 | **Toggle Status Bar** | Shows or hides the timer in the status bar. |
 | **Toggle Icon** | Shows or hides the timer icon in the status bar. |
+| **Toggle Sound Notifications** | Enables or disables audio notifications when timers complete. |
 
 ## Timer States
 
@@ -90,13 +91,23 @@ The icon can be toggled on or off in the plugin settings or with the "Toggle Ico
 
 ## Notifications
 
-When a timer completes, PomoBar shows a notice: "PomoBar: Time's up! Your most recent timer has finished."
+When a timer completes, PomoBar provides both visual and optional audio notifications:
+
+- **Visual Notice**: Shows "PomoBar: Time's up! Your most recent timer has finished."
+- **Audio Notification**: Plays an optional sound when enabled in settings
 
 The plugin automatically:
 
 - Switches to the appropriate next timer type.
 - Resets the timer to the new duration.
 - Pauses the timer, so you can start the next session when you are ready.
+
+### Audio Notifications
+
+Sound notifications can be:
+- **Enabled/Disabled**: Toggle in settings or using the "Toggle Sound Notifications" command
+- **Customized**: Choose from default options or provide a custom URL/file path
+- **Cross-platform**: Audio loads from CDN for improved reliability and compatibility
 
 ## Tips for Effective Use
 

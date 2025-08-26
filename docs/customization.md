@@ -39,4 +39,14 @@ The timer's color scheme is designed to be consistent with Obsidian's native UI.
 - **Running**: The timer is displayed in a slightly brighter color to indicate that it is active.
 - **Paused**: The timer is displayed in a muted color to indicate that it is paused.
 
-By adjusting these settings and leveraging the visual cues, you can create a personalized time management system that perfectly fits your needs.
+## Audio Notifications
+
+PomoBar now includes optional sound notifications to alert you when timers complete:
+
+- **Default Sounds**: Choose from built-in notification sounds loaded from CDN for reliability.
+- **Custom Audio**: Provide your own sound file URL or local file path for personalized notifications.
+- **Toggle Control**: Enable or disable sound notifications entirely through settings or the "Toggle Sound Notifications" command.
+
+The audio system is designed to be cross-platform compatible and load reliably without complex local file management.
+
+By adjusting these settings and leveraging both visual and audio cues, you can create a personalized time management system that perfectly fits your needs.
