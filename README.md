@@ -2,7 +2,7 @@
 
 **_The Minimalist Pomodoro Timer for Obsidian._**
 
-Boost your productivity and maintain focus without ever leaving your notes. PomoBar is a sleek, unobtrusive Pomodoro timer that lives in your Obsidian status bar, helping you seamlessly integrate the Pomodoro Technique into your workflow.
+Boost your productivity and maintain focus without ever leaving your notes. PomoBar is a sleek, unobtrusive Pomodoro timer that lives in your Obsidian status bar, with optional audio notifications to keep you on track. Seamlessly integrate the Pomodoro Technique into your workflow with visual and audible cues.
 
 |                          Default View                          |                          Running View                          |
 | :------------------------------------------------------------: | :------------------------------------------------------------: |
@@ -13,9 +13,10 @@ Boost your productivity and maintain focus without ever leaving your notes. Pomo
 ## Why Choose PomoBar?
 
 - 🧘 **Stay Focused, Not Distracted:** PomoBar lives in your status bar, providing a constant but subtle reminder of your work session without cluttering your workspace.
+- 🔊 **Optional Audio Notifications:** Get gentle sound alerts when timers complete—choose from default sounds or use your own custom audio files.
 - 🖱️ **Intuitive & Quick Controls:** Manage your timers with simple clicks—no need to open new windows or type commands.
 - 🔄 **Automated Flow:** Automatically cycles between work and break periods, so you can keep your momentum going.
-- ⚙️ **Fully Customizable:** Head to the settings to adjust the duration of your work sessions and breaks to fit your personal workflow perfectly.
+- ⚙️ **Fully Customizable:** Adjust timer durations, enable/disable sounds, and personalize your Pomodoro experience to fit your workflow perfectly.
 
 ## How It Works
 
@@ -29,11 +30,14 @@ For more detailed instructions, check out our [documentation](https://semanticda
 
 ## ⌨️ Keyboard-Friendly Commands
 
-For our keyboard-centric users, PomoBar now includes a set of commands that allow you to control the timer without touching your mouse. You can assign custom hotkeys to these commands in Obsidian's settings for a truly personalized and efficient workflow.
+For our keyboard-centric users, PomoBar includes a comprehensive set of commands that allow you to control the timer without touching your mouse. You can assign custom hotkeys to these commands in Obsidian's settings for a truly personalized and efficient workflow.
 
 - **Start/Pause timer**: Toggle the timer on or off.
 - **Reset current timer**: Reset the timer for the current session.
 - **Cycle to next timer duration**: Switch between work, short break, and long break.
+- **Toggle sound notifications**: Enable or disable audio alerts on the fly.
+- **Toggle status bar visibility**: Show or hide the timer display.
+- **Toggle icon visibility**: Control status bar icon display.
 
 ## Installation
 
