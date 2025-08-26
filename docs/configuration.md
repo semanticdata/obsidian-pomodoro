@@ -14,6 +14,12 @@ PomoBar offers several options to customize your Pomodoro experience. You can ac
 - **Show status bar icon**: Toggles the visibility of the timer icon in the status bar.
 - **Use custom status bar icon**: Allows you to set a custom icon for the status bar. You can use any icon from the [Lucide icon pack](https://lucide.dev/).
 
+## Sound Notifications
+
+- **Enable sound notifications**: Toggle audio alerts when timers complete.
+- **Sound options**: Choose from default notification sounds or provide a custom URL/file path.
+- **Custom sound**: Option to use a custom URL or local file instead of default sounds.
+
 ## Example Configurations
 
 ### Classic Pomodoro

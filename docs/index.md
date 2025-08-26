@@ -40,7 +40,7 @@ This plugin is designed to help you focus and be more productive by integrating 
 ### 📊 Focus on Productivity
 
 - No complex analytics or tracking
-- Simple notifications when timers complete
+- Audio notifications when timers complete (optional)
 - Encourages consistent work habits
 
 ## Getting Help

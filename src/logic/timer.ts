@@ -2,11 +2,13 @@ import { Plugin, Notice } from "obsidian";
 import { PomodoroSettings } from "../types";
 import { ICONS_MAP } from "../icons";
 import { TIMER_STATES, TIMER_INTERVAL_MS, CSS_CLASSES, MOUSE_BUTTONS } from "../constants";
+import { SoundManager } from "./soundManager";
 
 export class PomodoroTimer {
 	private plugin: Plugin;
 	private settings: PomodoroSettings;
 	private statusBarItem: HTMLElement;
+	private soundManager: SoundManager;
 	private remainingTime = 0;
 	private isRunning = false;
 	private currentDurationIndex = 0;
@@ -14,10 +16,11 @@ export class PomodoroTimer {
 	private currentInterval: number | null = null;
 	private registeredIntervals: Set<number> = new Set();
 
-	constructor(plugin: Plugin, settings: PomodoroSettings, statusBarItem: HTMLElement) {
+	constructor(plugin: Plugin, settings: PomodoroSettings, statusBarItem: HTMLElement, soundManager: SoundManager) {
 		this.plugin = plugin;
 		this.settings = settings;
 		this.statusBarItem = statusBarItem;
+		this.soundManager = soundManager;
 		this.setupStatusBar();
 		this.resetTimer();
 	}
@@ -115,6 +118,7 @@ export class PomodoroTimer {
 
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
+		this.soundManager.updateSettings(settings);
 		this.updateIconVisibility();
 		this.updateStatusBarVisibility();
 		this.updateIcon();
@@ -134,6 +138,8 @@ export class PomodoroTimer {
 					this.updateDisplay();
 				} else {
 					new Notice("PomoBar: Time's up! Your most recent timer has finished.", 5000);
+					
+					this.soundManager.playCompletionSound();
 
 					if (this.currentDurationIndex === TIMER_STATES.WORK) {
 						this.workIntervalCount++;
@@ -254,6 +260,9 @@ export class PomodoroTimer {
 			window.clearInterval(this.currentInterval);
 			this.currentInterval = null;
 		}
+		
+		// Clean up sound manager
+		this.soundManager.cleanup();
 	}
 
 	// Test accessors - only used for testing private properties
