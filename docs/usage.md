@@ -105,9 +105,10 @@ The plugin automatically:
 ### Audio Notifications
 
 Sound notifications can be:
-- **Enabled/Disabled**: Toggle in settings or using the "Toggle Sound Notifications" command
-- **Customized**: Choose from default options or provide a custom URL/file path
-- **Cross-platform**: Audio loads from CDN for improved reliability and compatibility
+
+- **Enabled/Disabled**: Toggle in settings or using the *Toggle Sound Notifications* command.
+- **Customized**: Choose from default options or provide a custom URL/file path.
+- **Cross-platform**: Audio loads from CDN for improved reliability and compatibility.
 
 ## Tips for Effective Use
 
