@@ -9,6 +9,10 @@ PomoBar offers several options to customize your Pomodoro experience. You can ac
 - **Long break time**: The duration of your long breaks in minutes. (Default: 15)
 - **Long break interval**: The number of work intervals before a long break. (Default: 4)
 
+## Timer Behavior
+
+- **Auto-start Next Timer**: Automatically start the next timer in the cycle when the current timer completes. When enabled, timers will flow seamlessly from work to break and back without requiring manual interaction. When disabled (default), timers pause after completion, requiring you to manually start the next phase. (Default: disabled)
+
 ## Appearance
 
 - **Show status bar icon**: Toggles the visibility of the timer icon in the status bar.
