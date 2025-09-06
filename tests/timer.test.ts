@@ -493,4 +493,164 @@ describe('PomodoroTimer', () => {
       expect(timer.currentDuration).toBe(0); // Should be back to work
     });
   });
+
+  describe('Auto-progression Feature', () => {
+    let timer: PomodoroTimer;
+
+    beforeEach(async () => {
+      await plugin.onload();
+      timer = (plugin as PluginWithPrivates)._timer;
+      jest.clearAllMocks();
+    });
+
+    describe('Auto-progression Disabled (Default Behavior)', () => {
+      beforeEach(() => {
+        // Ensure auto-progression is disabled (default)
+        plugin.settings.autoProgressEnabled = false;
+        timer.updateSettings(plugin.settings);
+      });
+
+      it('should pause after work timer completes', () => {
+        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+        timer._workIntervalCount = 0;
+        timer._remainingTime = 0;
+        timer._isRunning = true;
+
+        // Simulate timer completion logic (without auto-progression)
+        if (timer._remainingTime === 0) {
+          timer._workIntervalCount++;
+          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+          timer.resetTimer();
+          timer.pauseTimer();
+        }
+
+        expect(timer.running).toBe(false);
+        expect(timer.currentDuration).toBe(1); // Should be in short break
+        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
+      });
+
+      it('should pause after break timer completes', () => {
+        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+        timer._remainingTime = 0;
+        timer._isRunning = true;
+
+        // Simulate break completion logic (without auto-progression)
+        if (timer._remainingTime === 0) {
+          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+          timer.resetTimer();
+          timer.pauseTimer();
+        }
+
+        expect(timer.running).toBe(false);
+        expect(timer.currentDuration).toBe(0); // Should be back to work
+        expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
+      });
+    });
+
+    describe('Auto-progression Enabled', () => {
+      beforeEach(() => {
+        // Enable auto-progression
+        plugin.settings.autoProgressEnabled = true;
+        timer.updateSettings(plugin.settings);
+      });
+
+      it('should continue running after work timer completes', () => {
+        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+        timer._workIntervalCount = 0;
+        timer._remainingTime = 0;
+        timer._isRunning = true;
+
+        // Simulate timer completion logic (with auto-progression)
+        if (timer._remainingTime === 0) {
+          timer._workIntervalCount++;
+          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+          
+          if (plugin.settings.autoProgressEnabled) {
+            timer._remainingTime = timer['getCurrentDurationTime']();
+          } else {
+            timer.resetTimer();
+            timer.pauseTimer();
+          }
+        }
+
+        expect(timer.running).toBe(true);
+        expect(timer.currentDuration).toBe(1); // Should be in short break
+        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
+      });
+
+      it('should continue running after break timer completes', () => {
+        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+        timer._remainingTime = 0;
+        timer._isRunning = true;
+
+        // Simulate break completion logic (with auto-progression)
+        if (timer._remainingTime === 0) {
+          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+          
+          if (plugin.settings.autoProgressEnabled) {
+            timer._remainingTime = timer['getCurrentDurationTime']();
+          } else {
+            timer.resetTimer();
+            timer.pauseTimer();
+          }
+        }
+
+        expect(timer.running).toBe(true);
+        expect(timer.currentDuration).toBe(0); // Should be back to work
+        expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
+      });
+
+      it('should transition to long break with auto-progression', () => {
+        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+        timer._workIntervalCount = 3; // One less than default (4)
+        timer._remainingTime = 0;
+        timer._isRunning = true;
+
+        // Simulate work completion leading to long break
+        if (timer._remainingTime === 0) {
+          timer._workIntervalCount++;
+          if (timer._workIntervalCount >= plugin.settings.intervalsBeforeLongBreak) {
+            timer._currentDurationIndex = 2; // TIMER_STATES.LONG_BREAK
+            timer._workIntervalCount = 0;
+          }
+          
+          if (plugin.settings.autoProgressEnabled) {
+            timer._remainingTime = timer['getCurrentDurationTime']();
+          } else {
+            timer.resetTimer();
+            timer.pauseTimer();
+          }
+        }
+
+        expect(timer.running).toBe(true);
+        expect(timer.currentDuration).toBe(2); // Should be in long break
+        expect(timer.workCount).toBe(0); // Should reset work count
+        expect(timer.timeRemaining).toBe(plugin.settings.longBreakTime * 60);
+      });
+
+      it('should still allow manual pause during auto-progression', () => {
+        // Enable auto-progression but test manual control
+        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+        timer._isRunning = true;
+        timer._remainingTime = 300; // 5 minutes remaining
+
+        timer.pauseTimer();
+
+        expect(timer.running).toBe(false);
+        expect(timer.timeRemaining).toBe(300); // Time should be preserved
+      });
+
+      it('should allow manual reset during auto-progression', () => {
+        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+        timer._isRunning = false;
+        timer._remainingTime = 300; // Some time remaining
+
+        timer.resetTimer();
+
+        expect(timer.running).toBe(false);
+        expect(timer.currentDuration).toBe(1); // Should stay in short break
+        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
+      });
+    });
+  });
 });

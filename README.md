@@ -15,8 +15,8 @@ Boost your productivity and maintain focus without ever leaving your notes. Pomo
 - 🧘 **Stay Focused, Not Distracted:** PomoBar lives in your status bar, providing a constant but subtle reminder of your work session without cluttering your workspace.
 - 🔊 **Optional Audio Notifications:** Get gentle sound alerts when timers complete—choose from default sounds or use your own custom audio files.
 - 🖱️ **Intuitive & Quick Controls:** Manage your timers with simple clicks—no need to open new windows or type commands.
-- 🔄 **Automated Flow:** Automatically cycles between work and break periods, so you can keep your momentum going.
-- ⚙️ **Fully Customizable:** Adjust timer durations, enable/disable sounds, and personalize your Pomodoro experience to fit your workflow perfectly.
+- 🔄 **Automated Flow:** Optional auto-progression automatically starts the next timer in your Pomodoro cycle, or pause after each session for manual control.
+- ⚙️ **Fully Customizable:** Adjust timer durations, enable/disable sounds and auto-progression, and personalize your Pomodoro experience to fit your workflow perfectly.
 
 ## How It Works
 

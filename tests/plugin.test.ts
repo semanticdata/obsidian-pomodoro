@@ -65,6 +65,7 @@ describe('PomodoroPlugin', () => {
         soundEnabled: false, // Default value
         selectedSound: "chime.wav", // Default value  
         soundVolume: 0.5, // Default value
+        autoProgressEnabled: false, // Default value
       });
     });
   });
