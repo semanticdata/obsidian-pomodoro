@@ -116,6 +116,16 @@ export class PomodoroTimer {
 		}
 	}
 
+	private getCurrentDurationTime(): number {
+		if (this.currentDurationIndex === TIMER_STATES.WORK) {
+			return this.settings.workTime * 60;
+		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
+			return this.settings.shortBreakTime * 60;
+		} else {
+			return this.settings.longBreakTime * 60;
+		}
+	}
+
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
 		this.soundManager.updateSettings(settings);
@@ -152,8 +162,16 @@ export class PomodoroTimer {
 					} else {
 						this.currentDurationIndex = TIMER_STATES.WORK;
 					}
-					this.resetTimer();
-					this.pauseTimer();
+
+					if (this.settings.autoProgressEnabled) {
+						// Continue running - start the next timer automatically
+						this.remainingTime = this.getCurrentDurationTime();
+						this.updateDisplay();
+					} else {
+						// Current behavior - pause after timer completion
+						this.resetTimer();
+						this.pauseTimer();
+					}
 				}
 			}, TIMER_INTERVAL_MS);
 
