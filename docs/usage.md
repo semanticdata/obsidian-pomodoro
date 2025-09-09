@@ -82,12 +82,23 @@ The timer icon changes to reflect the current state:
 
 The icon can be toggled on or off in the plugin settings or with the "Toggle Icon" command.
 
-## Workflow Example
+## Workflow Examples
+
+### Standard Workflow (Default)
 
 1. **Start Work Session**: Left-click the timer or use the "Toggle Timer" command to begin a 25-minute work period.
 2. **Complete Work**: The timer provides an alert when the time expires and automatically switches to break mode.
-3. **Take a Break**: The timer is ready for a 5-minute break (or a 15-minute long break after four work sessions).
+3. **Take a Break**: The timer is ready for a 5-minute break (or a 15-minute long break after four work sessions). Click to start the break when ready.
 4. **Continue Cycle**: Repeat the process for productive work sessions.
+
+### Auto-Progression Workflow
+
+When auto-progression is enabled in settings:
+
+1. **Start Work Session**: Left-click the timer or use the "Toggle Timer" command to begin a 25-minute work period.
+2. **Complete Work**: The timer provides an alert and automatically begins the break period without requiring interaction.
+3. **Automatic Breaks**: Break timers start immediately, maintaining the flow of your Pomodoro cycle.
+4. **Seamless Transitions**: The cycle continues automatically between work and break periods until you manually pause or reset.
 
 ## Notifications
 
@@ -100,7 +111,8 @@ The plugin automatically:
 
 - Switches to the appropriate next timer type.
 - Resets the timer to the new duration.
-- Pauses the timer, so you can start the next session when you are ready.
+- **Default behavior**: Pauses the timer, so you can start the next session when you are ready.
+- **With auto-progression enabled**: Automatically starts the next timer in the cycle for seamless flow.
 
 ### Audio Notifications
 

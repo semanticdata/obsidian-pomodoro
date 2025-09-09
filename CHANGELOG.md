@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.5.0 - 2025-09-08
+
+### Added
+
+- New optional auto progression feature to automatically start the next timer in your cycle.
+
 ## 1.4.0 - 2025-08-26
 
 ### Changed

@@ -146,7 +146,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
 
       expect(mockContainerEl.empty).toHaveBeenCalled();
-      expect(Setting).toHaveBeenCalledTimes(12);
+      expect(Setting).toHaveBeenCalledTimes(13); // Updated count for new auto-progression setting
     });
   });
 
@@ -289,7 +289,7 @@ describe('PomodoroSettingTab', () => {
       settingTab.display();
       const settings = (Setting as jest.Mock).mock.results;
 
-      const showIconSetting = settings[5].value;
+      const showIconSetting = settings[6].value;
       const showIconOnChange = showIconSetting.addToggle.mock.calls[0][0];
       const toggleComponent = {
         setValue: jest.fn(),
@@ -303,6 +303,27 @@ describe('PomodoroSettingTab', () => {
       await onChangeCallback(true);
 
       expect(mockPlugin.settings.showIcon).toBe(true);
+      expect(mockPlugin.saveSettings).toHaveBeenCalled();
+    });
+
+    it('should update autoProgressEnabled on toggle', async () => {
+      settingTab.display();
+      const settings = (Setting as jest.Mock).mock.results;
+
+      const autoProgressSetting = settings[5].value;
+      const autoProgressOnChange = autoProgressSetting.addToggle.mock.calls[0][0];
+      const toggleComponent = {
+        setValue: jest.fn(),
+        onChange: jest.fn(),
+      };
+      toggleComponent.setValue = jest.fn().mockReturnValue(toggleComponent);
+      toggleComponent.onChange = jest.fn().mockReturnValue(toggleComponent);
+      autoProgressOnChange(toggleComponent);
+      const onChangeCallback = toggleComponent.onChange.mock.calls[0][0];
+
+      await onChangeCallback(true);
+
+      expect(mockPlugin.settings.autoProgressEnabled).toBe(true);
       expect(mockPlugin.saveSettings).toHaveBeenCalled();
     });
   });

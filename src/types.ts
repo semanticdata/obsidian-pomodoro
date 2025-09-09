@@ -9,6 +9,7 @@ export interface PomodoroSettings {
 	selectedSound: string;
 	soundVolume: number;
 	customSoundUrl?: string;
+	autoProgressEnabled: boolean;
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -21,4 +22,5 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
 	soundEnabled: false,
 	selectedSound: "chime.wav",
 	soundVolume: 0.5,
+	autoProgressEnabled: false,
 };

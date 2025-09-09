@@ -87,6 +87,16 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				}));
 
 		new Setting(containerEl)
+			.setName("Auto-start Next Timer")
+			.setDesc("Automatically start the next timer in the cycle when the current timer completes. When disabled, timers pause after completion.")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.autoProgressEnabled)
+				.onChange(async (value) => {
+					this.plugin.settings.autoProgressEnabled = value;
+					await this.plugin.saveSettings();
+				}));
+
+		new Setting(containerEl)
 			.setName("Show Timer Icon")
 			.setDesc("Display a timer icon next to the countdown in the status bar.")
 			.addToggle(toggle => toggle
