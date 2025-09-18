@@ -118,17 +118,23 @@ export class PomodoroTimer {
 		if (this.currentDurationIndex === TIMER_STATES.WORK) {
 			return (
 				this.timeEnd?.toISOString() ===
-				moment.duration(this.settings.workMinutes, "minutes").toISOString()
+				moment
+					.duration(this.settings.workMinutes, "minutes")
+					.toISOString()
 			);
 		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
 			return (
 				this.timeEnd?.toISOString() ===
-				moment.duration(this.settings.shortBreakMinutes, "minutes").toISOString()
+				moment
+					.duration(this.settings.shortBreakMinutes, "minutes")
+					.toISOString()
 			);
 		} else if (this.currentDurationIndex === TIMER_STATES.LONG_BREAK) {
 			return (
 				this.timeEnd?.toISOString() ===
-				moment.duration(this.settings.longBreakMinutes, "minutes").toISOString()
+				moment
+					.duration(this.settings.longBreakMinutes, "minutes")
+					.toISOString()
 			);
 		}
 		return false;
@@ -199,7 +205,7 @@ export class PomodoroTimer {
 				const time = this.timeRemaining;
 				this.updateDisplay(time);
 				if (time.asMilliseconds() > 0) {
-					null
+					null;
 				} else {
 					if (this.settings.autoProgressEnabled) {
 						// Continue running - start the next timer automatically
