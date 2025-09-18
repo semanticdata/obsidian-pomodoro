@@ -1,11 +1,12 @@
 export interface PomodoroSettings {
-	workTime: number;
-	shortBreakTime: number;
-	longBreakTime: number;
+	workMinutes: number;
+	shortBreakMinutes: number;
+	longBreakMinutes: number;
 	intervalsBeforeLongBreak: number;
 	showIcon: boolean;
 	showInStatusBar: boolean;
 	soundEnabled: boolean;
+	persistentNotification: boolean;
 	selectedSound: string;
 	soundVolume: number;
 	customSoundUrl?: string;
@@ -13,13 +14,14 @@ export interface PomodoroSettings {
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
-	workTime: 25,
-	shortBreakTime: 5,
-	longBreakTime: 15,
+	workMinutes: 25,
+	shortBreakMinutes: 5,
+	longBreakMinutes: 15,
 	intervalsBeforeLongBreak: 4,
 	showIcon: false,
 	showInStatusBar: true,
 	soundEnabled: false,
+	persistentNotification: false,
 	selectedSound: "chime.wav",
 	soundVolume: 0.5,
 	autoProgressEnabled: false,

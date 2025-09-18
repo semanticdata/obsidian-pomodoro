@@ -16,8 +16,8 @@ export class PomodoroSettingTab extends PluginSettingTab {
 
 	private validateAndUpdateSetting(
 		value: string,
-		settingProperty: 'workTime' | 'shortBreakTime' | 'longBreakTime' | 'intervalsBeforeLongBreak',
-		resetAction: 'resetTimer' | 'resetPomodoroSession'
+		settingProperty: "workMinutes" | "shortBreakMinutes" | "longBreakMinutes" | "intervalsBeforeLongBreak",
+		resetAction: "resetTimer" | "resetPomodoroSession"
 	): boolean {
 		const numValue = parseInt(value.trim());
 		if (!isNaN(numValue) && numValue > 0 && Number.isInteger(Number(value.trim()))) {
@@ -51,9 +51,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			.setDesc("Duration of the work timer in minutes.")
 			.addText(text => text
 				.setPlaceholder("e.g., 25")
-				.setValue(this.plugin.settings.workTime.toString())
+				.setValue(this.plugin.settings.workMinutes.toString())
 				.onChange(async (value) => {
-					await this.validateAndUpdateSetting(value, 'workTime', 'resetTimer');
+					await this.validateAndUpdateSetting(value, "workMinutes", "resetTimer");
 				}));
 
 		new Setting(containerEl)
@@ -61,9 +61,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			.setDesc("Duration of the short break timer in minutes.")
 			.addText(text => text
 				.setPlaceholder("e.g., 5")
-				.setValue(this.plugin.settings.shortBreakTime.toString())
+				.setValue(this.plugin.settings.shortBreakMinutes.toString())
 				.onChange(async (value) => {
-					await this.validateAndUpdateSetting(value, 'shortBreakTime', 'resetTimer');
+					await this.validateAndUpdateSetting(value, "shortBreakMinutes", "resetTimer");
 				}));
 
 		new Setting(containerEl)
@@ -71,9 +71,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			.setDesc("Duration of the long break timer in minutes.")
 			.addText(text => text
 				.setPlaceholder("e.g., 15")
-				.setValue(this.plugin.settings.longBreakTime.toString())
+				.setValue(this.plugin.settings.longBreakMinutes.toString())
 				.onChange(async (value) => {
-					await this.validateAndUpdateSetting(value, 'longBreakTime', 'resetTimer');
+					await this.validateAndUpdateSetting(value, "longBreakMinutes", "resetTimer");
 				}));
 
 		new Setting(containerEl)
@@ -93,7 +93,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 				.setValue(this.plugin.settings.autoProgressEnabled)
 				.onChange(async (value) => {
 					this.plugin.settings.autoProgressEnabled = value;
+					value ? this.plugin.settings.persistentNotification = false : null;
 					await this.plugin.saveSettings();
+					this.display(); 
 				}));
 
 		new Setting(containerEl)
@@ -127,6 +129,19 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					this.plugin.settings.soundEnabled = value;
 					await this.plugin.saveSettings();
 				}));
+
+		new Setting(containerEl)
+			.setName("Persistent Notification")
+			.setDesc("Play sound continously, until timer is continued or reset")
+			.addToggle(toggle => toggle
+				.setValue(this.plugin.settings.persistentNotification)
+				.onChange(async (value) => {
+					this.plugin.settings.persistentNotification = value;
+					value ? this.plugin.settings.autoProgressEnabled = false : null;
+					await this.plugin.saveSettings();
+					this.display();
+				})
+			)
 
 		new Setting(containerEl)
 			.setName("Sound Selection")

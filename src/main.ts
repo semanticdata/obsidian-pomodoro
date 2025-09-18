@@ -22,14 +22,10 @@ export default class PomodoroPlugin extends Plugin {
 		// Add commands for keyboard shortcuts
 		this.addCommand({
 			id: 'toggle-timer',
-			name: 'Start/Pause timer',
+			name: 'Toggle timer',
 			callback: () => {
 				if (this.timer) {
-					if (this.timer.running) {
-						this.timer.pauseTimer();
-					} else {
-						this.timer.startTimer();
-					}
+					this.timer.toggleTimer();
 				}
 			}
 		});
@@ -38,7 +34,7 @@ export default class PomodoroPlugin extends Plugin {
 			id: 'reset-timer',
 			name: 'Reset current timer',
 			callback: () => {
-				if (this.timer && !this.timer.running) {
+				if (this.timer && !this.timer.isRunning) {
 					this.timer.resetTimer();
 				}
 			}
@@ -48,7 +44,7 @@ export default class PomodoroPlugin extends Plugin {
 			id: 'cycle-timer',
 			name: 'Cycle to next timer duration',
 			callback: () => {
-				if (this.timer && !this.timer.running) {
+				if (this.timer && !this.timer.isRunning) {
 					this.timer.cycleDuration();
 				}
 			}
@@ -104,7 +100,7 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	get currentDurationIndex() {
-		return this.timer?.currentDuration ?? 0;
+		return this.timer?.timerType ?? 0;
 	}
 
 	set currentDurationIndex(_value: number) {
@@ -112,7 +108,7 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	get workIntervalCount() {
-		return this.timer?.workCount ?? 0;
+		return this.timer?.workIntervalsCount ?? 0;
 	}
 
 	set workIntervalCount(_value: number) {

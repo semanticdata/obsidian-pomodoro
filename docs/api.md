@@ -146,9 +146,9 @@ Main configuration interface for the plugin.
 
 ```typescript
 interface PomodoroSettings {
-    workTime: number;                    // Work session duration in minutes
-    shortBreakTime: number;              // Short break duration in minutes  
-    longBreakTime: number;               // Long break duration in minutes
+    workMinutes: number;                    // Work session duration in minutes
+    shortBreakMinutes: number;              // Short break duration in minutes  
+    longBreakMinutes: number;               // Long break duration in minutes
     intervalsBeforeLongBreak: number;    // Work intervals before long break
     showIcon: boolean;                   // Display timer icon in status bar
 }
@@ -189,9 +189,9 @@ Default configuration values:
 
 ```typescript
 const DEFAULT_SETTINGS: PomodoroSettings = {
-    workTime: 25,
-    shortBreakTime: 5,
-    longBreakTime: 15,
+    workMinutes: 25,
+    shortBreakMinutes: 5,
+    longBreakMinutes: 15,
     intervalsBeforeLongBreak: 4,
     showIcon: false
 };

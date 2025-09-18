@@ -117,9 +117,9 @@ cd obsidian-pomodoro
 
 ```typescript
 interface PomodoroSettings {
-    workTime: number;              // Work session duration (minutes)
-    shortBreakTime: number;        // Short break duration (minutes)
-    longBreakTime: number;         // Long break duration (minutes)
+    workMinutes: number;              // Work session duration (minutes)
+    shortBreakMinutes: number;        // Short break duration (minutes)
+    longBreakMinutes: number;         // Long break duration (minutes)
     intervalsBeforeLongBreak: number; // Work sessions before long break
     showIcon: boolean;             // Show/hide timer icon
 }
