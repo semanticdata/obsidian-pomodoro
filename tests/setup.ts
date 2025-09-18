@@ -6,7 +6,15 @@ export interface PluginWithPrivates extends PomodoroPlugin {
   _timer: PomodoroTimer;
 }
 
-jest.mock('obsidian'); // This will use the __mocks__/obsidian.ts automatically
+jest.mock('obsidian', () => {
+  const obsidian = jest.requireActual('obsidian');
+  const moment = jest.requireActual('moment');
+
+  return {
+    ...obsidian,
+    moment
+  }
+}); // This will use the __mocks__/obsidian.ts automatically
 
 // Mock document.createElement globally to ensure consistent behavior
 global.document = {
