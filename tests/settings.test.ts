@@ -30,7 +30,7 @@ describe('Settings Management', () => {
   });
 
   it('should save settings', async () => {
-    plugin.settings.workTime = 30;
+    plugin.settings.workMinutes = 30;
     await plugin.saveSettings();
     expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
   });
@@ -39,7 +39,7 @@ describe('Settings Management', () => {
     const timer = (plugin as PluginWithPrivates)._timer;
     const updateSettingsSpy = jest.spyOn(timer, 'updateSettings');
 
-    plugin.settings.workTime = 45;
+    plugin.settings.workMinutes = 45;
     await plugin.saveSettings();
 
     expect(updateSettingsSpy).toHaveBeenCalledWith(plugin.settings);

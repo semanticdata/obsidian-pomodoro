@@ -44,8 +44,8 @@ describe('PomodoroTimer', () => {
       jest.useFakeTimers();
       const timer = (plugin as PluginWithPrivates)._timer;
 
-      timer.startTimer();
-      expect(timer.running).toBe(true);
+      timer.toggleTimer();
+      expect(timer.isRunning).toBe(true);
       expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-active');
       expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-paused');
       expect(window.setInterval).toHaveBeenCalledTimes(1);
@@ -60,9 +60,9 @@ describe('PomodoroTimer', () => {
       (mockStatusBarItem.classList.add as jest.Mock).mockClear();
       (mockStatusBarItem.classList.remove as jest.Mock).mockClear();
 
-      timer.startTimer();
+      timer.toggleTimer();
       timer.pauseTimer();
-      expect(timer.running).toBe(false);
+      expect(timer.isRunning).toBe(false);
       expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-active');
       expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-paused');
       expect(window.clearInterval).toHaveBeenCalledTimes(1);
@@ -72,7 +72,7 @@ describe('PomodoroTimer', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
 
       timer.resetTimer();
-      expect(timer.running).toBe(false);
+      expect(timer.isRunning).toBe(false);
       expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
     });
 
@@ -80,23 +80,23 @@ describe('PomodoroTimer', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
 
       timer.cycleDuration();
-      expect(timer.currentDuration).toBe(1); // Short break
+      expect(timer.timerType).toBe(1); // Short break
 
       timer.cycleDuration();
-      expect(timer.currentDuration).toBe(2); // Long break
+      expect(timer.timerType).toBe(2); // Long break
 
       timer.cycleDuration();
-      expect(timer.currentDuration).toBe(0); // Work
+      expect(timer.timerType).toBe(0); // Work
     });
 
     it('should not cycle duration when timer is running', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
 
-      timer.startTimer();
-      const initialDuration = timer.currentDuration;
+      timer.toggleTimer();
+      const initialTimerType = timer.timerType;
       timer.cycleDuration();
 
-      expect(timer.currentDuration).toBe(initialDuration);
+      expect(timer.timerType).toBe(initialTimerType);
       timer.pauseTimer();
     });
 
@@ -107,7 +107,7 @@ describe('PomodoroTimer', () => {
       const textEl = { textContent: '' };
       mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
 
-      timer.startTimer();
+      timer.toggleTimer();
 
       // Advance timer by 1 second
       jest.advanceTimersByTime(1000);
@@ -127,14 +127,14 @@ describe('PomodoroTimer', () => {
       // Set timer to different state
       timer['currentDurationIndex'] = 2; // Long break
       timer['workIntervalCount'] = 3;
-      timer.startTimer();
+      timer.toggleTimer();
 
       // Call resetToWorkState (covers lines 191-194)
       timer.resetToWorkState();
 
       expect(timer['currentDurationIndex']).toBe(0); // Work state
       expect(timer['workIntervalCount']).toBe(0); // Reset count
-      expect(timer.running).toBe(false); // Should be paused
+      expect(timer.isRunning).toBe(false); // Should be paused
       expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes")); // Work duration
     });
 
@@ -144,7 +144,6 @@ describe('PomodoroTimer', () => {
       // Already in work state but with some progress
       timer['currentDurationIndex'] = 0; // Work state
       timer['workIntervalCount'] = 2;
-      timer['remainingTime'] = 500; // Some progress made
       timer['timeEnd'] = moment.utc(moment.now()).add(500, "seconds"); // Some progress made
 
       timer.resetToWorkState();
@@ -214,10 +213,10 @@ describe('PomodoroTimer', () => {
 
     describe('Left Click Events', () => {
       it('should start timer when not running', () => {
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
         
         // Spy on method before calling handler
-        const startTimerSpy = jest.spyOn(timer, 'startTimer').mockImplementation(() => {
+        const startTimerSpy = jest.spyOn(timer, 'toggleTimer').mockImplementation(() => {
           timer._isRunning = true;
         });
         
@@ -237,8 +236,8 @@ describe('PomodoroTimer', () => {
       });
 
       it('should pause timer when running', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
         
         const pauseTimerSpy = jest.spyOn(timer, 'pauseTimer').mockImplementation(() => {
           timer._isRunning = false;
@@ -259,7 +258,7 @@ describe('PomodoroTimer', () => {
 
     describe('Middle Click Events', () => {
       it('should cycle duration when not running', () => {
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
         
         const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
         
@@ -277,8 +276,8 @@ describe('PomodoroTimer', () => {
       });
 
       it('should still call cycleDuration when running (no restriction in auxclick)', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
         
         const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
         
@@ -297,7 +296,7 @@ describe('PomodoroTimer', () => {
 
     describe('Right Click Events', () => {
       it('should reset timer when not running', () => {
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
         
         const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
         
@@ -319,8 +318,8 @@ describe('PomodoroTimer', () => {
       });
 
       it('should not reset timer when running', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
         
         const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
         
@@ -378,8 +377,8 @@ describe('PomodoroTimer', () => {
     });
 
     it('should show play icon when running', () => {
-      timer.startTimer();
-      expect(timer.running).toBe(true);
+      timer.toggleTimer();
+      expect(timer.isRunning).toBe(true);
       
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
@@ -391,10 +390,10 @@ describe('PomodoroTimer', () => {
 
     it('should show pause icon when paused mid-session', () => {
       // Start timer then pause it
-      timer.startTimer();
+      timer.toggleTimer();
       timer.pauseTimer();
       
-      expect(timer.running).toBe(false);
+      expect(timer.isRunning).toBe(false);
       expect(timer._isAtDefaultDuration()).toBe(true); // Still at full duration in our mock
       
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
@@ -405,11 +404,11 @@ describe('PomodoroTimer', () => {
     });
 
     it('should update icon when cycling durations', () => {
-      const initialDuration = timer.currentDuration;
+      const initialDuration = timer.timerType;
       
       timer.cycleDuration();
       
-      expect(timer.currentDuration).not.toBe(initialDuration);
+      expect(timer.timerType).not.toBe(initialDuration);
       
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
@@ -439,7 +438,7 @@ describe('PomodoroTimer', () => {
       timer._timeEnd = moment.duration(0);
       timer._isRunning = true;
       
-      const initialWorkCount = timer.workCount;
+      const initialWorkCount = timer.workIntervalsCount;
       
       // Simulate timer reaching zero (this would normally happen in the interval)
       // We need to trigger the timer completion logic manually since we can't wait for intervals
@@ -450,8 +449,8 @@ describe('PomodoroTimer', () => {
         timer.pauseTimer();
       }
       
-      expect(timer.workCount).toBe(initialWorkCount + 1);
-      expect(timer.currentDuration).toBe(1); // Should be in short break
+      expect(timer.workIntervalsCount).toBe(initialWorkCount + 1);
+      expect(timer.timerType).toBe(1); // Should be in short break
     });
 
     it('should transition to long break after configured work intervals', () => {
@@ -473,8 +472,8 @@ describe('PomodoroTimer', () => {
         timer.pauseTimer();
       }
       
-      expect(timer.currentDuration).toBe(2); // Should be in long break
-      expect(timer.workCount).toBe(0); // Should reset work count
+      expect(timer.timerType).toBe(2); // Should be in long break
+      expect(timer.workIntervalsCount).toBe(0); // Should reset work count
     });
 
     it('should transition from break back to work', () => {
@@ -491,7 +490,7 @@ describe('PomodoroTimer', () => {
         timer.pauseTimer();
       }
       
-      expect(timer.currentDuration).toBe(0); // Should be back to work
+      expect(timer.timerType).toBe(0); // Should be back to work
     });
   });
 
@@ -525,8 +524,8 @@ describe('PomodoroTimer', () => {
           timer.pauseTimer();
         }
 
-        expect(timer.running).toBe(false);
-        expect(timer.currentDuration).toBe(1); // Should be in short break
+        expect(timer.isRunning).toBe(false);
+        expect(timer.timerType).toBe(1); // Should be in short break
         expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes"));
       });
 
@@ -542,8 +541,8 @@ describe('PomodoroTimer', () => {
           timer.pauseTimer();
         }
 
-        expect(timer.running).toBe(false);
-        expect(timer.currentDuration).toBe(0); // Should be back to work
+        expect(timer.isRunning).toBe(false);
+        expect(timer.timerType).toBe(0); // Should be back to work
         expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
       });
     });
@@ -567,15 +566,15 @@ describe('PomodoroTimer', () => {
           timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
           
           if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
+            timer._timeEnd = timer['getCurrentTimerDuration']();
           } else {
             timer.resetTimer();
             timer.pauseTimer();
           }
         }
 
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(1); // Should be in short break
+        expect(timer.isRunning).toBe(true);
+        expect(timer.timerType).toBe(1); // Should be in short break
         expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes"));
       });
 
@@ -589,15 +588,15 @@ describe('PomodoroTimer', () => {
           timer._currentDurationIndex = 0; // TIMER_STATES.WORK
           
           if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
+            timer._timeEnd = timer['getCurrentTimerDuration']();
           } else {
             timer.resetTimer();
             timer.pauseTimer();
           }
         }
 
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(0); // Should be back to work
+        expect(timer.isRunning).toBe(true);
+        expect(timer.timerType).toBe(0); // Should be back to work
         expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
       });
 
@@ -616,16 +615,16 @@ describe('PomodoroTimer', () => {
           }
           
           if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
+            timer._timeEnd = timer['getCurrentTimerDuration']();
           } else {
             timer.resetTimer();
             timer.pauseTimer();
           }
         }
 
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(2); // Should be in long break
-        expect(timer.workCount).toBe(0); // Should reset work count
+        expect(timer.isRunning).toBe(true);
+        expect(timer.timerType).toBe(2); // Should be in long break
+        expect(timer.workIntervalsCount).toBe(0); // Should reset work count
         expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.longBreakMinutes, "minutes"));
       });
 

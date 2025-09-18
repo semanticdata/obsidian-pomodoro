@@ -41,18 +41,18 @@ describe('PomodoroPlugin', () => {
   describe('Initialization and Settings', () => {
     it('should load default settings on onload if no saved data', async () => {
       await plugin.onload();
-      expect(plugin.settings.workTime).toBe(25);
-      expect(plugin.settings.shortBreakTime).toBe(5);
-      expect(plugin.settings.longBreakTime).toBe(15);
+      expect(plugin.settings.workMinutes).toBe(25);
+      expect(plugin.settings.shortBreakMinutes).toBe(5);
+      expect(plugin.settings.longBreakMinutes).toBe(15);
       expect(plugin.settings.intervalsBeforeLongBreak).toBe(4);
       expect((plugin as PluginWithPrivates)._statusBarItem).toBeDefined();
     });
 
     it('should load saved settings on onload', async () => {
       const savedSettings = {
-        workTime: 30,
-        shortBreakTime: 7,
-        longBreakTime: 20,
+        workMinutes: 30,
+        shortBreakMinutes: 7,
+        longBreakMinutes: 20,
         intervalsBeforeLongBreak: 3,
       };
       plugin.loadData = jest.fn().mockResolvedValue(savedSettings);
@@ -80,10 +80,10 @@ describe('PomodoroPlugin', () => {
     it('should initialize with correct default state', async () => {
       await plugin.onload();
       const timer = (plugin as PluginWithPrivates)._timer;
-      expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
-      expect(timer.running).toBe(false);
-      expect(timer.currentDuration).toBe(0);
-      expect(timer.workCount).toBe(0);
+      expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
+      expect(timer.isRunning).toBe(false);
+      expect(timer.timerType).toBe(0);
+      expect(timer.workIntervalsCount).toBe(0);
     });
   });
 
@@ -172,7 +172,7 @@ describe('PomodoroPlugin', () => {
     describe('Toggle Timer Command', () => {
       it('should start timer when not running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
 
         // Find and execute the toggle-timer command
         const mockAddCommand = plugin.addCommand as jest.Mock;
@@ -183,15 +183,15 @@ describe('PomodoroPlugin', () => {
         jest.spyOn(timer, 'startTimer');
         toggleCommand[0].callback();
 
-        expect(timer.startTimer).toHaveBeenCalled();
+        expect(timer.toggleTimer).toHaveBeenCalled();
       });
 
       it('should pause timer when running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
         
         // Start the timer first
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
 
         // Execute toggle command
         const mockAddCommand = plugin.addCommand as jest.Mock;
@@ -227,7 +227,7 @@ describe('PomodoroPlugin', () => {
     describe('Reset Timer Command', () => {
       it('should reset timer when not running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
 
         const mockAddCommand = plugin.addCommand as jest.Mock;
         const resetCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'reset-timer');
@@ -240,8 +240,8 @@ describe('PomodoroPlugin', () => {
 
       it('should not reset timer when running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
 
         const mockAddCommand = plugin.addCommand as jest.Mock;
         const resetCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'reset-timer');
@@ -256,7 +256,7 @@ describe('PomodoroPlugin', () => {
     describe('Cycle Timer Command', () => {
       it('should cycle timer when not running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
-        expect(timer.running).toBe(false);
+        expect(timer.isRunning).toBe(false);
 
         const mockAddCommand = plugin.addCommand as jest.Mock;
         const cycleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'cycle-timer');
@@ -269,8 +269,8 @@ describe('PomodoroPlugin', () => {
 
       it('should not cycle timer when running', async () => {
         const timer = (plugin as PluginWithPrivates)._timer;
-        timer.startTimer();
-        expect(timer.running).toBe(true);
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
 
         const mockAddCommand = plugin.addCommand as jest.Mock;
         const cycleCommand = mockAddCommand.mock.calls.find(call => call[0].id === 'cycle-timer');
