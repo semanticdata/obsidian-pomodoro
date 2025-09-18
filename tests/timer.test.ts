@@ -73,7 +73,7 @@ describe('PomodoroTimer', () => {
 
       timer.resetTimer();
       expect(timer.isRunning).toBe(false);
-      expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
+      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
     });
 
     it('should cycle durations correctly', () => {
@@ -135,7 +135,7 @@ describe('PomodoroTimer', () => {
       expect(timer['currentDurationIndex']).toBe(0); // Work state
       expect(timer['workIntervalCount']).toBe(0); // Reset count
       expect(timer.isRunning).toBe(false); // Should be paused
-      expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes")); // Work duration
+      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString()); // Work duration
     });
 
     it('should reset to work state even when already in work state', () => {
@@ -150,7 +150,7 @@ describe('PomodoroTimer', () => {
 
       expect(timer['currentDurationIndex']).toBe(0); // Still work state
       expect(timer['workIntervalCount']).toBe(0); // Reset count
-      expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes")); // Reset duration
+      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString()); // Reset duration
     });
   });
 
@@ -376,7 +376,7 @@ describe('PomodoroTimer', () => {
       expect(iconContainer?.innerHTML).toContain('Mock SVG'); // From our SVG mock
     });
 
-    it('should show play icon when running', () => {
+    it('should show pause icon when running', () => {
       timer.toggleTimer();
       expect(timer.isRunning).toBe(true);
       
@@ -388,7 +388,7 @@ describe('PomodoroTimer', () => {
       expect(iconContainer?.innerHTML).toContain('Mock SVG');
     });
 
-    it('should show pause icon when paused mid-session', () => {
+    it('should show play icon when paused mid-session', () => {
       // Start timer then pause it
       timer.toggleTimer();
       timer.pauseTimer();
@@ -442,12 +442,8 @@ describe('PomodoroTimer', () => {
       
       // Simulate timer reaching zero (this would normally happen in the interval)
       // We need to trigger the timer completion logic manually since we can't wait for intervals
-      if (timer._timeEnd === moment.duration(0)) {
-        timer._workIntervalCount++;
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
+      timer.advanceTimer();
+      timer.pauseTimer();
       
       expect(timer.workIntervalsCount).toBe(initialWorkCount + 1);
       expect(timer.timerType).toBe(1); // Should be in short break
@@ -462,15 +458,8 @@ describe('PomodoroTimer', () => {
       timer._isRunning = true;
       
       // Simulate timer completion leading to long break
-      if (timer._timeEnd === moment.duration(0)) {
-        timer._workIntervalCount++;
-        if (timer._workIntervalCount >= plugin.settings.intervalsBeforeLongBreak) {
-          timer._currentDurationIndex = 2; // TIMER_STATES.LONG_BREAK
-          timer._workIntervalCount = 0;
-        }
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
+      timer.advanceTimer();
+      timer.pauseTimer();
       
       expect(timer.timerType).toBe(2); // Should be in long break
       expect(timer.workIntervalsCount).toBe(0); // Should reset work count
@@ -484,11 +473,8 @@ describe('PomodoroTimer', () => {
       timer._isRunning = true;
       
       // Simulate break completion
-      if (timer._timeEnd === moment.duration(0)) {
-        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
+      timer.advanceTimer();
+      timer.pauseTimer();
       
       expect(timer.timerType).toBe(0); // Should be back to work
     });
@@ -517,16 +503,12 @@ describe('PomodoroTimer', () => {
         timer._isRunning = true;
 
         // Simulate timer completion logic (without auto-progression)
-        if (timer._timeEnd === moment.duration(0)) {
-          timer._workIntervalCount++;
-          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-          timer.resetTimer();
-          timer.pauseTimer();
-        }
+        timer.advanceTimer();
+        timer.pauseTimer();
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(1); // Should be in short break
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
       });
 
       it('should pause after break timer completes', () => {
@@ -535,15 +517,12 @@ describe('PomodoroTimer', () => {
         timer._isRunning = true;
 
         // Simulate break completion logic (without auto-progression)
-        if (timer._timeEnd === moment.duration(0)) {
-          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-          timer.resetTimer();
-          timer.pauseTimer();
-        }
+        timer.advanceTimer();
+        timer.pauseTimer();
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(0); // Should be back to work
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
       });
     });
 
@@ -561,21 +540,11 @@ describe('PomodoroTimer', () => {
         timer._isRunning = true;
 
         // Simulate timer completion logic (with auto-progression)
-        if (timer._timeEnd === moment.duration(0)) {
-          timer._workIntervalCount++;
-          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._timeEnd = timer['getCurrentTimerDuration']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
+        timer.advanceTimer();
 
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(1); // Should be in short break
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
       });
 
       it('should continue running after break timer completes', () => {
@@ -584,20 +553,11 @@ describe('PomodoroTimer', () => {
         timer._isRunning = true;
 
         // Simulate break completion logic (with auto-progression)
-        if (timer._timeEnd === moment.duration(0)) {
-          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._timeEnd = timer['getCurrentTimerDuration']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
+        timer.advanceTimer();
 
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(0); // Should be back to work
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
       });
 
       it('should transition to long break with auto-progression', () => {
@@ -607,25 +567,12 @@ describe('PomodoroTimer', () => {
         timer._isRunning = true;
 
         // Simulate work completion leading to long break
-        if (timer._timeEnd === moment.duration(0)) {
-          timer._workIntervalCount++;
-          if (timer._workIntervalCount >= plugin.settings.intervalsBeforeLongBreak) {
-            timer._currentDurationIndex = 2; // TIMER_STATES.LONG_BREAK
-            timer._workIntervalCount = 0;
-          }
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._timeEnd = timer['getCurrentTimerDuration']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
+        timer.advanceTimer();
 
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(2); // Should be in long break
         expect(timer.workIntervalsCount).toBe(0); // Should reset work count
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.longBreakMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.longBreakMinutes, "minutes").toISOString());
       });
 
       it('should still allow manual pause during auto-progression', () => {
@@ -637,7 +584,7 @@ describe('PomodoroTimer', () => {
         timer.pauseTimer();
 
         expect(timer.isRunning).toBe(false);
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes")); // Time should be preserved
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString()); // Time should be preserved
       });
 
       it('should allow manual reset during auto-progression', () => {
@@ -649,7 +596,7 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(1); // Should stay in short break
-        expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.shortBreakMinutes, "minutes"));
+        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
       });
     });
   });

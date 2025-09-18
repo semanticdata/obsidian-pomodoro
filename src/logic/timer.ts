@@ -117,18 +117,18 @@ export class PomodoroTimer {
 		// Check if the timer is at its fresh/default duration for the current state
 		if (this.currentDurationIndex === TIMER_STATES.WORK) {
 			return (
-				this.timeEnd ===
-				moment.duration(this.settings.workMinutes, "minutes")
+				this.timeEnd?.toISOString() ===
+				moment.duration(this.settings.workMinutes, "minutes").toISOString()
 			);
 		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
 			return (
-				this.timeEnd ===
-				moment.duration(this.settings.shortBreakMinutes, "minutes")
+				this.timeEnd?.toISOString() ===
+				moment.duration(this.settings.shortBreakMinutes, "minutes").toISOString()
 			);
 		} else if (this.currentDurationIndex === TIMER_STATES.LONG_BREAK) {
 			return (
-				this.timeEnd ===
-				moment.duration(this.settings.longBreakMinutes, "minutes")
+				this.timeEnd?.toISOString() ===
+				moment.duration(this.settings.longBreakMinutes, "minutes").toISOString()
 			);
 		}
 		return false;
@@ -220,6 +220,7 @@ export class PomodoroTimer {
 					} else {
 						// Current behavior - pause after timer completion
 						// this.resetTimer();
+						this.advanceTimer();
 						this.pauseTimer();
 					}
 				}
@@ -362,7 +363,7 @@ export class PomodoroTimer {
 	}
 
 	// Test accessors - only used for testing private properties
-	get _isRunning() {
+	get _isRunning(): boolean {
 		return this.isRunning;
 	}
 
@@ -375,7 +376,7 @@ export class PomodoroTimer {
 		}
 	}
 
-	get _currentDurationIndex() {
+	get _currentDurationIndex(): number {
 		return this.currentDurationIndex;
 	}
 
@@ -383,7 +384,7 @@ export class PomodoroTimer {
 		this.currentDurationIndex = value;
 	}
 
-	get _workIntervalCount() {
+	get _workIntervalCount(): number {
 		return this.workIntervalCount;
 	}
 
@@ -391,7 +392,7 @@ export class PomodoroTimer {
 		this.workIntervalCount = value;
 	}
 
-	get _remainingTime() {
+	get _timeRemaining(): moment.Duration {
 		return this.timeRemaining;
 	}
 

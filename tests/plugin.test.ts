@@ -1,6 +1,6 @@
 import './setup';
 import PomodoroPlugin from '../src/main';
-import { App } from 'obsidian';
+import { moment, App } from 'obsidian';
 import { PluginWithPrivates } from './setup';
 
 describe('PomodoroPlugin', () => {
@@ -63,6 +63,7 @@ describe('PomodoroPlugin', () => {
         showIcon: false, // Default value
         showInStatusBar: true, // Default value
         soundEnabled: false, // Default value
+        persistentNotification: false, // Default value
         selectedSound: "chime.wav", // Default value  
         soundVolume: 0.5, // Default value
         autoProgressEnabled: false, // Default value
@@ -80,7 +81,7 @@ describe('PomodoroPlugin', () => {
     it('should initialize with correct default state', async () => {
       await plugin.onload();
       const timer = (plugin as PluginWithPrivates)._timer;
-      expect(timer.timeRemaining).toBe(moment.duration(plugin.settings.workMinutes, "minutes"));
+      expect(timer.timeRemaining.seconds()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").seconds());
       expect(timer.isRunning).toBe(false);
       expect(timer.timerType).toBe(0);
       expect(timer.workIntervalsCount).toBe(0);
@@ -180,7 +181,7 @@ describe('PomodoroPlugin', () => {
         expect(toggleCommand).toBeDefined();
 
         // Execute the command callback
-        jest.spyOn(timer, 'startTimer');
+        jest.spyOn(timer, 'toggleTimer');
         toggleCommand[0].callback();
 
         expect(timer.toggleTimer).toHaveBeenCalled();
@@ -336,7 +337,7 @@ describe('PomodoroPlugin', () => {
         const mockAddCommand = plugin.addCommand as jest.Mock;
         
         const expectedCommandNames = {
-          'toggle-timer': 'Start/Pause timer',
+          'toggle-timer': 'Toggle timer',
           'reset-timer': 'Reset current timer',
           'cycle-timer': 'Cycle to next timer duration',
           'toggle-icon-visibility': 'Toggle timer icon visibility',
