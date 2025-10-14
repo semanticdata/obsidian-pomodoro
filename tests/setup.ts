@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PomodoroTimer } from '../src/logic/timer';
 import PomodoroPlugin from '../src/main';
 

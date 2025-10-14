@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import "./setup";
 import { PomodoroSettingTab } from "../src/components/SettingsTab";
 import type PomodoroPlugin from "../src/main";
@@ -52,74 +53,7 @@ function createMockToggleComponent() {
 	return component;
 }
 
-/**
- * Helper to create a mock dropdown component
- */
-function createMockDropdownComponent() {
-	let onChangeCallback: ((value: string) => void) | null = null;
-
-	const component: any = {
-		addOption: jest.fn().mockReturnThis(),
-		setValue: jest.fn().mockReturnThis(),
-		onChange: jest.fn((cb: (value: string) => void) => {
-			onChangeCallback = cb;
-			return component;
-		}),
-		triggerChange: async (value: string) => {
-			if (onChangeCallback) {
-				await onChangeCallback(value);
-			}
-		},
-	};
-
-	return component;
-}
-
-/**
- * Helper to create a mock slider component
- */
-function createMockSliderComponent() {
-	let onChangeCallback: ((value: number) => void) | null = null;
-
-	const component: any = {
-		setLimits: jest.fn().mockReturnThis(),
-		setValue: jest.fn().mockReturnThis(),
-		setDynamicTooltip: jest.fn().mockReturnThis(),
-		onChange: jest.fn((cb: (value: number) => void) => {
-			onChangeCallback = cb;
-			return component;
-		}),
-		triggerChange: async (value: number) => {
-			if (onChangeCallback) {
-				await onChangeCallback(value);
-			}
-		},
-	};
-
-	return component;
-}
-
-/**
- * Helper to create a mock button component
- */
-function createMockButtonComponent() {
-	let onClickCallback: (() => void) | null = null;
-
-	const component: any = {
-		setButtonText: jest.fn().mockReturnThis(),
-		onClick: jest.fn((cb: () => void) => {
-			onClickCallback = cb;
-			return component;
-		}),
-		triggerClick: () => {
-			if (onClickCallback) {
-				onClickCallback();
-			}
-		},
-	};
-
-	return component;
-}
+/* eslint-disable jest/expect-expect */
 
 // Simplified Setting mock - no circular references, just straightforward mocking
 

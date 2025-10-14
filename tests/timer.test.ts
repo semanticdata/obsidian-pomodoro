@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import './setup';
 import PomodoroPlugin from '../src/main';
 import { moment, App } from 'obsidian';

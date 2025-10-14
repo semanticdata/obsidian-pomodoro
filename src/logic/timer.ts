@@ -143,7 +143,7 @@ export class PomodoroTimer {
 			// Expose which icon key was selected for testing/debugging
 			try {
 				iconContainer.setAttribute('data-icon-key', iconKey);
-			} catch (e) {
+			} catch {
 				// Ignore if attribute setting fails on mocked elements
 			}
 
