@@ -114,30 +114,9 @@ export class PomodoroTimer {
 	}
 
 	private isAtDefaultDuration(): boolean {
-		// Check if the timer is at its fresh/default duration for the current state
-		if (this.currentDurationIndex === TIMER_STATES.WORK) {
-			return (
-				this.timeEnd?.toISOString() ===
-				moment
-					.duration(this.settings.workMinutes, "minutes")
-					.toISOString()
-			);
-		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
-			return (
-				this.timeEnd?.toISOString() ===
-				moment
-					.duration(this.settings.shortBreakMinutes, "minutes")
-					.toISOString()
-			);
-		} else if (this.currentDurationIndex === TIMER_STATES.LONG_BREAK) {
-			return (
-				this.timeEnd?.toISOString() ===
-				moment
-					.duration(this.settings.longBreakMinutes, "minutes")
-					.toISOString()
-			);
-		}
-		return false;
+		const remaining = this.timeRemaining;
+		const current = this.getCurrentTimerDuration();
+		return remaining.asMilliseconds() === current.asMilliseconds();
 	}
 
 	private updateIcon() {
