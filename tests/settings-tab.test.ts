@@ -1,6 +1,6 @@
 import "./setup";
 import { PomodoroSettingTab } from "../src/components/SettingsTab";
-import PomodoroPlugin from "../src/main";
+import type PomodoroPlugin from "../src/main";
 import { App, Setting } from "obsidian";
 import { SoundManager } from "../src/logic/soundManager";
 
@@ -187,7 +187,12 @@ describe("PomodoroSettingTab", () => {
 			description: "Test Description",
 		};
 
-		mockPlugin = new PomodoroPlugin(mockApp, manifest);
+		// Dynamically import the plugin class to avoid circular runtime imports
+		// between `src/main` and `src/components/SettingsTab` during test load.
+		const { default: PomodoroPluginClass } = await import(
+			"../src/main"
+		);
+		mockPlugin = new PomodoroPluginClass(mockApp, manifest);
 		mockPlugin.loadData = jest.fn().mockResolvedValue({});
 		mockPlugin.saveData = jest.fn().mockResolvedValue(undefined);
 		mockPlugin.saveSettings = jest.fn().mockResolvedValue(undefined);
