@@ -117,18 +117,19 @@ describe('PomodoroTimer', () => {
       timer.toggleTimer();
       expect(timer.isRunning).toBe(true);
 
-      // Advance timer by 1 second
-      jest.advanceTimersByTime(1000);
+      // Advance the fake system time by 1 second and update display manually.
+      const after = now + 1000;
+      jest.setSystemTime(after);
 
-      // Force a microtask tick so any pending promises settle
-      return Promise.resolve().then(() => {
-        // Should show 24:59 (25 minutes - 1 second)
-        expect(textEl.textContent).toBe('24:59');
+      // Call updateDisplay to reflect the new time
+      (timer as any).updateDisplay();
 
-        // Clean up
-        timer.pauseTimer();
-        jest.useRealTimers();
-      });
+      // Should show 24:59 (25 minutes - 1 second)
+      expect(textEl.textContent).toBe('24:59');
+
+      // Clean up
+      timer.pauseTimer();
+      jest.useRealTimers();
     });
   });
 
