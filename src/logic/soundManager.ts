@@ -60,7 +60,7 @@ export class SoundManager {
 			} catch (error) {
 				console.error(
 					`Failed to load vault audio file: ${soundName}`,
-					error
+					error,
 				);
 				// Fall back to the original path
 				return soundName;
@@ -107,7 +107,7 @@ export class SoundManager {
 					clearTimeout(timeoutId);
 					resolve(audio);
 				},
-				{ once: true }
+				{ once: true },
 			);
 
 			audio.addEventListener(
@@ -116,7 +116,7 @@ export class SoundManager {
 					clearTimeout(timeoutId);
 					reject(new Error(`Failed to load audio: ${soundUrl}`));
 				},
-				{ once: true }
+				{ once: true },
 			);
 
 			audio.src = soundUrl;

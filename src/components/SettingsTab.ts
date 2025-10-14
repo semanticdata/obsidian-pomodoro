@@ -21,7 +21,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			| "shortBreakMinutes"
 			| "longBreakMinutes"
 			| "intervalsBeforeLongBreak",
-		resetAction: "resetTimer" | "resetPomodoroSession"
+		resetAction: "resetTimer" | "resetPomodoroSession",
 	): boolean {
 		const numValue = parseInt(value.trim());
 		if (
@@ -67,9 +67,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 						await this.validateAndUpdateSetting(
 							value,
 							"workMinutes",
-							"resetTimer"
+							"resetTimer",
 						);
-					})
+					}),
 			);
 
 		new Setting(containerEl)
@@ -83,9 +83,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 						await this.validateAndUpdateSetting(
 							value,
 							"shortBreakMinutes",
-							"resetTimer"
+							"resetTimer",
 						);
-					})
+					}),
 			);
 
 		new Setting(containerEl)
@@ -99,35 +99,35 @@ export class PomodoroSettingTab extends PluginSettingTab {
 						await this.validateAndUpdateSetting(
 							value,
 							"longBreakMinutes",
-							"resetTimer"
+							"resetTimer",
 						);
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Intervals Before Long Break")
 			.setDesc(
-				"Number of work intervals before a long break is triggered."
+				"Number of work intervals before a long break is triggered.",
 			)
 			.addText((text) =>
 				text
 					.setPlaceholder("e.g., 4")
 					.setValue(
-						this.plugin.settings.intervalsBeforeLongBreak.toString()
+						this.plugin.settings.intervalsBeforeLongBreak.toString(),
 					)
 					.onChange(async (value) => {
 						await this.validateAndUpdateSetting(
 							value,
 							"intervalsBeforeLongBreak",
-							"resetPomodoroSession"
+							"resetPomodoroSession",
 						);
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Auto-start Next Timer")
 			.setDesc(
-				"Automatically start the next timer in the cycle when the current timer completes. When disabled, timers pause after completion."
+				"Automatically start the next timer in the cycle when the current timer completes. When disabled, timers pause after completion.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -135,18 +135,17 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.autoProgressEnabled = value;
 						value
-							? (this.plugin.settings.persistentNotification =
-									false)
+							? (this.plugin.settings.persistentNotification = false)
 							: null;
 						await this.plugin.saveSettings();
 						this.display();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Show Timer Icon")
 			.setDesc(
-				"Display a timer icon next to the countdown in the status bar."
+				"Display a timer icon next to the countdown in the status bar.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -154,13 +153,13 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.showIcon = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Show in Status Bar")
 			.setDesc(
-				"Toggle the timer's visibility in the status bar. You can also use the 'Toggle status bar visibility' command."
+				"Toggle the timer's visibility in the status bar. You can also use the 'Toggle status bar visibility' command.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -168,7 +167,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.showInStatusBar = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(containerEl).setName("Sound Notifications").setHeading();
@@ -182,13 +181,13 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.soundEnabled = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Persistent Notification")
 			.setDesc(
-				"Play sound continously, until timer is continued or reset"
+				"Play sound continously, until timer is continued or reset",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -200,13 +199,13 @@ export class PomodoroSettingTab extends PluginSettingTab {
 							: null;
 						await this.plugin.saveSettings();
 						this.display();
-					})
+					}),
 			);
 
 		new Setting(containerEl)
 			.setName("Sound Selection")
 			.setDesc(
-				"Choose a built-in sound or select 'custom' to use your own."
+				"Choose a built-in sound or select 'custom' to use your own.",
 			)
 			.addDropdown((dropdown) => {
 				const builtInSounds = this.soundManager.getBuiltInSounds();
@@ -239,17 +238,17 @@ export class PomodoroSettingTab extends PluginSettingTab {
 							this.plugin.settings.customSoundUrl?.trim();
 						if (isCustomSelected) {
 							await this.soundManager.previewSound(
-								this.plugin.settings.customSoundUrl!.trim()
+								this.plugin.settings.customSoundUrl!.trim(),
 							);
 						} else {
 							await this.soundManager.previewSound(
-								this.plugin.settings.selectedSound
+								this.plugin.settings.selectedSound,
 							);
 						}
 					} catch (error) {
 						console.warn("Preview failed:", error);
 					}
-				})
+				}),
 			);
 
 		const customSoundSetting = new Setting(containerEl)
@@ -258,13 +257,13 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			.addText((text) =>
 				text
 					.setPlaceholder(
-						"e.g., MyFolder/custom-sound.mp3 or https://example.com/sound.wav"
+						"e.g., MyFolder/custom-sound.mp3 or https://example.com/sound.wav",
 					)
 					.setValue(this.plugin.settings.customSoundUrl || "")
 					.onChange(async (value) => {
 						this.plugin.settings.customSoundUrl = value.trim();
 						await this.plugin.saveSettings();
-					})
+					}),
 			);
 
 		// Store references for dynamic visibility control
@@ -285,7 +284,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 					.onChange(async (value) => {
 						this.plugin.settings.soundVolume = value;
 						await this.plugin.saveSettings();
-					})
+					}),
 			)
 			.addButton((button) =>
 				button.setButtonText("Test Volume").onClick(async () => {
@@ -294,17 +293,17 @@ export class PomodoroSettingTab extends PluginSettingTab {
 							this.plugin.settings.customSoundUrl?.trim();
 						if (isCustomSelected) {
 							await this.soundManager.previewSound(
-								this.plugin.settings.customSoundUrl!.trim()
+								this.plugin.settings.customSoundUrl!.trim(),
 							);
 						} else {
 							await this.soundManager.previewSound(
-								this.plugin.settings.selectedSound
+								this.plugin.settings.selectedSound,
 							);
 						}
 					} catch (error) {
 						console.warn("Volume test failed:", error);
 					}
-				})
+				}),
 			);
 	}
 }

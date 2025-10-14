@@ -19,11 +19,11 @@ export default class PomodoroPlugin extends Plugin {
 			this,
 			this.settings,
 			this.statusBarItem,
-			this.soundManager
+			this.soundManager,
 		);
 
 		this.addSettingTab(
-			new PomodoroSettingTab(this.app, this, this.soundManager)
+			new PomodoroSettingTab(this.app, this, this.soundManager),
 		);
 
 		// Add commands for keyboard shortcuts
@@ -95,7 +95,7 @@ export default class PomodoroPlugin extends Plugin {
 		this.settings = Object.assign(
 			{},
 			DEFAULT_SETTINGS,
-			await this.loadData()
+			await this.loadData(),
 		);
 	}
 

@@ -12,9 +12,9 @@ Main plugin class that extends Obsidian's `Plugin` base class.
 
 ```typescript
 class PomodoroPlugin extends Plugin {
-    settings: PomodoroSettings;
-    private timer: PomodoroTimer;
-    private statusBarItem: HTMLElement;
+	settings: PomodoroSettings;
+	private timer: PomodoroTimer;
+	private statusBarItem: HTMLElement;
 }
 ```
 
@@ -59,11 +59,11 @@ Core timer logic and status bar interaction handler.
 
 ```typescript
 class PomodoroTimer {
-    constructor(
-        plugin: Plugin, 
-        settings: PomodoroSettings, 
-        statusBarItem: HTMLElement
-    );
+	constructor(
+		plugin: Plugin,
+		settings: PomodoroSettings,
+		statusBarItem: HTMLElement,
+	);
 }
 ```
 
@@ -128,7 +128,7 @@ Settings UI component that extends Obsidian's `PluginSettingTab`.
 
 ```typescript
 class PomodoroSettingTab extends PluginSettingTab {
-    constructor(app: App, plugin: PomodoroPlugin);
+	constructor(app: App, plugin: PomodoroPlugin);
 }
 ```
 
@@ -146,11 +146,11 @@ Main configuration interface for the plugin.
 
 ```typescript
 interface PomodoroSettings {
-    workMinutes: number;                    // Work session duration in minutes
-    shortBreakMinutes: number;              // Short break duration in minutes  
-    longBreakMinutes: number;               // Long break duration in minutes
-    intervalsBeforeLongBreak: number;    // Work intervals before long break
-    showIcon: boolean;                   // Display timer icon in status bar
+	workMinutes: number; // Work session duration in minutes
+	shortBreakMinutes: number; // Short break duration in minutes
+	longBreakMinutes: number; // Long break duration in minutes
+	intervalsBeforeLongBreak: number; // Work intervals before long break
+	showIcon: boolean; // Display timer icon in status bar
 }
 ```
 
@@ -162,9 +162,9 @@ Enumeration of timer types:
 
 ```typescript
 const TIMER_STATES = {
-    WORK: 0,
-    SHORT_BREAK: 1, 
-    LONG_BREAK: 2
+	WORK: 0,
+	SHORT_BREAK: 1,
+	LONG_BREAK: 2,
 } as const;
 ```
 
@@ -174,12 +174,12 @@ CSS class names used for styling:
 
 ```typescript
 const CSS_CLASSES = {
-    TIMER: 'pomobar-timer',
-    ICON: 'pomobar-icon', 
-    TEXT: 'pomobar-text',
-    ACTIVE: 'is-active',
-    PAUSED: 'is-paused',
-    NO_ICON: 'no-icon'
+	TIMER: "pomobar-timer",
+	ICON: "pomobar-icon",
+	TEXT: "pomobar-text",
+	ACTIVE: "is-active",
+	PAUSED: "is-paused",
+	NO_ICON: "no-icon",
 } as const;
 ```
 
@@ -189,11 +189,11 @@ Default configuration values:
 
 ```typescript
 const DEFAULT_SETTINGS: PomodoroSettings = {
-    workMinutes: 25,
-    shortBreakMinutes: 5,
-    longBreakMinutes: 15,
-    intervalsBeforeLongBreak: 4,
-    showIcon: false
+	workMinutes: 25,
+	shortBreakMinutes: 5,
+	longBreakMinutes: 15,
+	intervalsBeforeLongBreak: 4,
+	showIcon: false,
 };
 ```
 
@@ -209,7 +209,7 @@ The status bar timer responds to three mouse events:
 - **Action**: Toggle timer start/pause state
 - **Behavior**: Starts timer if stopped, pauses if running
 
-#### Middle Click (Auxiliary Button)  
+#### Middle Click (Auxiliary Button)
 
 - **Event**: `auxclick` with `button === 1`
 - **Action**: Cycle through timer durations
@@ -226,9 +226,9 @@ The status bar timer responds to three mouse events:
 The timer operates as a state machine with automatic transitions:
 
 ```text
-Work Timer (25min) 
+Work Timer (25min)
     ↓ (completion)
-Short Break (5min) 
+Short Break (5min)
     ↓ (completion, < 4 work intervals)
 Work Timer
     ↓ (completion, 4th work interval)
@@ -243,8 +243,8 @@ Work Timer (cycle repeats)
 
 ```html
 <span class="pomobar-timer">
-    <span class="pomobar-icon">[SVG Icon]</span>
-    <span class="pomobar-text">25:00</span>
+	<span class="pomobar-icon">[SVG Icon]</span>
+	<span class="pomobar-text">25:00</span>
 </span>
 ```
 

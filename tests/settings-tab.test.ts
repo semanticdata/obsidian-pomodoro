@@ -57,7 +57,6 @@ function createMockToggleComponent() {
 
 // Simplified Setting mock - no circular references, just straightforward mocking
 
-
 describe("PomodoroSettingTab", () => {
 	let settingTab: PomodoroSettingTab;
 	let mockPlugin: PomodoroPlugin;
@@ -80,9 +79,7 @@ describe("PomodoroSettingTab", () => {
 
 		// Dynamically import the plugin class to avoid circular runtime imports
 		// between `src/main` and `src/components/SettingsTab` during test load.
-		const { default: PomodoroPluginClass } = await import(
-			"../src/main"
-		);
+		const { default: PomodoroPluginClass } = await import("../src/main");
 		mockPlugin = new PomodoroPluginClass(mockApp, manifest);
 		mockPlugin.loadData = jest.fn().mockResolvedValue({});
 		mockPlugin.saveData = jest.fn().mockResolvedValue(undefined);
@@ -113,7 +110,7 @@ describe("PomodoroSettingTab", () => {
 		settingTab = new PomodoroSettingTab(
 			mockApp,
 			mockPlugin,
-			mockSoundManager
+			mockSoundManager,
 		);
 		settingTab.containerEl = mockContainerEl;
 	});
@@ -122,13 +119,14 @@ describe("PomodoroSettingTab", () => {
 	 * Helper to find a setting by name and extract its text component
 	 */
 	function getTextComponentBySettingName(name: string) {
-		const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
+		const settingMock = (jest.requireMock("obsidian") as any)
+			.Setting as jest.Mock;
 		const allSettings = settingMock.mock.results.map(
-			(result: any) => result.value
+			(result: any) => result.value,
 		);
 
 		const setting = allSettings.find(
-			(s: any) => s.setName.mock.calls[0]?.[0] === name
+			(s: any) => s.setName.mock.calls[0]?.[0] === name,
 		);
 
 		if (!setting) {
@@ -152,13 +150,14 @@ describe("PomodoroSettingTab", () => {
 	 * Helper to find a setting by name and extract its toggle component
 	 */
 	function getToggleComponentBySettingName(name: string) {
-		const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
+		const settingMock = (jest.requireMock("obsidian") as any)
+			.Setting as jest.Mock;
 		const allSettings = settingMock.mock.results.map(
-			(result: any) => result.value
+			(result: any) => result.value,
 		);
 
 		const setting = allSettings.find(
-			(s: any) => s.setName.mock.calls[0]?.[0] === name
+			(s: any) => s.setName.mock.calls[0]?.[0] === name,
 		);
 
 		if (!setting) {
@@ -182,16 +181,18 @@ describe("PomodoroSettingTab", () => {
 			settingTab.display();
 
 			expect(mockContainerEl.empty).toHaveBeenCalled();
-				const SettingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
-				expect(SettingMock).toHaveBeenCalled();
+			const SettingMock = (jest.requireMock("obsidian") as any)
+				.Setting as jest.Mock;
+			expect(SettingMock).toHaveBeenCalled();
 		});
 
 		it("should create all required timer settings", () => {
 			settingTab.display();
 
-			const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
+			const settingMock = (jest.requireMock("obsidian") as any)
+				.Setting as jest.Mock;
 			const allSettings = settingMock.mock.results.map(
-				(result: any) => result.value
+				(result: any) => result.value,
 			);
 			const settingNames = allSettings
 				.map((setting: any) => setting.setName.mock.calls[0]?.[0])
@@ -234,7 +235,7 @@ describe("PomodoroSettingTab", () => {
 		it("should update shortBreakMinutes on valid input", async () => {
 			settingTab.display();
 			const component = getTextComponentBySettingName(
-				"Short Break Duration"
+				"Short Break Duration",
 			);
 
 			await component.triggerChange("10");
@@ -247,7 +248,7 @@ describe("PomodoroSettingTab", () => {
 		it("should update longBreakMinutes on valid input", async () => {
 			settingTab.display();
 			const component = getTextComponentBySettingName(
-				"Long Break Duration"
+				"Long Break Duration",
 			);
 
 			await component.triggerChange("20");
@@ -260,7 +261,7 @@ describe("PomodoroSettingTab", () => {
 		it("should update intervalsBeforeLongBreak on valid input", async () => {
 			settingTab.display();
 			const component = getTextComponentBySettingName(
-				"Intervals Before Long Break"
+				"Intervals Before Long Break",
 			);
 
 			await component.triggerChange("3");
@@ -274,9 +275,8 @@ describe("PomodoroSettingTab", () => {
 
 		it("should update showIcon on toggle", async () => {
 			settingTab.display();
-			const component = getToggleComponentBySettingName(
-				"Show Timer Icon"
-			);
+			const component =
+				getToggleComponentBySettingName("Show Timer Icon");
 
 			await component.triggerChange(true);
 
@@ -287,7 +287,7 @@ describe("PomodoroSettingTab", () => {
 		it("should update autoProgressEnabled on toggle", async () => {
 			settingTab.display();
 			const component = getToggleComponentBySettingName(
-				"Auto-start Next Timer"
+				"Auto-start Next Timer",
 			);
 
 			await component.triggerChange(true);
@@ -310,7 +310,7 @@ describe("PomodoroSettingTab", () => {
 		async function testNumericValidation(
 			settingName: string,
 			settingProperty: keyof typeof mockPlugin.settings,
-			testCases: ValidationTestCase[]
+			testCases: ValidationTestCase[],
 		) {
 			for (const testCase of testCases) {
 				// Re-setup for each test case
@@ -324,12 +324,12 @@ describe("PomodoroSettingTab", () => {
 
 				if (testCase.shouldUpdate) {
 					expect(mockPlugin.settings[settingProperty]).not.toBe(
-						initialValue
+						initialValue,
 					);
 					expect(mockPlugin.saveSettings).toHaveBeenCalled();
 				} else {
 					expect(mockPlugin.settings[settingProperty]).toBe(
-						initialValue
+						initialValue,
 					);
 					expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
 				}
@@ -379,17 +379,21 @@ describe("PomodoroSettingTab", () => {
 		describe("Work Duration Validation", () => {
 			commonInvalidInputs.forEach((testCase) => {
 				it(`should reject ${testCase.description}`, async () => {
-					await testNumericValidation("Work Duration", "workMinutes", [
-						testCase,
-					]);
+					await testNumericValidation(
+						"Work Duration",
+						"workMinutes",
+						[testCase],
+					);
 				});
 			});
 
 			commonValidInputs.forEach((testCase) => {
 				it(`should accept ${testCase.description}`, async () => {
-					await testNumericValidation("Work Duration", "workMinutes", [
-						testCase,
-					]);
+					await testNumericValidation(
+						"Work Duration",
+						"workMinutes",
+						[testCase],
+					);
 				});
 			});
 		});
@@ -399,7 +403,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Short Break Duration",
 					"shortBreakMinutes",
-					commonInvalidInputs
+					commonInvalidInputs,
 				);
 			});
 
@@ -407,7 +411,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Short Break Duration",
 					"shortBreakMinutes",
-					[{ description: "valid", input: "10", shouldUpdate: true }]
+					[{ description: "valid", input: "10", shouldUpdate: true }],
 				);
 			});
 		});
@@ -417,7 +421,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Long Break Duration",
 					"longBreakMinutes",
-					commonInvalidInputs
+					commonInvalidInputs,
 				);
 			});
 
@@ -425,7 +429,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Long Break Duration",
 					"longBreakMinutes",
-					[{ description: "valid", input: "20", shouldUpdate: true }]
+					[{ description: "valid", input: "20", shouldUpdate: true }],
 				);
 			});
 		});
@@ -435,7 +439,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Intervals Before Long Break",
 					"intervalsBeforeLongBreak",
-					commonInvalidInputs
+					commonInvalidInputs,
 				);
 			});
 
@@ -443,7 +447,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Intervals Before Long Break",
 					"intervalsBeforeLongBreak",
-					[{ description: "valid", input: "3", shouldUpdate: true }]
+					[{ description: "valid", input: "3", shouldUpdate: true }],
 				);
 			});
 		});

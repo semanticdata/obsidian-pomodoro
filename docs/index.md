@@ -7,7 +7,7 @@ This plugin is designed to help you focus and be more productive by integrating 
 |                       Default View                        |                       Running View                        |
 | :-------------------------------------------------------: | :-------------------------------------------------------: |
 |      ![screenshot-1](./screenshots/screenshot-1.png)      |      ![screenshot-2](./screenshots/screenshot-2.png)      |
-|               *Also available with icons!*                |            *...and they change when running!*             |
+|               _Also available with icons!_                |            _...and they change when running!_             |
 | ![screenshot-icon-1](./screenshots/screenshot-icon-1.png) | ![screenshot-icon-2](./screenshots/screenshot-icon-2.png) |
 
 ## Getting Started

@@ -5,7 +5,7 @@ First off, thank you for considering contributing to PomoBar! It’s people like
 ## Quick Start
 
 1. **Fork and Clone:**
-    Fork the repository on GitHub, then clone it locally:
+   Fork the repository on GitHub, then clone it locally:
 
     ```bash
     git clone https://github.com/semanticdata/obsidian-pomodoro.git
@@ -42,21 +42,21 @@ First off, thank you for considering contributing to PomoBar! It’s people like
 The project documentation can be found under the docs/ directory. It is built using [MkDocs](https://www.mkdocs.org/) and Material for MkDocs. To work on the documentation, you'll need a Python environment and `uv`.
 
 1. **Install `uv`:**
-    If you don't have it already, install `uv`:
+   If you don't have it already, install `uv`:
 
     ```bash
     pip install uv
     ```
 
 2. **Sync the Development Environment:**
-    This command will create a virtual environment (if it doesn't exist) and install the dependencies from `pyproject.toml`:
+   This command will create a virtual environment (if it doesn't exist) and install the dependencies from `pyproject.toml`:
 
     ```bash
     uv sync
     ```
 
 3. **Run the Docs Server:**
-    Use `uv run` to execute `mkdocs` within the managed environment:
+   Use `uv run` to execute `mkdocs` within the managed environment:
 
     ```bash
     uv run mkdocs serve
@@ -65,7 +65,7 @@ The project documentation can be found under the docs/ directory. It is built us
     You can now view the live-reloading documentation site at `http://127.0.0.1:8000`.
 
 4. **Build the Documentation:**
-    To generate the static site, use the `build` command:
+   To generate the static site, use the `build` command:
 
     ```bash
     uv run mkdocs build

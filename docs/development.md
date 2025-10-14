@@ -53,42 +53,42 @@ cd obsidian-pomodoro
 - `package.json`: Defines the project's dependencies and scripts.
 - `pyproject.toml`: Configuration file for Python projects.
 - `docs/`: Contains the documentation files for the project.
-  - `api.md`: Documentation for the project's API.
-  - `configuration.md`: Documentation for the project's configuration.
-  - `development.md`: Documentation for developers.
-  - `index.md`: The main documentation file.
-  - `installation.md`: Documentation for installing the project.
-  - `troubleshooting.md`: Documentation for troubleshooting the project.
-  - `usage.md`: Documentation for using the project.
+    - `api.md`: Documentation for the project's API.
+    - `configuration.md`: Documentation for the project's configuration.
+    - `development.md`: Documentation for developers.
+    - `index.md`: The main documentation file.
+    - `installation.md`: Documentation for installing the project.
+    - `troubleshooting.md`: Documentation for troubleshooting the project.
+    - `usage.md`: Documentation for using the project.
 - `src/`: Contains the source code for the project.
-  - `components/`: Contains the project's components.
-    - `SettingsTab.ts`: The settings tab component.
-  - `constants.ts`: Contains the project's constants.
-  - `icons.ts`: Contains the project's icons.
-  - `logic/`: Contains the project's logic.
-    - `timer.ts`: The timer logic.
-  - `main.ts`: The main entry point for the project.
-  - `types.ts`: Contains the project's types.
+    - `components/`: Contains the project's components.
+        - `SettingsTab.ts`: The settings tab component.
+    - `constants.ts`: Contains the project's constants.
+    - `icons.ts`: Contains the project's icons.
+    - `logic/`: Contains the project's logic.
+        - `timer.ts`: The timer logic.
+    - `main.ts`: The main entry point for the project.
+    - `types.ts`: Contains the project's types.
 - `tests/`: Contains the tests for the project.
-  - `__mocks__/`: Contains mocks for the tests.
-    - `obsidian.ts`: Mocks for the Obsidian API.
-  - `plugin.test.ts`: Tests for the plugin.
-  - `settings-tab.test.ts`: Tests for the settings tab.
-  - `settings.test.ts`: Tests for the settings.
-  - `setup.ts`: Setup for the tests.
-  - `timer.test.ts`: Tests for the timer.
+    - `__mocks__/`: Contains mocks for the tests.
+        - `obsidian.ts`: Mocks for the Obsidian API.
+    - `plugin.test.ts`: Tests for the plugin.
+    - `settings-tab.test.ts`: Tests for the settings tab.
+    - `settings.test.ts`: Tests for the settings.
+    - `setup.ts`: Setup for the tests.
+    - `timer.test.ts`: Tests for the timer.
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm run dev` | Build in development mode with file watching |
-| `pnpm run build` | Build for production |
-| `pnpm run lint` | Run ESLint code analysis |
-| `pnpm run lint:fix` | Fix automatically fixable linting issues |
-| `pnpm run test` | Run Jest test suite |
-| `pnpm run test:watch` | Run tests in watch mode |
-| `pnpm run test:coverage` | Generate test coverage report |
+| Command                  | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `pnpm run dev`           | Build in development mode with file watching |
+| `pnpm run build`         | Build for production                         |
+| `pnpm run lint`          | Run ESLint code analysis                     |
+| `pnpm run lint:fix`      | Fix automatically fixable linting issues     |
+| `pnpm run test`          | Run Jest test suite                          |
+| `pnpm run test:watch`    | Run tests in watch mode                      |
+| `pnpm run test:coverage` | Generate test coverage report                |
 
 ## Architecture Overview
 
@@ -117,11 +117,11 @@ cd obsidian-pomodoro
 
 ```typescript
 interface PomodoroSettings {
-    workMinutes: number;              // Work session duration (minutes)
-    shortBreakMinutes: number;        // Short break duration (minutes)
-    longBreakMinutes: number;         // Long break duration (minutes)
-    intervalsBeforeLongBreak: number; // Work sessions before long break
-    showIcon: boolean;             // Show/hide timer icon
+	workMinutes: number; // Work session duration (minutes)
+	shortBreakMinutes: number; // Short break duration (minutes)
+	longBreakMinutes: number; // Long break duration (minutes)
+	intervalsBeforeLongBreak: number; // Work sessions before long break
+	showIcon: boolean; // Show/hide timer icon
 }
 ```
 
@@ -149,15 +149,15 @@ pnpm run test:coverage
 ### Writing Tests
 
 ```typescript title="tests/new-test.test.ts"
-import { PomodoroTimer } from '../src/logic/timer';
-import { mockPlugin, mockSettings } from './__mocks__/obsidian';
+import { PomodoroTimer } from "../src/logic/timer";
+import { mockPlugin, mockSettings } from "./__mocks__/obsidian";
 
-describe('PomodoroTimer', () => {
-    test('should initialize with correct default state', () => {
-        const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
-        expect(timer.running).toBe(false);
-        expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
-    });
+describe("PomodoroTimer", () => {
+	test("should initialize with correct default state", () => {
+		const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
+		expect(timer.running).toBe(false);
+		expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
+	});
 });
 ```
 

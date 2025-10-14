@@ -28,7 +28,7 @@ export class PomodoroTimer {
 		plugin: Plugin,
 		settings: PomodoroSettings,
 		statusBarItem: HTMLElement,
-		soundManager: SoundManager
+		soundManager: SoundManager,
 	) {
 		this.plugin = plugin;
 		this.settings = settings;
@@ -65,7 +65,7 @@ export class PomodoroTimer {
 				if (e.button === MOUSE_BUTTONS.LEFT_CLICK) {
 					this.toggleTimer();
 				}
-			}
+			},
 		);
 
 		this.plugin.registerDomEvent(
@@ -75,7 +75,7 @@ export class PomodoroTimer {
 				if (e.button === MOUSE_BUTTONS.MIDDLE_CLICK) {
 					this.cycleDuration();
 				}
-			}
+			},
 		);
 
 		this.plugin.registerDomEvent(
@@ -86,13 +86,13 @@ export class PomodoroTimer {
 				if (!this.isRunning) {
 					this.resetTimer();
 				}
-			}
+			},
 		);
 	}
 
 	private updateIconVisibility() {
 		const iconContainer = this.statusBarItem.querySelector(
-			`.${CSS_CLASSES.ICON}`
+			`.${CSS_CLASSES.ICON}`,
 		) as HTMLElement;
 		if (iconContainer) {
 			if (this.settings.showIcon) {
@@ -121,7 +121,7 @@ export class PomodoroTimer {
 
 	private updateIcon() {
 		const iconContainer = this.statusBarItem.querySelector(
-			`.${CSS_CLASSES.ICON}`
+			`.${CSS_CLASSES.ICON}`,
 		) as HTMLElement;
 		if (iconContainer) {
 			let iconKey = "pomobar-timer";
@@ -142,7 +142,7 @@ export class PomodoroTimer {
 
 			// Expose which icon key was selected for testing/debugging
 			try {
-				iconContainer.setAttribute('data-icon-key', iconKey);
+				iconContainer.setAttribute("data-icon-key", iconKey);
 			} catch {
 				// Ignore if attribute setting fails on mocked elements
 			}
@@ -200,14 +200,14 @@ export class PomodoroTimer {
 						this.soundManager.playCompletionSound();
 						new Notice(
 							"PomoBar: Time's up! Your most recent timer has finished.",
-							10000
+							10000,
 						);
 					} else if (this.settings.persistentNotification) {
 						// Keep on chiming until user interacts with the timer
 						this.soundManager.playCompletionSound();
 						new Notice(
 							"PomoBar: Time's up! Your most recent timer has finished.",
-							1000
+							1000,
 						);
 					} else {
 						// Current behavior - pause after timer completion
@@ -316,7 +316,7 @@ export class PomodoroTimer {
 		if (moment.isMoment(this.timeEnd)) {
 			// RUNNING state
 			return moment.duration(
-				this.timeEnd.diff(moment.now(), "milliseconds")
+				this.timeEnd.diff(moment.now(), "milliseconds"),
 			);
 		} else if (moment.isDuration(this.timeEnd)) {
 			// PAUSED state

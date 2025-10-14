@@ -1,11 +1,11 @@
-import js from '@eslint/js';
-import tseslint from 'typescript-eslint';
-import globals from 'globals';
-import jest from 'eslint-plugin-jest';
+import js from "@eslint/js";
+import tseslint from "typescript-eslint";
+import globals from "globals";
+import jest from "eslint-plugin-jest";
 
 export default tseslint.config(
 	{
-		ignores: ['node_modules/', 'dist/', 'main.js', 'site/', '.venv/'],
+		ignores: ["node_modules/", "dist/", "main.js", "site/", ".venv/"],
 	},
 	js.configs.recommended,
 	...tseslint.configs.recommended,
@@ -16,24 +16,24 @@ export default tseslint.config(
 			},
 			parser: tseslint.parser,
 			parserOptions: {
-				sourceType: 'module',
+				sourceType: "module",
 			},
 		},
 		rules: {
-			'no-unused-vars': 'off',
-			'@typescript-eslint/no-unused-vars': ['error', { args: 'none' }],
-			'@typescript-eslint/ban-ts-comment': 'off',
-			'no-prototype-builtins': 'off',
-			'@typescript-eslint/no-empty-function': 'off',
-			'@typescript-eslint/no-unused-expressions': 'off',
+			"no-unused-vars": "off",
+			"@typescript-eslint/no-unused-vars": ["error", { args: "none" }],
+			"@typescript-eslint/ban-ts-comment": "off",
+			"no-prototype-builtins": "off",
+			"@typescript-eslint/no-empty-function": "off",
+			"@typescript-eslint/no-unused-expressions": "off",
 		},
 	},
 	{
-		files: ['**/*.test.ts'],
-		...jest.configs['flat/recommended'],
+		files: ["**/*.test.ts"],
+		...jest.configs["flat/recommended"],
 		rules: {
-			...jest.configs['flat/recommended'].rules,
-			'jest/prefer-expect-assertions': 'off',
+			...jest.configs["flat/recommended"].rules,
+			"jest/prefer-expect-assertions": "off",
 		},
 		languageOptions: {
 			globals: {
