@@ -1,5 +1,106 @@
 import { jest } from '@jest/globals';
 
+function createMockTextComponent() {
+	let onChangeCallback: ((value: string) => void) | null = null;
+
+	const component: any = {
+		setPlaceholder: jest.fn().mockReturnThis(),
+		setValue: jest.fn().mockReturnThis(),
+		onChange: jest.fn((cb: (value: string) => void) => {
+			onChangeCallback = cb;
+			return component;
+		}),
+		onInput: jest.fn().mockReturnThis(),
+		// Helper method to trigger the onChange callback in tests
+		triggerChange: async (value: string) => {
+			if (onChangeCallback) {
+				await onChangeCallback(value);
+			}
+		},
+	};
+
+	return component;
+}
+
+function createMockToggleComponent() {
+	let onChangeCallback: ((value: boolean) => void) | null = null;
+
+	const component: any = {
+		setValue: jest.fn().mockReturnThis(),
+		onChange: jest.fn((cb: (value: boolean) => void) => {
+			onChangeCallback = cb;
+			return component;
+		}),
+		triggerChange: async (value: boolean) => {
+			if (onChangeCallback) {
+				await onChangeCallback(value);
+			}
+		},
+	};
+
+	return component;
+}
+
+function createMockDropdownComponent() {
+	let onChangeCallback: ((value: string) => void) | null = null;
+
+	const component: any = {
+		addOption: jest.fn().mockReturnThis(),
+		setValue: jest.fn().mockReturnThis(),
+		onChange: jest.fn((cb: (value: string) => void) => {
+			onChangeCallback = cb;
+			return component;
+		}),
+		triggerChange: async (value: string) => {
+			if (onChangeCallback) {
+				await onChangeCallback(value);
+			}
+		},
+	};
+
+	return component;
+}
+
+function createMockSliderComponent() {
+	let onChangeCallback: ((value: number) => void) | null = null;
+
+	const component: any = {
+		setLimits: jest.fn().mockReturnThis(),
+		setValue: jest.fn().mockReturnThis(),
+		setDynamicTooltip: jest.fn().mockReturnThis(),
+		onChange: jest.fn((cb: (value: number) => void) => {
+			onChangeCallback = cb;
+			return component;
+		}),
+		triggerChange: async (value: number) => {
+			if (onChangeCallback) {
+				await onChangeCallback(value);
+			}
+		},
+	};
+
+	return component;
+}
+
+function createMockButtonComponent() {
+	let onClickCallback: (() => void) | null = null;
+
+	const component: any = {
+		setButtonText: jest.fn().mockReturnThis(),
+		onClick: jest.fn((cb: () => void) => {
+			onClickCallback = cb;
+			return component;
+		}),
+		triggerClick: () => {
+			if (onClickCallback) {
+				onClickCallback();
+			}
+		},
+	};
+
+	return component;
+}
+
 interface PluginManifest {
   id: string;
   name: string;
@@ -13,6 +114,7 @@ export class Plugin {
   app: App;
   manifest: PluginManifest;
   statusBarItem: HTMLElement | null = null;
+  domEventHandlers: { el: HTMLElement, event: string, callback: (event: Event) => void }[] = [];
 
   constructor(app: App, manifest: PluginManifest) {
     this.app = app;
@@ -124,7 +226,8 @@ export class Plugin {
   }
 
   registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (event: Event) => void) => {
-    // Mock implementation that stores the calls for testing
+    console.log('registerDomEvent called:', event);
+    (this as any).domEventHandlers.push({ el, event, callback });
   })
 
   registerInterval(intervalId: number) {
@@ -172,55 +275,49 @@ export class PluginSettingTab {
   }
 }
 
-export class Setting {
-  settingEl: HTMLElement;
-  private onChangeCallback?: (value: string) => Promise<void>;
+export const Setting = jest.fn().mockImplementation(() => {
+  const settingInstance: any = {};
 
-  constructor(containerEl: HTMLElement) {
-    this.settingEl = document.createElement('div');
-    containerEl.appendChild(this.settingEl);
-  }
+  // simple settingEl
+  settingInstance.settingEl = { style: { display: "" } };
 
-  setName(name: string) { return this; }
-  setDesc(desc: string) { return this; }
-  setHeading() { return this; }
+  // Fluent API methods - always return the same mock instance
+  settingInstance.setName = jest.fn(() => settingInstance);
+  settingInstance.setDesc = jest.fn(() => settingInstance);
+  settingInstance.setHeading = jest.fn(() => settingInstance);
 
-  addText(cb: (textComponent: TextComponent) => TextComponent) {
-    // Mock text component for chaining
-    const mockText: TextComponent = {
-      setPlaceholder: jest.fn().mockReturnThis(),
-      setValue: jest.fn().mockReturnThis(),
-      onChange: jest.fn((callback: (value: string) => Promise<void>) => {
-        this.onChangeCallback = callback;
-        return mockText;
-      }),
-      inputEl: document.createElement('input'),
-      // Add method to simulate user input for testing
-      simulateInput: async (value: string) => {
-        if (this.onChangeCallback) {
-          await this.onChangeCallback(value);
-        }
-      }
-    };
-    cb(mockText);
-    return this;
-  }
+  settingInstance.addText = jest.fn((cb: any) => {
+    const component = createMockTextComponent();
+    cb(component);
+    return settingInstance;
+  });
 
-  addToggle(cb: (toggleComponent: ToggleComponent) => ToggleComponent) {
-    // Mock toggle component for chaining
-    const mockToggle: ToggleComponent = {
-      setValue: jest.fn().mockReturnThis(),
-      onChange: jest.fn().mockReturnThis(),
-    };
-    cb(mockToggle);
-    return this;
-  }
+  settingInstance.addToggle = jest.fn((cb: any) => {
+    const component = createMockToggleComponent();
+    cb(component);
+    return settingInstance;
+  });
 
-  // Method to get the text component for testing
-  getTextComponent() {
-    return this.settingEl.querySelector('input');
-  }
-}
+  settingInstance.addDropdown = jest.fn((cb: any) => {
+    const component = createMockDropdownComponent();
+    cb(component);
+    return settingInstance;
+  });
+
+  settingInstance.addSlider = jest.fn((cb: any) => {
+    const component = createMockSliderComponent();
+    cb(component);
+    return settingInstance;
+  });
+
+  settingInstance.addButton = jest.fn((cb: any) => {
+    const component = createMockButtonComponent();
+    cb(component);
+    return settingInstance;
+  });
+
+  return settingInstance;
+});
 
 export interface App {
   workspace?: unknown;
@@ -241,6 +338,24 @@ interface TextComponent {
 interface ToggleComponent {
   setValue: jest.Mock;
   onChange: jest.Mock;
+}
+
+interface DropdownComponent {
+  addOption: jest.Mock;
+  setValue: jest.Mock;
+  onChange: jest.Mock;
+}
+
+interface SliderComponent {
+  setLimits: jest.Mock;
+  setValue: jest.Mock;
+  setDynamicTooltip: jest.Mock;
+  onChange: jest.Mock;
+}
+
+interface ButtonComponent {
+  setButtonText: jest.Mock;
+  onClick: jest.Mock;
 }
 
 // Mock for document if running in Node without JSDOM (basic)

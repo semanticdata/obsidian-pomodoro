@@ -1,7 +1,7 @@
 import "./setup";
 import { PomodoroSettingTab } from "../src/components/SettingsTab";
 import type PomodoroPlugin from "../src/main";
-import { App, Setting } from "obsidian";
+import { App } from "obsidian";
 import { SoundManager } from "../src/logic/soundManager";
 
 /**
@@ -122,56 +122,7 @@ function createMockButtonComponent() {
 }
 
 // Simplified Setting mock - no circular references, just straightforward mocking
-jest.mock("obsidian", () => {
-	const original = jest.requireActual("obsidian");
 
-	return {
-		...original,
-		Setting: jest.fn().mockImplementation(() => {
-				const settingInstance: any = {
-					setName: jest.fn(function (this: any) {
-						return settingInstance;
-					}),
-					setDesc: jest.fn(function (this: any) {
-						return settingInstance;
-					}),
-					setHeading: jest.fn(function (this: any) {
-						return settingInstance;
-					}),
-				settingEl: {
-					style: { display: "" },
-				},
-				addText: jest.fn(function (this: any, cb) {
-					const component = createMockTextComponent();
-					cb(component);
-					return this;
-				}),
-				addToggle: jest.fn(function (this: any, cb) {
-					const component = createMockToggleComponent();
-					cb(component);
-					return this;
-				}),
-				addDropdown: jest.fn(function (this: any, cb) {
-					const component = createMockDropdownComponent();
-					cb(component);
-					return this;
-				}),
-				addSlider: jest.fn(function (this: any, cb) {
-					const component = createMockSliderComponent();
-					cb(component);
-					return this;
-				}),
-				addButton: jest.fn(function (this: any, cb) {
-					const component = createMockButtonComponent();
-					cb(component);
-					return this;
-				}),
-			};
-
-			return settingInstance;
-		}),
-	};
-});
 
 describe("PomodoroSettingTab", () => {
 	let settingTab: PomodoroSettingTab;
@@ -237,7 +188,7 @@ describe("PomodoroSettingTab", () => {
 	 * Helper to find a setting by name and extract its text component
 	 */
 	function getTextComponentBySettingName(name: string) {
-		const settingMock = Setting as jest.Mock;
+		const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
 		const allSettings = settingMock.mock.results.map(
 			(result: any) => result.value
 		);
@@ -267,7 +218,7 @@ describe("PomodoroSettingTab", () => {
 	 * Helper to find a setting by name and extract its toggle component
 	 */
 	function getToggleComponentBySettingName(name: string) {
-		const settingMock = Setting as jest.Mock;
+		const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
 		const allSettings = settingMock.mock.results.map(
 			(result: any) => result.value
 		);
@@ -297,13 +248,14 @@ describe("PomodoroSettingTab", () => {
 			settingTab.display();
 
 			expect(mockContainerEl.empty).toHaveBeenCalled();
-			expect(Setting).toHaveBeenCalled();
+				const SettingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
+				expect(SettingMock).toHaveBeenCalled();
 		});
 
 		it("should create all required timer settings", () => {
 			settingTab.display();
 
-			const settingMock = Setting as jest.Mock;
+			const settingMock = (jest.requireMock("obsidian") as any).Setting as jest.Mock;
 			const allSettings = settingMock.mock.results.map(
 				(result: any) => result.value
 			);
@@ -557,7 +509,7 @@ describe("PomodoroSettingTab", () => {
 				await testNumericValidation(
 					"Intervals Before Long Break",
 					"intervalsBeforeLongBreak",
-					[{ description: "valid", input: "4", shouldUpdate: true }]
+					[{ description: "valid", input: "3", shouldUpdate: true }]
 				);
 			});
 		});
