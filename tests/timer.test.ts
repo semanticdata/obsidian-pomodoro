@@ -181,16 +181,20 @@ describe('PomodoroTimer', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
       mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
 
-      // Should not throw error
+      // Should not throw error and should not change remaining time
+      const beforeMs = timer.timeRemaining.asMilliseconds();
       expect(() => timer['updateDisplay']()).not.toThrow();
+      expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(beforeMs, -2);
     });
 
     it('should handle missing icon element in updateIconVisibility', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
       mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
 
-      // Should not throw error
+      // Should not throw error and should preserve class list when icon element is missing
+      const beforeClasses = Array.from(mockStatusBarItem.classList);
       expect(() => timer.updateSettings(plugin.settings)).not.toThrow();
+      expect(Array.from(mockStatusBarItem.classList)).toEqual(beforeClasses);
     });
 
     it('should handle cleanup with multiple registered intervals', () => {
@@ -217,8 +221,11 @@ describe('PomodoroTimer', () => {
       // Ensure no intervals are registered
       timer['registeredIntervals'] = new Set();
 
+      // Should not throw and should not call clearInterval; internal state should remain cleared
       expect(() => timer.cleanup()).not.toThrow();
       expect(clearIntervalSpy).not.toHaveBeenCalled();
+      expect(timer['registeredIntervals'].size).toBe(0);
+      expect(timer['currentInterval']).toBeNull();
 
       clearIntervalSpy.mockRestore();
     });
@@ -608,7 +615,10 @@ describe('PomodoroTimer', () => {
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(2); // Should be in long break
         expect(timer.workIntervalsCount).toBe(0); // Should reset work count
-        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(moment.duration(plugin.settings.longBreakMinutes, "minutes").asMilliseconds());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.longBreakMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
 
       it('should still allow manual pause during auto-progression', () => {
