@@ -41,7 +41,8 @@ describe('PomodoroTimer', () => {
 
   describe('Timer Logic', () => {
     it('should start the timer and update display', () => {
-      jest.useFakeTimers();
+      jest.useFakeTimers({ legacyFakeTimers: false });
+      jest.setSystemTime(new Date());
       const timer = (plugin as PluginWithPrivates)._timer;
 
       timer.toggleTimer();
@@ -101,11 +102,15 @@ describe('PomodoroTimer', () => {
     });
 
     it('should update display when timer counts down', () => {
-      jest.useFakeTimers();
+      jest.useFakeTimers({ legacyFakeTimers: false });
+      // Align fake system time so moment.now uses the fake timers
+      const now = Date.now();
+      jest.setSystemTime(now);
+
       const timer = (plugin as PluginWithPrivates)._timer;
 
       // Set up querySelector to return text element
-      const textEl = { textContent: '' };
+      const textEl: any = { textContent: '' };
       mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
 
       // Start the timer
@@ -115,12 +120,15 @@ describe('PomodoroTimer', () => {
       // Advance timer by 1 second
       jest.advanceTimersByTime(1000);
 
-      // Should show 24:59 (25 minutes - 1 second)
-      expect(textEl.textContent).toBe('24:59');
+      // Force a microtask tick so any pending promises settle
+      return Promise.resolve().then(() => {
+        // Should show 24:59 (25 minutes - 1 second)
+        expect(textEl.textContent).toBe('24:59');
 
-      // Clean up
-      timer.pauseTimer();
-      jest.useRealTimers();
+        // Clean up
+        timer.pauseTimer();
+        jest.useRealTimers();
+      });
     });
   });
 

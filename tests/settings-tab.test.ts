@@ -11,7 +11,7 @@ import { SoundManager } from "../src/logic/soundManager";
 function createMockTextComponent() {
 	let onChangeCallback: ((value: string) => void) | null = null;
 
-	const component = {
+	const component: any = {
 		setPlaceholder: jest.fn().mockReturnThis(),
 		setValue: jest.fn().mockReturnThis(),
 		onChange: jest.fn((cb: (value: string) => void) => {
@@ -36,7 +36,7 @@ function createMockTextComponent() {
 function createMockToggleComponent() {
 	let onChangeCallback: ((value: boolean) => void) | null = null;
 
-	const component = {
+	const component: any = {
 		setValue: jest.fn().mockReturnThis(),
 		onChange: jest.fn((cb: (value: boolean) => void) => {
 			onChangeCallback = cb;
@@ -58,7 +58,7 @@ function createMockToggleComponent() {
 function createMockDropdownComponent() {
 	let onChangeCallback: ((value: string) => void) | null = null;
 
-	const component = {
+	const component: any = {
 		addOption: jest.fn().mockReturnThis(),
 		setValue: jest.fn().mockReturnThis(),
 		onChange: jest.fn((cb: (value: string) => void) => {
@@ -81,7 +81,7 @@ function createMockDropdownComponent() {
 function createMockSliderComponent() {
 	let onChangeCallback: ((value: number) => void) | null = null;
 
-	const component = {
+	const component: any = {
 		setLimits: jest.fn().mockReturnThis(),
 		setValue: jest.fn().mockReturnThis(),
 		setDynamicTooltip: jest.fn().mockReturnThis(),
@@ -105,7 +105,7 @@ function createMockSliderComponent() {
 function createMockButtonComponent() {
 	let onClickCallback: (() => void) | null = null;
 
-	const component = {
+	const component: any = {
 		setButtonText: jest.fn().mockReturnThis(),
 		onClick: jest.fn((cb: () => void) => {
 			onClickCallback = cb;
@@ -128,10 +128,16 @@ jest.mock("obsidian", () => {
 	return {
 		...original,
 		Setting: jest.fn().mockImplementation(() => {
-			const settingInstance = {
-				setName: jest.fn().mockReturnThis(),
-				setDesc: jest.fn().mockReturnThis(),
-				setHeading: jest.fn().mockReturnThis(),
+				const settingInstance: any = {
+					setName: jest.fn(function (this: any) {
+						return settingInstance;
+					}),
+					setDesc: jest.fn(function (this: any) {
+						return settingInstance;
+					}),
+					setHeading: jest.fn(function (this: any) {
+						return settingInstance;
+					}),
 				settingEl: {
 					style: { display: "" },
 				},
