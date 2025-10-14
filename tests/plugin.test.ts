@@ -78,12 +78,19 @@ describe('PomodoroPlugin', () => {
       expect(addSettingTabSpy).toHaveBeenCalledWith(expect.any(Object));
     });
 
-    it('should initialize with correct default state', async () => {
+    it('should initialize timer with correct default duration', async () => {
       await plugin.onload();
       const timer = (plugin as PluginWithPrivates)._timer;
-      expect(timer.timeRemaining.seconds()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").seconds());
+
+      // Fixed: Use asSeconds() instead of seconds() to get total seconds
+      // seconds() only returns seconds within the current minute (0-59)
+      // asSeconds() returns the total duration in seconds
+      const expectedDurationSeconds = moment.duration(plugin.settings.workMinutes, "minutes").asSeconds();
+      const actualDurationSeconds = timer.timeRemaining.asSeconds();
+
+      expect(actualDurationSeconds).toBe(expectedDurationSeconds);
       expect(timer.isRunning).toBe(false);
-      expect(timer.timerType).toBe(0);
+      expect(timer.timerType).toBe(0); // Work state
       expect(timer.workIntervalsCount).toBe(0);
     });
   });
@@ -93,75 +100,77 @@ describe('PomodoroPlugin', () => {
       await plugin.onload();
     });
 
-    it('should provide currentDurationIndex getter', () => {
+    it('should provide currentDurationIndex getter that delegates to timer', () => {
+      // This getter provides backward compatibility by delegating to timer.timerType
       expect(plugin.currentDurationIndex).toBe(0);
+
+      // Verify it reflects timer state
+      const timer = (plugin as PluginWithPrivates)._timer;
+      expect(plugin.currentDurationIndex).toBe(timer.timerType);
     });
 
-    it('should provide workIntervalCount getter', () => {
+    it('should provide workIntervalCount getter that delegates to timer', () => {
+      // This getter provides backward compatibility by delegating to timer.workIntervalsCount
       expect(plugin.workIntervalCount).toBe(0);
+
+      // Verify it reflects timer state
+      const timer = (plugin as PluginWithPrivates)._timer;
+      expect(plugin.workIntervalCount).toBe(timer.workIntervalsCount);
     });
 
-    it('should provide resetTimer method', () => {
-      expect(typeof plugin.resetTimer).toBe('function');
+    it('should provide resetTimer method that delegates to timer', () => {
+      const timer = (plugin as PluginWithPrivates)._timer;
+      const resetTimerSpy = jest.spyOn(timer, 'resetTimer');
+
       plugin.resetTimer();
-      // Should not throw
+
+      expect(resetTimerSpy).toHaveBeenCalled();
     });
 
-    it('should handle currentDurationIndex setter (compatibility)', () => {
-      // Test setter does nothing but doesn't throw
-      expect(() => {
-        plugin.currentDurationIndex = 1;
-      }).not.toThrow();
-      
-      // Getter should still work from timer, not affected by setter
-      expect(plugin.currentDurationIndex).toBe(0);
+    it('should provide resetPomodoroSession method that resets to work state', () => {
+      const timer = (plugin as PluginWithPrivates)._timer;
+      const resetToWorkStateSpy = jest.spyOn(timer, 'resetToWorkState');
+
+      plugin.resetPomodoroSession();
+
+      expect(resetToWorkStateSpy).toHaveBeenCalled();
     });
 
-    it('should handle workIntervalCount setter (compatibility)', () => {
-      // Test setter does nothing but doesn't throw
-      expect(() => {
-        plugin.workIntervalCount = 5;
-      }).not.toThrow();
-      
-      // Getter should still work from timer, not affected by setter
-      expect(plugin.workIntervalCount).toBe(0);
-    });
+    it('should safely handle resetTimer when timer is not initialized', () => {
+      // Create a plugin without calling onload (no timer initialized)
+      const uninitializedPlugin = new PomodoroPlugin({} as App, {
+        id: 'test',
+        name: 'Test',
+        version: '1.0.0',
+        minAppVersion: '0.15.0',
+        author: 'Test',
+        description: 'Test',
+      });
 
-    it('should handle resetTimer when timer is undefined', () => {
-      // Create a new plugin without timer initialization to test the null check
-      const mockAppForTest = {} as App;
-      const manifestForTest = { id: 'test', name: 'Test', version: '1.0.0', minAppVersion: '0.15.0', author: 'Test', description: 'Test' };
-      const testPlugin = new PomodoroPlugin(mockAppForTest, manifestForTest);
-      
-      // Should not throw even when timer is undefined (not initialized)
+      // Should not throw when timer is undefined
       expect(() => {
-        testPlugin.resetTimer();
+        uninitializedPlugin.resetTimer();
       }).not.toThrow();
+
+      // Timer remains undefined after call
+      expect((uninitializedPlugin as PluginWithPrivates)._timer).toBeUndefined();
     });
   });
 
-  describe('Icon Integration', () => {
-    it('should include timer icon in status bar', async () => {
+  describe('Settings Management', () => {
+    beforeEach(async () => {
       await plugin.onload();
-      const statusBar = (plugin as PluginWithPrivates)._statusBarItem;
-      // Check that appendChild was called (icon container was added)
-      expect(statusBar.appendChild).toHaveBeenCalled();
     });
 
-    it('should show/hide icon based on showIcon setting', async () => {
-      await plugin.onload();
+    it('should save settings and update timer', async () => {
       const timer = (plugin as PluginWithPrivates)._timer;
+      const updateSettingsSpy = jest.spyOn(timer, 'updateSettings');
 
-      // Test hiding icon
-      plugin.settings.showIcon = false;
+      plugin.settings.workMinutes = 45;
       await plugin.saveSettings();
 
-      // Verify timer's updateSettings was called
-      expect(timer).toBeDefined();
-
-      // Test showing icon again
-      plugin.settings.showIcon = true;
-      await plugin.saveSettings();
+      expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+      expect(updateSettingsSpy).toHaveBeenCalledWith(plugin.settings);
     });
   });
 
@@ -314,40 +323,69 @@ describe('PomodoroPlugin', () => {
       });
     });
 
-    describe('Command Registration', () => {
-      it('should register all expected commands', async () => {
+    describe('Toggle Sound Notifications Command', () => {
+      it('should toggle sound enabled setting', () => {
+        plugin.settings.soundEnabled = false;
+
         const mockAddCommand = plugin.addCommand as jest.Mock;
-        
-        const expectedCommands = [
+        const command = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-sound-notifications');
+
+        expect(command).toBeDefined();
+        jest.spyOn(plugin, 'saveSettings');
+        command[0].callback();
+
+        expect(plugin.settings.soundEnabled).toBe(true);
+        expect(plugin.saveSettings).toHaveBeenCalled();
+      });
+
+      it('should toggle sound off when currently on', () => {
+        plugin.settings.soundEnabled = true;
+
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const command = mockAddCommand.mock.calls.find(call => call[0].id === 'toggle-sound-notifications');
+
+        command[0].callback();
+
+        expect(plugin.settings.soundEnabled).toBe(false);
+      });
+    });
+
+    describe('Command Registration', () => {
+      it('should register all core commands', () => {
+        const mockAddCommand = plugin.addCommand as jest.Mock;
+        const registeredCommandIds = mockAddCommand.mock.calls.map(call => call[0].id);
+
+        // Verify core commands are registered
+        const coreCommands = [
           'toggle-timer',
-          'reset-timer', 
+          'reset-timer',
           'cycle-timer',
           'toggle-icon-visibility',
-          'toggle-status-bar'
+          'toggle-status-bar',
+          'toggle-sound-notifications',
         ];
 
-        const registeredCommandIds = mockAddCommand.mock.calls.map(call => call[0].id);
-        
-        expectedCommands.forEach(commandId => {
+        coreCommands.forEach(commandId => {
           expect(registeredCommandIds).toContain(commandId);
         });
       });
 
-      it('should register commands with proper names', async () => {
+      it('should register commands with descriptive names', () => {
         const mockAddCommand = plugin.addCommand as jest.Mock;
-        
-        const expectedCommandNames = {
+
+        const expectedCommandNames: Record<string, string> = {
           'toggle-timer': 'Toggle timer',
           'reset-timer': 'Reset current timer',
           'cycle-timer': 'Cycle to next timer duration',
           'toggle-icon-visibility': 'Toggle timer icon visibility',
-          'toggle-status-bar': 'Toggle status bar visibility'
+          'toggle-status-bar': 'Toggle status bar visibility',
+          'toggle-sound-notifications': 'Toggle sound notifications',
         };
 
-        Object.entries(expectedCommandNames).forEach(([id, name]) => {
+        Object.entries(expectedCommandNames).forEach(([id, expectedName]) => {
           const command = mockAddCommand.mock.calls.find(call => call[0].id === id);
           expect(command).toBeDefined();
-          expect(command[0].name).toBe(name);
+          expect(command[0].name).toBe(expectedName);
         });
       });
     });
