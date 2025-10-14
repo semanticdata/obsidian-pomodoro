@@ -71,9 +71,12 @@ describe('PomodoroTimer', () => {
 
     it('should reset the timer', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
-
       timer.resetTimer();
-.asMilliseconds()).toBeCloseTo(moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds());
+
+      // After reset, timeRemaining should match the configured work duration
+      expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+        moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds()
+      );
     });
 
     it('should cycle durations correctly', () => {
@@ -147,7 +150,11 @@ describe('PomodoroTimer', () => {
       expect(timer['currentDurationIndex']).toBe(0); // Work state
       expect(timer['workIntervalCount']).toBe(0); // Reset count
       expect(timer.isRunning).toBe(false); // Should be paused
-      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString()); // Work duration
+      // Compare durations numerically to avoid 1ms differences from timing
+      expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+        moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds(),
+        -2
+      ); // Work duration
     });
 
     it('should reset to work state even when already in work state', () => {
@@ -162,7 +169,10 @@ describe('PomodoroTimer', () => {
 
       expect(timer['currentDurationIndex']).toBe(0); // Still work state
       expect(timer['workIntervalCount']).toBe(0); // Reset count
-      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString()); // Reset duration
+      expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+        moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds(),
+        -2
+      ); // Reset duration
     });
   });
 
@@ -522,7 +532,10 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(1); // Should be in short break
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.shortBreakMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
 
       it('should pause after break timer completes', () => {
@@ -536,7 +549,10 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(0); // Should be back to work
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
     });
 
@@ -558,7 +574,10 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(1); // Should be in short break
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.shortBreakMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
 
       it('should continue running after break timer completes', () => {
@@ -571,7 +590,10 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(0); // Should be back to work
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
 
       it('should transition to long break with auto-progression', () => {
@@ -598,7 +620,10 @@ describe('PomodoroTimer', () => {
         timer.pauseTimer();
 
         expect(timer.isRunning).toBe(false);
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString()); // Time should be preserved
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.shortBreakMinutes, "minutes").asMilliseconds(),
+          -2
+        ); // Time should be preserved
       });
 
       it('should allow manual reset during auto-progression', () => {
@@ -610,7 +635,10 @@ describe('PomodoroTimer', () => {
 
         expect(timer.isRunning).toBe(false);
         expect(timer.timerType).toBe(1); // Should stay in short break
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.shortBreakMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+          moment.duration(plugin.settings.shortBreakMinutes, "minutes").asMilliseconds(),
+          -2
+        );
       });
     });
   });
