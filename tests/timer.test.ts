@@ -48,22 +48,57 @@ describe("PomodoroTimer", () => {
 	});
 
 	describe("Timer Logic", () => {
-		it("should start the timer and update display", () => {
-			jest.useFakeTimers({ legacyFakeTimers: false });
-			jest.setSystemTime(new Date());
-			const timer = (plugin as PluginWithPrivates)._timer;
+		describe("Basic Timer Operations (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(new Date());
+			});
 
-			timer.toggleTimer();
-			expect(timer.isRunning).toBe(true);
-			expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith(
-				"pomodoro-active",
-			);
-			expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith(
-				"pomodoro-paused",
-			);
-			expect(window.setInterval).toHaveBeenCalledTimes(1);
+			afterEach(() => {
+				jest.useRealTimers();
+			});
 
-			jest.useRealTimers();
+			it("should start the timer and update display", () => {
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+				expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith(
+					"pomodoro-active",
+				);
+				expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith(
+					"pomodoro-paused",
+				);
+				expect(window.setInterval).toHaveBeenCalledTimes(1);
+			});
+
+			it("should update display when timer counts down", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				// Set up querySelector to return text element
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				// Start the timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Advance the fake system time by 1 second and update display manually.
+				const after = now + 1000;
+				jest.setSystemTime(after);
+
+				// Call updateDisplay to reflect the new time
+				(timer as any).updateDisplay();
+
+				// Should show 24:59 (25 minutes - 1 second)
+				expect(textEl.textContent).toBe("24:59");
+
+				// Clean up
+				timer.pauseTimer();
+			});
 		});
 
 		it("should pause the timer", () => {
@@ -120,37 +155,6 @@ describe("PomodoroTimer", () => {
 			expect(timer.timerType).toBe(initialTimerType);
 			timer.pauseTimer();
 		});
-
-		it("should update display when timer counts down", () => {
-			jest.useFakeTimers({ legacyFakeTimers: false });
-			// Align fake system time so moment.now uses the fake timers
-			const now = Date.now();
-			jest.setSystemTime(now);
-
-			const timer = (plugin as PluginWithPrivates)._timer;
-
-			// Set up querySelector to return text element
-			const textEl: any = { textContent: "" };
-			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
-
-			// Start the timer
-			timer.toggleTimer();
-			expect(timer.isRunning).toBe(true);
-
-			// Advance the fake system time by 1 second and update display manually.
-			const after = now + 1000;
-			jest.setSystemTime(after);
-
-			// Call updateDisplay to reflect the new time
-			(timer as any).updateDisplay();
-
-			// Should show 24:59 (25 minutes - 1 second)
-			expect(textEl.textContent).toBe("24:59");
-
-			// Clean up
-			timer.pauseTimer();
-			jest.useRealTimers();
-		});
 	});
 
 	describe("resetToWorkState Method", () => {
@@ -199,60 +203,67 @@ describe("PomodoroTimer", () => {
 	});
 
 	describe("Edge Cases", () => {
-		it("should handle negative duration display (timer overflow)", () => {
-			jest.useFakeTimers({ legacyFakeTimers: false });
-			const now = Date.now();
-			jest.setSystemTime(now);
+		describe("Negative Duration Display (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(Date.now());
+			});
 
-			const timer = (plugin as PluginWithPrivates)._timer;
+			afterEach(() => {
+				jest.useRealTimers();
+			});
 
-			// Set up querySelector to return text element
-			const textEl: any = { textContent: "" };
-			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
+			it("should handle negative duration display (timer overflow)", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
 
-			// Start the timer
-			timer.toggleTimer();
-			expect(timer.isRunning).toBe(true);
+				// Set up querySelector to return text element
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
 
-			// Advance time beyond the timer duration to create negative duration
-			// Default work time is 25 minutes (1500 seconds)
-			const overflowTime = 1500000 + 30000; // 25 minutes + 30 seconds
-			jest.setSystemTime(now + overflowTime);
+				// Start the timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
 
-			// Call updateDisplay to reflect the negative time
-			(timer as any).updateDisplay();
+				// Advance time beyond the timer duration to create negative duration
+				// Default work time is 25 minutes (1500 seconds)
+				const overflowTime = 1500000 + 30000; // 25 minutes + 30 seconds
+				jest.setSystemTime(now + overflowTime);
 
-			// Should show -0:30 (negative 30 seconds)
-			expect(textEl.textContent).toBe("-0:30");
+				// Call updateDisplay to reflect the negative time
+				(timer as any).updateDisplay();
 
-			// Clean up
-			timer.pauseTimer();
-			jest.useRealTimers();
-		});
+				// Should show -0:30 (negative 30 seconds)
+				expect(textEl.textContent).toBe("-0:30");
 
-		it("should format negative minutes correctly", () => {
-			jest.useFakeTimers({ legacyFakeTimers: false });
-			const now = Date.now();
-			jest.setSystemTime(now);
+				// Clean up
+				timer.pauseTimer();
+			});
 
-			const timer = (plugin as PluginWithPrivates)._timer;
+			it("should format negative minutes correctly", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
 
-			const textEl: any = { textContent: "" };
-			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
 
-			timer.toggleTimer();
+				timer.toggleTimer();
 
-			// Advance time to create -2 minutes and 15 seconds overflow
-			const overflowTime = 1500000 + 135000; // 25 minutes + 2 minutes 15 seconds
-			jest.setSystemTime(now + overflowTime);
+				// Advance time to create -2 minutes and 15 seconds overflow
+				const overflowTime = 1500000 + 135000; // 25 minutes + 2 minutes 15 seconds
+				jest.setSystemTime(now + overflowTime);
 
-			(timer as any).updateDisplay();
+				(timer as any).updateDisplay();
 
-			// Should show -2:15
-			expect(textEl.textContent).toBe("-2:15");
+				// Should show -2:15
+				expect(textEl.textContent).toBe("-2:15");
 
-			timer.pauseTimer();
-			jest.useRealTimers();
+				timer.pauseTimer();
+			});
 		});
 
 		it("should handle missing text element in updateDisplay", () => {
@@ -490,35 +501,43 @@ describe("PomodoroTimer", () => {
 			);
 		});
 
-		it("should show play icon when paused mid-session", () => {
-			jest.useFakeTimers({ legacyFakeTimers: false });
-			const now = Date.now();
-			jest.setSystemTime(now);
+		describe("Paused Mid-Session Icon (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(Date.now());
+			});
 
-			// Start timer
-			timer.toggleTimer();
-			expect(timer.isRunning).toBe(true);
+			afterEach(() => {
+				jest.useRealTimers();
+			});
 
-			// Advance time by 1 second
-			jest.advanceTimersByTime(1000);
-			(timer as any).updateDisplay(); // Manually trigger update
+			it("should show play icon when paused mid-session", () => {
+				// Start timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
 
-			// Pause the timer
-			timer.pauseTimer();
+				// Advance time by 1 second
+				jest.advanceTimersByTime(1000);
+				(timer as any).updateDisplay(); // Manually trigger update
 
-			expect(timer.isRunning).toBe(false);
-			expect(timer._isAtDefaultDuration()).toBe(false); // No longer at default duration
+				// Pause the timer
+				timer.pauseTimer();
 
-			const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-			const iconContainer = statusBarItem.querySelector(".pomodoro-icon");
+				expect(timer.isRunning).toBe(false);
+				expect(timer._isAtDefaultDuration()).toBe(false); // No longer at default duration
 
-			expect(iconContainer).toBeDefined();
-			// Should have play icon key when paused mid-session
-			expect(iconContainer?.getAttribute("data-icon-key")).toBe(
-				"pomobar-timer-play",
-			);
+				const statusBarItem = (
+					plugin as PluginWithPrivates
+				)._statusBarItem;
+				const iconContainer =
+					statusBarItem.querySelector(".pomodoro-icon");
 
-			jest.useRealTimers();
+				expect(iconContainer).toBeDefined();
+				// Should have play icon key when paused mid-session
+				expect(iconContainer?.getAttribute("data-icon-key")).toBe(
+					"pomobar-timer-play",
+				);
+			});
 		});
 
 		it("should update icon when cycling durations", () => {
