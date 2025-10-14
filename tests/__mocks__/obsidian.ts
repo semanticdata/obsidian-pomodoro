@@ -176,57 +176,45 @@ export class Plugin {
       get: () => Array.from(classList).join(' ')
     });
 
-    // Track child elements for querySelector
+    // Use the global document.createElement mock (setup.ts) as the single
+    // source of truth for element behavior (including attribute accessors)
+    const element = document.createElement('div') as unknown as any;
+
+    // Ensure the classList on this element uses our mockClassList so tests
+    // can still assert add/remove calls
+    element.classList = mockClassList;
+
+    // Provide a simple appendChild that records children for querySelector
     const childElements: HTMLElement[] = [];
+    element.appendChild = jest.fn((child: HTMLElement) => {
+      childElements.push(child);
+      return child;
+    });
 
-    // Create a complete mock element
-    const item = {
-      tagName: 'DIV',
-      classList: mockClassList,
-      setText: jest.fn(),
-      appendChild: jest.fn((child: HTMLElement) => {
-        childElements.push(child);
-        return child;
-      }),
-      querySelector: jest.fn((selector: string) => {
-        // Simple mock querySelector for our specific needs
-        if (selector === '.pomodoro-icon') {
-          const iconEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-icon'));
-          if (iconEl) return iconEl;
-          // Return a mock icon element if not found with attribute support
-          const attrs = new Map<string, string>();
-          return {
-            style: { display: '' },
-            removeAttribute: jest.fn((k: string) => { attrs.delete(k); }),
-            setAttribute: jest.fn((k: string, v: any) => { attrs.set(k, String(v)); }),
-            getAttribute: jest.fn((k: string) => attrs.has(k) ? attrs.get(k) as string : null),
-            classList: { contains: jest.fn(() => true) },
-            innerHTML: '',
-            textContent: ''
-          };
-        }
-        if (selector === '.pomodoro-text') {
-          const textEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-text'));
-          if (textEl) return textEl;
-          // Return a mock text element if not found
-          return {
-            textContent: '',
-            innerHTML: ''
-          };
-        }
-        return null;
-      }),
-      addEventListener: jest.fn(),
-      innerHTML: '',
-      textContent: '',
-      style: { display: '' },
-      removeAttribute: jest.fn(),
-      setAttribute: jest.fn(),
-      remove: jest.fn(),
-    };
+    // Delegate querySelector needs to check children first, then fall back to
+    // the element's default querySelector behavior (provided by setup.ts)
+    element.querySelector = jest.fn((selector: string) => {
+      if (selector === '.pomodoro-icon') {
+        const iconEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-icon'));
+        if (iconEl) return iconEl;
+        // Fall back to document.createElement provided mock for attributes
+        const el = document.createElement('span') as any;
+        el.classList.add('pomodoro-icon');
+        return el;
+      }
+      if (selector === '.pomodoro-text') {
+        const textEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-text'));
+        if (textEl) return textEl;
+        const el = document.createElement('span') as any;
+        el.classList.add('pomodoro-text');
+        return el;
+      }
+      return null;
+    });
 
-    // this.statusBarItem = item; // PomodoroPlugin will set its own instance member
-    return item as unknown as HTMLElement;
+    element.addEventListener = jest.fn();
+
+    return element as HTMLElement;
   }
 
   registerDomEvent = jest.fn((el: HTMLElement, event: string, callback: (event: Event) => void) => {
