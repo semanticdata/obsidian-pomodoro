@@ -199,6 +199,62 @@ describe("PomodoroTimer", () => {
 	});
 
 	describe("Edge Cases", () => {
+		it("should handle negative duration display (timer overflow)", () => {
+			jest.useFakeTimers({ legacyFakeTimers: false });
+			const now = Date.now();
+			jest.setSystemTime(now);
+
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			// Set up querySelector to return text element
+			const textEl: any = { textContent: "" };
+			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
+
+			// Start the timer
+			timer.toggleTimer();
+			expect(timer.isRunning).toBe(true);
+
+			// Advance time beyond the timer duration to create negative duration
+			// Default work time is 25 minutes (1500 seconds)
+			const overflowTime = 1500000 + 30000; // 25 minutes + 30 seconds
+			jest.setSystemTime(now + overflowTime);
+
+			// Call updateDisplay to reflect the negative time
+			(timer as any).updateDisplay();
+
+			// Should show -0:30 (negative 30 seconds)
+			expect(textEl.textContent).toBe("-0:30");
+
+			// Clean up
+			timer.pauseTimer();
+			jest.useRealTimers();
+		});
+
+		it("should format negative minutes correctly", () => {
+			jest.useFakeTimers({ legacyFakeTimers: false });
+			const now = Date.now();
+			jest.setSystemTime(now);
+
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			const textEl: any = { textContent: "" };
+			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
+
+			timer.toggleTimer();
+
+			// Advance time to create -2 minutes and 15 seconds overflow
+			const overflowTime = 1500000 + 135000; // 25 minutes + 2 minutes 15 seconds
+			jest.setSystemTime(now + overflowTime);
+
+			(timer as any).updateDisplay();
+
+			// Should show -2:15
+			expect(textEl.textContent).toBe("-2:15");
+
+			timer.pauseTimer();
+			jest.useRealTimers();
+		});
+
 		it("should handle missing text element in updateDisplay", () => {
 			const timer = (plugin as PluginWithPrivates)._timer;
 			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
@@ -269,7 +325,6 @@ describe("PomodoroTimer", () => {
 		 * Helper to find a registered DOM event handler by event name
 		 */
 		function findEventHandler(eventName: string) {
-			console.log("domEventHandlers:", (plugin as any).domEventHandlers);
 			const handler = (plugin as any).domEventHandlers.find(
 				(call: any) => call.event === eventName,
 			);

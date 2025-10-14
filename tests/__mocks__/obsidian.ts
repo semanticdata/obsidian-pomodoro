@@ -247,7 +247,6 @@ export class Plugin {
 
 	registerDomEvent = jest.fn(
 		(el: HTMLElement, event: string, callback: (event: Event) => void) => {
-			console.log("registerDomEvent called:", event);
 			(this as any).domEventHandlers.push({ el, event, callback });
 		},
 	);
