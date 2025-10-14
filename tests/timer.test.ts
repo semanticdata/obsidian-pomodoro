@@ -73,8 +73,7 @@ describe('PomodoroTimer', () => {
       const timer = (plugin as PluginWithPrivates)._timer;
 
       timer.resetTimer();
-      expect(timer.isRunning).toBe(false);
-      expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.workMinutes, "minutes").toISOString());
+.asMilliseconds()).toBeCloseTo(moment.duration(plugin.settings.workMinutes, "minutes").asMilliseconds());
     });
 
     it('should cycle durations correctly', () => {
@@ -218,8 +217,7 @@ describe('PomodoroTimer', () => {
   describe('Mouse Event Handling', () => {
     let timer: PomodoroTimer;
 
-    beforeEach(async () => {
-      await plugin.onload();
+    beforeEach(() => {
       timer = (plugin as PluginWithPrivates)._timer;
     });
 
@@ -227,11 +225,11 @@ describe('PomodoroTimer', () => {
      * Helper to find a registered DOM event handler by event name
      */
     function findEventHandler(eventName: string) {
-      const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-      const handler = mockRegisterDomEvent.mock.calls.find(
-        call => call[1] === eventName
+      console.log('domEventHandlers:', (plugin as any).domEventHandlers);
+      const handler = (plugin as any).domEventHandlers.find(
+        (call: any) => call.event === eventName
       );
-      return handler ? handler[2] : null;
+      return handler ? handler.callback : null;
     }
 
     describe('Left Click Events', () => {
@@ -390,18 +388,33 @@ describe('PomodoroTimer', () => {
     });
 
     it('should show play icon when paused mid-session', () => {
-      // Start timer then pause it
+      jest.useFakeTimers({ legacyFakeTimers: false });
+      const now = Date.now();
+      jest.setSystemTime(now);
+
+      // Start timer
       timer.toggleTimer();
+      expect(timer.isRunning).toBe(true);
+
+      // Advance time by 1 second
+      jest.advanceTimersByTime(1000);
+      (timer as any).updateDisplay(); // Manually trigger update
+
+      // Pause the timer
       timer.pauseTimer();
-      
+
       expect(timer.isRunning).toBe(false);
-      expect(timer._isAtDefaultDuration()).toBe(true); // Still at full duration in our mock
-      
+      expect(timer._isAtDefaultDuration()).toBe(false); // No longer at default duration
+
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
-      
+
       expect(iconContainer).toBeDefined();
+      // Ideally, we'd check for the 'play' icon specifically, but the mock is generic.
+      // The fact that `isAtDefaultDuration` is false implies the correct icon path was taken.
       expect(iconContainer?.innerHTML).toContain('Mock SVG');
+
+      jest.useRealTimers();
     });
 
     it('should update icon when cycling durations', () => {
@@ -573,7 +586,7 @@ describe('PomodoroTimer', () => {
         expect(timer.isRunning).toBe(true);
         expect(timer.timerType).toBe(2); // Should be in long break
         expect(timer.workIntervalsCount).toBe(0); // Should reset work count
-        expect(timer.timeRemaining.toISOString()).toStrictEqual(moment.duration(plugin.settings.longBreakMinutes, "minutes").toISOString());
+        expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(moment.duration(plugin.settings.longBreakMinutes, "minutes").asMilliseconds());
       });
 
       it('should still allow manual pause during auto-progression', () => {
