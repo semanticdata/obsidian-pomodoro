@@ -100,14 +100,17 @@ describe('PomodoroTimer', () => {
       timer.pauseTimer();
     });
 
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip('should update display when timer counts down', () => {
+    it('should update display when timer counts down', () => {
       jest.useFakeTimers();
       const timer = (plugin as PluginWithPrivates)._timer;
+
+      // Set up querySelector to return text element
       const textEl = { textContent: '' };
       mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
 
+      // Start the timer
       timer.toggleTimer();
+      expect(timer.isRunning).toBe(true);
 
       // Advance timer by 1 second
       jest.advanceTimersByTime(1000);
@@ -115,6 +118,7 @@ describe('PomodoroTimer', () => {
       // Should show 24:59 (25 minutes - 1 second)
       expect(textEl.textContent).toBe('24:59');
 
+      // Clean up
       timer.pauseTimer();
       jest.useRealTimers();
     });
@@ -202,8 +206,7 @@ describe('PomodoroTimer', () => {
     });
   });
 
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('Mouse Event Handling', () => {
+  describe('Mouse Event Handling', () => {
     let timer: PomodoroTimer;
 
     beforeEach(async () => {
@@ -211,146 +214,135 @@ describe('PomodoroTimer', () => {
       timer = (plugin as PluginWithPrivates)._timer;
     });
 
+    /**
+     * Helper to find a registered DOM event handler by event name
+     */
+    function findEventHandler(eventName: string) {
+      const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
+      const handler = mockRegisterDomEvent.mock.calls.find(
+        call => call[1] === eventName
+      );
+      return handler ? handler[2] : null;
+    }
+
     describe('Left Click Events', () => {
-      it('should start timer when not running', () => {
+      it('should toggle timer on left click', () => {
         expect(timer.isRunning).toBe(false);
-        
-        // Spy on method before calling handler
-        const startTimerSpy = jest.spyOn(timer, 'toggleTimer').mockImplementation(() => {
-          timer._isRunning = true;
-        });
-        
-        // Verify the event was registered during setup
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const clickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'click'
-        );
+
+        const toggleTimerSpy = jest.spyOn(timer, 'toggleTimer');
+        const clickHandler = findEventHandler('click');
+
         expect(clickHandler).toBeDefined();
 
-        // Execute the click handler directly with proper event
-        const clickEvent = { button: 0 };
-        clickHandler[2](clickEvent);
-        
-        expect(startTimerSpy).toHaveBeenCalled();
-        startTimerSpy.mockRestore();
+        // Simulate left click (button: 0)
+        const clickEvent = { button: 0 } as MouseEvent;
+        clickHandler(clickEvent);
+
+        expect(toggleTimerSpy).toHaveBeenCalled();
       });
 
-      it('should pause timer when running', () => {
+      it('should start timer when clicked while not running', () => {
+        expect(timer.isRunning).toBe(false);
+
+        const clickHandler = findEventHandler('click');
+        const clickEvent = { button: 0 } as MouseEvent;
+        clickHandler(clickEvent);
+
+        expect(timer.isRunning).toBe(true);
+      });
+
+      it('should pause timer when clicked while running', () => {
+        // Start timer first
         timer.toggleTimer();
         expect(timer.isRunning).toBe(true);
-        
-        const pauseTimerSpy = jest.spyOn(timer, 'pauseTimer').mockImplementation(() => {
-          timer._isRunning = false;
-        });
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const clickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'click'
-        )[2];
-        
-        const clickEvent = { button: 0 };
+
+        const clickHandler = findEventHandler('click');
+        const clickEvent = { button: 0 } as MouseEvent;
         clickHandler(clickEvent);
-        
-        expect(pauseTimerSpy).toHaveBeenCalled();
-        pauseTimerSpy.mockRestore();
+
+        expect(timer.isRunning).toBe(false);
       });
     });
 
     describe('Middle Click Events', () => {
-      it('should cycle duration when not running', () => {
+      it('should cycle duration on middle click when not running', () => {
         expect(timer.isRunning).toBe(false);
-        
-        const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
-        
-        const auxclickEvent = { button: 1 };
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const auxclickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'auxclick'
-        );
+        const initialTimerType = timer.timerType;
+
+        const auxclickHandler = findEventHandler('auxclick');
         expect(auxclickHandler).toBeDefined();
-        
-        auxclickHandler[2](auxclickEvent);
-        
-        expect(cycleDurationSpy).toHaveBeenCalled();
-        cycleDurationSpy.mockRestore();
+
+        // Simulate middle click (button: 1)
+        const auxclickEvent = { button: 1 } as MouseEvent;
+        auxclickHandler(auxclickEvent);
+
+        // Timer type should have cycled
+        expect(timer.timerType).not.toBe(initialTimerType);
       });
 
-      it('should still call cycleDuration when running (no restriction in auxclick)', () => {
+      it('should attempt to cycle duration even when running', () => {
+        // Note: cycleDuration checks isRunning internally and returns early if running
+        // But the event handler doesn't prevent calling it
         timer.toggleTimer();
         expect(timer.isRunning).toBe(true);
-        
-        const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
-        
-        const auxclickEvent = { button: 1 };
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const auxclickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'auxclick'
-        )[2];
-        
+
+        const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration');
+        const auxclickHandler = findEventHandler('auxclick');
+
+        const auxclickEvent = { button: 1 } as MouseEvent;
         auxclickHandler(auxclickEvent);
-        
+
+        // cycleDuration is called but does nothing when timer is running
         expect(cycleDurationSpy).toHaveBeenCalled();
-        cycleDurationSpy.mockRestore();
       });
     });
 
     describe('Right Click Events', () => {
-      it('should reset timer when not running', () => {
+      it('should reset timer on right click when not running', () => {
         expect(timer.isRunning).toBe(false);
-        
-        const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
-        
+
+        const resetTimerSpy = jest.spyOn(timer, 'resetTimer');
+        const contextmenuHandler = findEventHandler('contextmenu');
+
+        expect(contextmenuHandler).toBeDefined();
+
         const contextmenuEvent = {
           preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        );
-        expect(contextmenuHandler).toBeDefined();
-        
-        contextmenuHandler[2](contextmenuEvent);
-        
+        } as unknown as MouseEvent;
+
+        contextmenuHandler(contextmenuEvent);
+
         expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
         expect(resetTimerSpy).toHaveBeenCalled();
-        resetTimerSpy.mockRestore();
       });
 
-      it('should not reset timer when running', () => {
+      it('should not reset timer on right click when running', () => {
         timer.toggleTimer();
         expect(timer.isRunning).toBe(true);
-        
-        const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
-        
+
+        const resetTimerSpy = jest.spyOn(timer, 'resetTimer');
+        const contextmenuHandler = findEventHandler('contextmenu');
+
         const contextmenuEvent = {
           preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        )[2];
-        
+        } as unknown as MouseEvent;
+
         contextmenuHandler(contextmenuEvent);
-        
+
+        // Context menu is prevented but timer is not reset
         expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
         expect(resetTimerSpy).not.toHaveBeenCalled();
-        resetTimerSpy.mockRestore();
       });
 
       it('should always prevent default context menu', () => {
+        const contextmenuHandler = findEventHandler('contextmenu');
+
         const contextmenuEvent = {
           preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        )[2];
-        
+        } as unknown as MouseEvent;
+
         contextmenuHandler(contextmenuEvent);
-        
+
         expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
       });
     });
