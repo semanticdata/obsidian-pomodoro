@@ -193,12 +193,16 @@ export class Plugin {
         if (selector === '.pomodoro-icon') {
           const iconEl = childElements.find(el => el.classList && typeof el.classList.contains === 'function' && el.classList.contains('pomodoro-icon'));
           if (iconEl) return iconEl;
-          // Return a mock icon element if not found
+          // Return a mock icon element if not found with attribute support
+          const attrs = new Map<string, string>();
           return {
             style: { display: '' },
-            removeAttribute: jest.fn(),
-            setAttribute: jest.fn(),
-            classList: { contains: jest.fn(() => true) }
+            removeAttribute: jest.fn((k: string) => { attrs.delete(k); }),
+            setAttribute: jest.fn((k: string, v: any) => { attrs.set(k, String(v)); }),
+            getAttribute: jest.fn((k: string) => attrs.has(k) ? attrs.get(k) as string : null),
+            classList: { contains: jest.fn(() => true) },
+            innerHTML: '',
+            textContent: ''
           };
         }
         if (selector === '.pomodoro-text') {

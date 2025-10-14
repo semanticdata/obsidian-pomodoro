@@ -52,6 +52,17 @@ global.document = {
       get: () => Array.from(classList).join(' ')
     });
 
+    // Create a persistent child element with attribute support so multiple
+    // querySelector calls return the same object and tests can inspect attributes.
+    const attrs = new Map<string, string>();
+    const childEl = {
+      textContent: '',
+      innerHTML: '',
+      getAttribute: jest.fn((k: string) => attrs.has(k) ? attrs.get(k) as string : null),
+      setAttribute: jest.fn((k: string, v: any) => { attrs.set(k, String(v)); }),
+      removeAttribute: jest.fn((k: string) => { attrs.delete(k); }),
+    };
+
     return {
       tagName,
       classList: mockClassList,
@@ -65,14 +76,13 @@ global.document = {
         textContent: '',
         innerHTML: ''
       }),
-      querySelector: jest.fn().mockReturnValue({
-        textContent: '',
-        innerHTML: ''
-      }),
+      getAttribute: jest.fn((k: string) => attrs.has(k) ? attrs.get(k) as string : null),
+      setAttribute: jest.fn((k: string, v: any) => { attrs.set(k, String(v)); }),
+      removeAttribute: jest.fn((k: string) => { attrs.delete(k); }),
+      querySelector: jest.fn().mockImplementation(() => childEl),
       addEventListener: jest.fn() as jest.Mock,
       style: { display: '' },
-      removeAttribute: jest.fn(),
-      setAttribute: jest.fn(),
+      
     };
   }),
 } as Document & { createElement: jest.Mock };

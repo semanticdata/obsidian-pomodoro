@@ -387,9 +387,9 @@ describe('PomodoroTimer', () => {
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
       
-      // Should have timer icon
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG'); // From our SVG mock
+  // Should have timer icon-off since timer starts disabled (timeEnd === null)
+  expect(iconContainer).toBeDefined();
+  expect(iconContainer?.getAttribute('data-icon-key')).toBe('pomobar-timer-off');
     });
 
     it('should show pause icon when running', () => {
@@ -399,9 +399,9 @@ describe('PomodoroTimer', () => {
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
       
-      // Should have play icon
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
+  // Should have pause icon key
+  expect(iconContainer).toBeDefined();
+  expect(iconContainer?.getAttribute('data-icon-key')).toBe('pomobar-timer-pause');
     });
 
     it('should show play icon when paused mid-session', () => {
@@ -426,10 +426,9 @@ describe('PomodoroTimer', () => {
       const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
 
-      expect(iconContainer).toBeDefined();
-      // Ideally, we'd check for the 'play' icon specifically, but the mock is generic.
-      // The fact that `isAtDefaultDuration` is false implies the correct icon path was taken.
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
+  expect(iconContainer).toBeDefined();
+  // Should have play icon key when paused mid-session
+  expect(iconContainer?.getAttribute('data-icon-key')).toBe('pomobar-timer-play');
 
       jest.useRealTimers();
     });
@@ -445,7 +444,10 @@ describe('PomodoroTimer', () => {
       const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
       
       expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
+      // Icon key should reflect the (possibly cycled) state
+      expect(['pomobar-timer','pomobar-timer-play','pomobar-timer-pause','pomobar-timer-off']).toContain(
+        iconContainer?.getAttribute('data-icon-key')
+      );
     });
   });
 
