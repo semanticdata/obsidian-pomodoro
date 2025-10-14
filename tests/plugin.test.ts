@@ -173,6 +173,12 @@ describe("PomodoroPlugin", () => {
 			await plugin.onload();
 		});
 
+		it("should save settings", async () => {
+			plugin.settings.workMinutes = 30;
+			await plugin.saveSettings();
+			expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+		});
+
 		it("should save settings and update timer", async () => {
 			const timer = (plugin as PluginWithPrivates)._timer;
 			const updateSettingsSpy = jest.spyOn(timer, "updateSettings");
@@ -181,6 +187,16 @@ describe("PomodoroPlugin", () => {
 			await plugin.saveSettings();
 
 			expect(plugin.saveData).toHaveBeenCalledWith(plugin.settings);
+			expect(updateSettingsSpy).toHaveBeenCalledWith(plugin.settings);
+		});
+
+		it("should update timer settings when settings change", async () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			const updateSettingsSpy = jest.spyOn(timer, "updateSettings");
+
+			plugin.settings.workMinutes = 45;
+			await plugin.saveSettings();
+
 			expect(updateSettingsSpy).toHaveBeenCalledWith(plugin.settings);
 		});
 	});
