@@ -114,9 +114,10 @@ export class PomodoroTimer {
 	}
 
 	private isAtDefaultDuration(): boolean {
-		const remaining = this.timeRemaining;
-		const current = this.getCurrentTimerDuration();
-		return remaining.asMilliseconds() === current.asMilliseconds();
+		const expectedMs = this.getCurrentTimerDuration().asMilliseconds();
+		const currentMs = this.timeRemaining.asMilliseconds();
+		// Use tolerance check to avoid floating point precision issues
+		return Math.abs(expectedMs - currentMs) < 1000; // Within 1 second tolerance
 	}
 
 	private updateIcon() {
@@ -157,10 +158,13 @@ export class PomodoroTimer {
 			time = this.timeRemaining;
 		}
 		if (textEl) {
-			textEl.textContent = `${time.minutes()}:${time
-				.seconds()
-				.toString()
-				.padStart(2, "0")}`;
+			const totalSeconds = Math.abs(time.asSeconds());
+			const minutes = Math.floor(totalSeconds / 60);
+			const seconds = Math.floor(totalSeconds % 60);
+			const isNegative = time.asMilliseconds() < 0;
+			const sign = isNegative ? "-" : "";
+
+			textEl.textContent = `${sign}${minutes}:${seconds.toString().padStart(2, "0")}`;
 		}
 	}
 
