@@ -76,6 +76,35 @@ describe("PomodoroPlugin", () => {
 				autoProgressEnabled: false, // Default value
 			});
 		});
+
+		it("should migrate old settings schema to new schema", async () => {
+			const oldSettings = {
+				workTime: 30,
+				shortBreakTime: 7,
+				longBreakTime: 20,
+				intervalsBeforeLongBreak: 3,
+			};
+			plugin.loadData = jest.fn().mockResolvedValue(oldSettings);
+			plugin.saveData = jest.fn().mockResolvedValue(undefined);
+
+			await plugin.onload();
+
+			// Should have called saveData to persist migrated settings
+			expect(plugin.saveData).toHaveBeenCalledWith({
+				workMinutes: 30,
+				shortBreakMinutes: 7,
+				longBreakMinutes: 20,
+				intervalsBeforeLongBreak: 3,
+			});
+
+			// Settings should use new property names
+			expect(plugin.settings.workMinutes).toBe(30);
+			expect(plugin.settings.shortBreakMinutes).toBe(7);
+			expect(plugin.settings.longBreakMinutes).toBe(20);
+			expect(plugin.settings).not.toHaveProperty("workTime");
+			expect(plugin.settings).not.toHaveProperty("shortBreakTime");
+			expect(plugin.settings).not.toHaveProperty("longBreakTime");
+		});
 	});
 
 	describe("Plugin Lifecycle", () => {
