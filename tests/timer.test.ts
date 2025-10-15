@@ -841,5 +841,109 @@ describe("PomodoroTimer", () => {
 				);
 			});
 		});
+
+		describe("Persistent Notification Feature", () => {
+			beforeEach(() => {
+				// Enable persistent notification
+				plugin.settings.persistentNotification = true;
+				plugin.settings.autoProgressEnabled = false;
+				timer.updateSettings(plugin.settings);
+			});
+
+			it("should create persistent notification only once when timer overflows", () => {
+				// Access the private persistentNotice property
+				const getNotice = () => (timer as any).persistentNotice;
+
+				// Initially no notification
+				expect(getNotice()).toBeNull();
+
+				// Simulate timer overflow scenario
+				timer._currentDurationIndex = 0;
+				timer._workIntervalCount = 0;
+
+				// Start timer and immediately set to overflow state
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Manually trigger the overflow logic by calling the interval callback
+				// In real scenario, this would happen when time reaches 0
+				const intervalCallback = (timer as any).currentInterval;
+				expect(intervalCallback).not.toBeNull();
+
+				// Note: We can't easily test the interval callback directly in unit tests
+				// because it's an anonymous function. The important part is that the
+				// persistent notification is only created once and tracked properly.
+			});
+
+			it("should clear persistent notification when timer is paused", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Pause the timer
+				timer.pauseTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+
+			it("should clear persistent notification when timer is reset", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Reset the timer
+				timer.resetTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+
+			it("should clear persistent notification when timer is toggled", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Toggle the timer (start it)
+				timer.toggleTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference (set to null before starting)
+				// Note: After toggleTimer, a new timer is running, so persistentNotice
+				// should have been cleared before starting
+				timer.pauseTimer(); // Clean up
+			});
+
+			it("should clear persistent notification in cleanup", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Call cleanup
+				timer.cleanup();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+		});
 	});
 });

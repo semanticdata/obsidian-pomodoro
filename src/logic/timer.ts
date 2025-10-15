@@ -23,6 +23,7 @@ export class PomodoroTimer {
 	private workIntervalCount = 0;
 	private currentInterval: number | null = null;
 	private registeredIntervals: Set<number> = new Set();
+	private persistentNotice: Notice | null = null;
 
 	constructor(
 		plugin: Plugin,
@@ -189,6 +190,8 @@ export class PomodoroTimer {
 
 	toggleTimer() {
 		if (!this.isRunning) {
+			// Clear any persistent notification when starting timer
+			this.clearPersistentNotification();
 			this.timeEnd = moment.utc(moment.now()).add(this.timeRemaining);
 
 			const intervalId = window.setInterval(() => {
@@ -208,11 +211,14 @@ export class PomodoroTimer {
 						);
 					} else if (this.settings.persistentNotification) {
 						// Keep on chiming until user interacts with the timer
-						this.soundManager.playCompletionSound();
-						new Notice(
-							"PomoBar: Time's up! Your most recent timer has finished.",
-							1000,
-						);
+						// Only show notification once and keep it visible
+						if (!this.persistentNotice) {
+							this.soundManager.playCompletionSound();
+							this.persistentNotice = new Notice(
+								"PomoBar: Time's up! Your most recent timer has finished.",
+								0, // 0 = never auto-dismiss
+							);
+						}
 					} else {
 						// Current behavior - pause after timer completion
 						// this.resetTimer();
@@ -246,6 +252,13 @@ export class PomodoroTimer {
 		}
 	}
 
+	private clearPersistentNotification() {
+		if (this.persistentNotice) {
+			this.persistentNotice.hide();
+			this.persistentNotice = null;
+		}
+	}
+
 	advanceTimer() {
 		if (this.currentDurationIndex === TIMER_STATES.WORK) {
 			this.workIntervalCount++;
@@ -267,6 +280,7 @@ export class PomodoroTimer {
 
 	pauseTimer() {
 		this.clearCurrentInterval();
+		this.clearPersistentNotification();
 		this.timeEnd = this.timeRemaining;
 		this.statusBarItem.classList.remove(CSS_CLASSES.ACTIVE);
 		this.statusBarItem.classList.add(CSS_CLASSES.PAUSED);
@@ -276,6 +290,7 @@ export class PomodoroTimer {
 
 	resetTimer() {
 		this.clearCurrentInterval();
+		this.clearPersistentNotification();
 		this.soundManager.stopCurrentAudio();
 		this.timeEnd = null;
 
@@ -353,6 +368,9 @@ export class PomodoroTimer {
 			window.clearInterval(this.currentInterval);
 			this.currentInterval = null;
 		}
+
+		// Clean up persistent notification
+		this.clearPersistentNotification();
 
 		// Clean up sound manager
 		this.soundManager.cleanup();
