@@ -157,9 +157,9 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			);
 
 		new Setting(containerEl)
-			.setName("Show in Status Bar")
+			.setName("Toggle Timer Visibility in Status Bar")
 			.setDesc(
-				"Toggle the timer's visibility in the status bar. You can also use the 'Toggle status bar visibility' command.",
+				"Toggle the timer's visibility in the status bar. You can also use the similarly named command.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -173,8 +173,8 @@ export class PomodoroSettingTab extends PluginSettingTab {
 		new Setting(containerEl).setName("Sound Notifications").setHeading();
 
 		new Setting(containerEl)
-			.setName("Enable Sound Notifications")
-			.setDesc("Play a sound when timers complete.")
+			.setName("Sound Notifications")
+			.setDesc("Play a sound when a timer completes. Can be disabled for silent persistent notifications.")
 			.addToggle((toggle) =>
 				toggle
 					.setValue(this.plugin.settings.soundEnabled)
@@ -187,7 +187,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Persistent Notification")
 			.setDesc(
-				"Play sound continously, until timer is continued or reset",
+				"Displays a persistent notification and (optionally) plays sound continuously, until timer is continued or reset.",
 			)
 			.addToggle((toggle) =>
 				toggle
@@ -205,7 +205,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 			.setName("Sound Selection")
 			.setDesc(
-				"Choose a built-in sound or select 'custom' to use your own.",
+				"Choose a built-in sound or select 'Custom' to use a file in your vault or a URL.",
 			)
 			.addDropdown((dropdown) => {
 				const builtInSounds = this.soundManager.getBuiltInSounds();
