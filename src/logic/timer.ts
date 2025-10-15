@@ -211,9 +211,10 @@ export class PomodoroTimer {
 						);
 					} else if (this.settings.persistentNotification) {
 						// Keep on chiming until user interacts with the timer
+						// Play sound every second
+						this.soundManager.playCompletionSound();
 						// Only show notification once and keep it visible
 						if (!this.persistentNotice) {
-							this.soundManager.playCompletionSound();
 							this.persistentNotice = new Notice(
 								"PomoBar: Time's up! Your most recent timer has finished.",
 								0, // 0 = never auto-dismiss
