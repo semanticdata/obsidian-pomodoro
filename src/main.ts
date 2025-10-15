@@ -92,11 +92,25 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData(),
-		);
+		const data = await this.loadData();
+
+		// Migration for v2.0 settings schema
+		if (data && data.workTime !== undefined) {
+			// Migrate old property names to new ones
+			data.workMinutes = data.workTime;
+			data.shortBreakMinutes = data.shortBreakTime;
+			data.longBreakMinutes = data.longBreakTime;
+
+			// Remove old properties
+			delete data.workTime;
+			delete data.shortBreakTime;
+			delete data.longBreakTime;
+
+			// Save migrated settings
+			await this.saveData(data);
+		}
+
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 	}
 
 	async saveSettings() {
