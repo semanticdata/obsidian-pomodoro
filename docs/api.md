@@ -69,19 +69,45 @@ class PomodoroTimer {
 
 #### Methods
 
-##### `startTimer(): void`
+##### `toggleTimer(): void`
 
-Starts the timer countdown. Sets up interval and updates UI state.
+Starts or pauses the timer based on current state.
 
-- Changes status bar styling to active state
-- Registers interval with Obsidian
-- Handles timer completion and state transitions
+- **Starting**: Sets end time using Moment.js, registers interval
+- **Pausing**: Converts running state to paused Duration
+- **Completion**: Handles auto-progress, persistent notifications, or pause
+- **Negative time**: Auto-advances timer if time remaining is negative
+
+##### `advanceTimer(): void`
+
+Advances to the next timer type in the cycle and resets duration.
+
+- Increments work interval count for completed work sessions
+- Handles transition to long break after required intervals
+- Sets new end time for the next timer type
+
+##### `toggleStatusBarVisibility(): void`
+
+Toggles the visibility of the entire status bar timer.
+
+##### `cleanup(): void`
+
+Cleans up all resources when plugin is unloaded.
+
+- Clears all registered intervals
+- Removes persistent notifications
+- Stops audio playback
+
+##### `resetToWorkState(): void`
+
+Resets timer to work state and clears interval count.
 
 ##### `pauseTimer(): void`
 
 Pauses the running timer and updates UI to paused state.
 
 - Clears the countdown interval
+- Stores remaining time as Duration
 - Updates status bar styling
 
 ##### `resetTimer(): void`
@@ -151,6 +177,13 @@ interface PomodoroSettings {
 	longBreakMinutes: number; // Long break duration in minutes
 	intervalsBeforeLongBreak: number; // Work intervals before long break
 	showIcon: boolean; // Display timer icon in status bar
+	showInStatusBar: boolean; // Show/hide entire status bar timer
+	soundEnabled: boolean; // Enable sound notifications
+	persistentNotification: boolean; // Keep notification visible until interaction
+	selectedSound: string; // Sound file name for notifications
+	soundVolume: number; // Volume for sound notifications (0.0-1.0)
+	customSoundUrl?: string; // Optional custom sound URL/file path
+	autoProgressEnabled: boolean; // Auto-start next timer in cycle
 }
 ```
 
@@ -174,12 +207,12 @@ CSS class names used for styling:
 
 ```typescript
 const CSS_CLASSES = {
-	TIMER: "pomobar-timer",
-	ICON: "pomobar-icon",
-	TEXT: "pomobar-text",
-	ACTIVE: "is-active",
-	PAUSED: "is-paused",
-	NO_ICON: "no-icon",
+	TIMER: "pomodoro-timer",
+	ICON: "pomodoro-icon",
+	TEXT: "pomodoro-text",
+	ACTIVE: "pomodoro-active",
+	PAUSED: "pomodoro-paused",
+	NO_ICON: "pomodoro-timer--no-icon",
 } as const;
 ```
 
@@ -194,6 +227,12 @@ const DEFAULT_SETTINGS: PomodoroSettings = {
 	longBreakMinutes: 15,
 	intervalsBeforeLongBreak: 4,
 	showIcon: false,
+	showInStatusBar: true,
+	soundEnabled: false,
+	persistentNotification: false,
+	selectedSound: "chime.wav",
+	soundVolume: 0.5,
+	autoProgressEnabled: false,
 };
 ```
 
@@ -223,15 +262,41 @@ The status bar timer responds to three mouse events:
 
 ## Timer State Machine
 
-The timer operates as a state machine with automatic transitions:
+The timer uses a sophisticated type-based state machine with Moment.js:
+
+### State Representation
+
+```typescript
+private timeEnd: moment.Moment | moment.Duration | null = null;
+```
+
+- **null** = OFF state (timer reset)
+- **Moment** = RUNNING state (counting down to specific UTC timestamp)
+- **Duration** = PAUSED state (ready to resume with remaining time)
+
+### State Transitions
+
+```text
+OFF (null)
+    ↓ (toggleTimer)
+RUNNING (Moment) → countdown to timestamp
+    ↓ (toggleTimer/pauseTimer)
+PAUSED (Duration) → stores remaining time
+    ↓ (toggleTimer)
+RUNNING (Moment) → resume from saved time
+    ↓ (completion/advanceTimer)
+NEXT CYCLE → auto-progress or manual advance
+```
+
+### Timer Cycle Logic
 
 ```text
 Work Timer (25min)
     ↓ (completion)
 Short Break (5min)
-    ↓ (completion, < 4 work intervals)
+    ↓ (completion, < intervalsBeforeLongBreak)
 Work Timer
-    ↓ (completion, 4th work interval)
+    ↓ (completion, intervalsBeforeLongBreak reached)
 Long Break (15min)
     ↓ (completion)
 Work Timer (cycle repeats)
@@ -242,18 +307,18 @@ Work Timer (cycle repeats)
 ### HTML Structure
 
 ```html
-<span class="pomobar-timer">
-	<span class="pomobar-icon">[SVG Icon]</span>
-	<span class="pomobar-text">25:00</span>
+<span class="pomodoro-timer">
+	<span class="pomodoro-icon">[SVG Icon]</span>
+	<span class="pomodoro-text">25:00</span>
 </span>
 ```
 
 ### CSS States
 
 - **Default**: No additional classes
-- **Active**: `.is-active` class added during countdown
-- **Paused**: `.is-paused` class added when timer is paused
-- **No Icon**: `.no-icon` class when icon is disabled
+- **Active**: `.pomodoro-active` class added during countdown
+- **Paused**: `.pomodoro-paused` class added when timer is paused
+- **No Icon**: `.pomodoro-timer--no-icon` class when icon is disabled
 
 ## Testing Interface
 

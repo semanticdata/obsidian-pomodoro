@@ -66,7 +66,8 @@ cd obsidian-pomodoro
     - `constants.ts`: Contains the project's constants.
     - `icons.ts`: Contains the project's icons.
     - `logic/`: Contains the project's logic.
-        - `timer.ts`: The timer logic.
+        - `timer.ts`: The timer logic with Moment.js state machine.
+        - `soundManager.ts`: Audio notification management.
     - `main.ts`: The main entry point for the project.
     - `types.ts`: Contains the project's types.
 - `tests/`: Contains the tests for the project.
@@ -102,9 +103,11 @@ cd obsidian-pomodoro
 
 #### PomodoroTimer (`src/logic/timer.ts`)
 
-- Handles all timer logic and state management
+- Handles all timer logic and state management using Moment.js
 - Manages status bar display and user interactions
-- Controls timer intervals and state transitions
+- Controls timer intervals and state transitions with type-based state machine
+- Integrates with SoundManager for audio notifications
+- Supports persistent notifications and auto-progress functionality
 
 #### PomodoroSettingTab (`src/components/SettingsTab.ts`)
 
@@ -122,6 +125,13 @@ interface PomodoroSettings {
 	longBreakMinutes: number; // Long break duration (minutes)
 	intervalsBeforeLongBreak: number; // Work sessions before long break
 	showIcon: boolean; // Show/hide timer icon
+	showInStatusBar: boolean; // Show/hide entire status bar timer
+	soundEnabled: boolean; // Enable sound notifications
+	persistentNotification: boolean; // Keep notifications visible until interaction
+	selectedSound: string; // Sound file name
+	soundVolume: number; // Volume level (0.0-1.0)
+	customSoundUrl?: string; // Optional custom sound URL
+	autoProgressEnabled: boolean; // Auto-start next timer
 }
 ```
 
