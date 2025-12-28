@@ -17,7 +17,7 @@ git clone https://github.com/semanticdata/obsidian-pomodoro.git
 cd obsidian-pomodoro
 ```
 
-2. **Install dependencies**:
+1. **Install dependencies**:
 
 === "PNPM"
 
@@ -53,31 +53,31 @@ cd obsidian-pomodoro
 - `package.json`: Defines the project's dependencies and scripts.
 - `pyproject.toml`: Configuration file for Python projects.
 - `docs/`: Contains the documentation files for the project.
-    - `api.md`: Documentation for the project's API.
-    - `configuration.md`: Documentation for the project's configuration.
-    - `development.md`: Documentation for developers.
-    - `index.md`: The main documentation file.
-    - `installation.md`: Documentation for installing the project.
-    - `troubleshooting.md`: Documentation for troubleshooting the project.
-    - `usage.md`: Documentation for using the project.
+  - `api.md`: Documentation for the project's API.
+  - `configuration.md`: Documentation for the project's configuration.
+  - `development.md`: Documentation for developers.
+  - `index.md`: The main documentation file.
+  - `installation.md`: Documentation for installing the project.
+  - `troubleshooting.md`: Documentation for troubleshooting the project.
+  - `usage.md`: Documentation for using the project.
 - `src/`: Contains the source code for the project.
-    - `components/`: Contains the project's components.
-        - `SettingsTab.ts`: The settings tab component.
-    - `constants.ts`: Contains the project's constants.
-    - `icons.ts`: Contains the project's icons.
-    - `logic/`: Contains the project's logic.
-        - `timer.ts`: The timer logic with Moment.js state machine.
-        - `soundManager.ts`: Audio notification management.
-    - `main.ts`: The main entry point for the project.
-    - `types.ts`: Contains the project's types.
+  - `components/`: Contains the project's components.
+    - `SettingsTab.ts`: The settings tab component.
+  - `constants.ts`: Contains the project's constants.
+  - `icons.ts`: Contains the project's icons.
+  - `logic/`: Contains the project's logic.
+    - `timer.ts`: The timer logic with Moment.js state machine.
+    - `soundManager.ts`: Audio notification management.
+  - `main.ts`: The main entry point for the project.
+  - `types.ts`: Contains the project's types.
 - `tests/`: Contains the tests for the project.
-    - `__mocks__/`: Contains mocks for the tests.
-        - `obsidian.ts`: Mocks for the Obsidian API.
-    - `plugin.test.ts`: Tests for the plugin.
-    - `settings-tab.test.ts`: Tests for the settings tab.
-    - `settings.test.ts`: Tests for the settings.
-    - `setup.ts`: Setup for the tests.
-    - `timer.test.ts`: Tests for the timer.
+  - `__mocks__/`: Contains mocks for the tests.
+    - `obsidian.ts`: Mocks for the Obsidian API.
+  - `plugin.test.ts`: Tests for the plugin.
+  - `settings-tab.test.ts`: Tests for the settings tab.
+  - `settings.test.ts`: Tests for the settings.
+  - `setup.ts`: Setup for the tests.
+  - `timer.test.ts`: Tests for the timer.
 
 ## Available Scripts
 
@@ -120,18 +120,18 @@ cd obsidian-pomodoro
 
 ```typescript
 interface PomodoroSettings {
-	workMinutes: number; // Work session duration (minutes)
-	shortBreakMinutes: number; // Short break duration (minutes)
-	longBreakMinutes: number; // Long break duration (minutes)
-	intervalsBeforeLongBreak: number; // Work sessions before long break
-	showIcon: boolean; // Show/hide timer icon
-	showInStatusBar: boolean; // Show/hide entire status bar timer
-	soundEnabled: boolean; // Enable sound notifications
-	persistentNotification: boolean; // Keep notifications visible until interaction
-	selectedSound: string; // Sound file name
-	soundVolume: number; // Volume level (0.0-1.0)
-	customSoundUrl?: string; // Optional custom sound URL
-	autoProgressEnabled: boolean; // Auto-start next timer
+ workMinutes: number; // Work session duration (minutes)
+ shortBreakMinutes: number; // Short break duration (minutes)
+ longBreakMinutes: number; // Long break duration (minutes)
+ intervalsBeforeLongBreak: number; // Work sessions before long break
+ showIcon: boolean; // Show/hide timer icon
+ showInStatusBar: boolean; // Show/hide entire status bar timer
+ soundEnabled: boolean; // Enable sound notifications
+ persistentNotification: boolean; // Keep notifications visible until interaction
+ selectedSound: string; // Sound file name
+ soundVolume: number; // Volume level (0.0-1.0)
+ customSoundUrl?: string; // Optional custom sound URL
+ autoProgressEnabled: boolean; // Auto-start next timer
 }
 ```
 
@@ -163,11 +163,11 @@ import { PomodoroTimer } from "../src/logic/timer";
 import { mockPlugin, mockSettings } from "./__mocks__/obsidian";
 
 describe("PomodoroTimer", () => {
-	test("should initialize with correct default state", () => {
-		const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
-		expect(timer.running).toBe(false);
-		expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
-	});
+ test("should initialize with correct default state", () => {
+  const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
+  expect(timer.running).toBe(false);
+  expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
+ });
 });
 ```
 
