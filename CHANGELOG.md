@@ -2,6 +2,43 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.6.0 - 2025-12-27
+
+### Added
+
+- New persistent notification feature that maintains timer state across plugin reloads.
+- Settings migration logic to handle future feature updates seamlessly.
+
+### Changed
+
+- Major timer refactoring for more reliable state management:
+  - Moved from manual timing to epoch-based timing for improved accuracy.
+  - Pause state now managed by storing remaining duration.
+  - Running state inferred from timer interval being set.
+  - Start/Pause consolidated into single `toggleTimer` method.
+- Improved variable naming throughout the codebase for better readability.
+- Enhanced audio notification persistence to work reliably with the new timer system.
+
+### Fixed
+
+- Fixed negative time formatting display issues.
+- Resolved timer consistency issues during state transitions.
+- Fixed test suite after major refactoring:
+  - Replaced manual time calculations with moment.js integration.
+  - Fixed circular reference errors in test mocks.
+  - Centralized mock definitions for better maintainability.
+  - Improved fake timer integration with moment.js.
+- Corrected TypeScript errors and assertion failures in tests.
+- Fixed overflow display of negative numbers in timer countdown.
+
+### Developer Experience
+
+- Comprehensive test refactoring and improvements.
+- Added proper test cleanup and mock management.
+- Updated documentation to reflect new timer architecture.
+- Code formatting with Prettier across the entire codebase.
+- Resolved lint issues and improved code quality.
+
 ## 1.5.0 - 2025-09-08
 
 ### Added
