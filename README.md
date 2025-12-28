@@ -16,7 +16,7 @@ Boost your productivity and maintain focus without ever leaving your notes. Pomo
 - 🔊 **Optional Audio Notifications:** Get gentle sound alerts when timers complete—choose from default sounds or use your own custom audio files.
 - 🖱️ **Intuitive & Quick Controls:** Manage your timers with simple clicks—no need to open new windows or type commands.
 - 🔄 **Automated Flow:** Optional auto-progression automatically starts the next timer in your Pomodoro cycle, or pause after each session for manual control.
-- ⚙️ **Fully Customizable:** Adjust timer durations, enable/disable sounds and auto-progression, and personalize your Pomodoro experience to fit your workflow perfectly.
+- ⚙️ **Your Rhythm, Your Rules:** Deep work sessions aren't one-size-fits-all. Custom-tune your work/break intervals to match your energy levels.
 
 ## How It Works
 
