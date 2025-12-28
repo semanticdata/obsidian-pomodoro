@@ -10,7 +10,7 @@ The Pomodoro Technique is a time management method that uses a timer to break do
 2. ☕ **Short Break**: 5 minutes of rest
 3. 🍅 **Work**: Another 25-minute session
 4. ☕ **Short Break**: Another 5-minute rest
-5. *Repeat 2 more times...*
+5. _Repeat 2 more times..._
 6. 🛋️ **Long Break**: 15 minutes of extended rest
 
 After 4 work sessions, you get a longer break to recharge before starting the cycle again.
@@ -21,23 +21,23 @@ The PomoBar timer appears in your Obsidian status bar and can be controlled with
 
 ### Mouse Controls
 
-| Action | Function |
-|--------|----------|
-| **Left Click** | Start or pause the timer |
+| Action           | Function                                                      |
+| ---------------- | ------------------------------------------------------------- |
+| **Left Click**   | Start or pause the timer                                      |
 | **Middle Click** | Cycle to the next timer phase (work, short break, long break) |
-| **Right Click** | Reset the current timer |
+| **Right Click**  | Reset the current timer                                       |
 
 ### Obsidian Commands
 
 You can also control the timer using Obsidian's command palette. This allows you to assign hotkeys to common actions for a keyboard-driven workflow.
 
-| Command | Description |
-|---|---|
-| **Toggle Timer** | Plays or pauses the timer. |
-| **Reset Timer** | Resets the timer to its initial state. |
-| **Cycle Timer** | Switches to the next phase in the Pomodoro cycle. |
-| **Toggle Status Bar** | Shows or hides the timer in the status bar. |
-| **Toggle Icon** | Shows or hides the timer icon in the status bar. |
+| Command                        | Description                                                   |
+| ------------------------------ | ------------------------------------------------------------- |
+| **Toggle Timer**               | Plays or pauses the timer.                                    |
+| **Reset Timer**                | Resets the timer to its initial state.                        |
+| **Cycle Timer**                | Switches to the next phase in the Pomodoro cycle.             |
+| **Toggle Status Bar**          | Shows or hides the timer in the status bar.                   |
+| **Toggle Icon**                | Shows or hides the timer icon in the status bar.              |
 | **Toggle Sound Notifications** | Enables or disables audio notifications when timers complete. |
 
 ## Timer States
@@ -74,11 +74,11 @@ The timer provides several visual cues to keep you informed of its status at a g
 
 The timer icon changes to reflect the current state:
 
-| Icon | State |
-|---|---|
+| Icon           | State                                 |
+| -------------- | ------------------------------------- |
 | **Timer Icon** | Displayed when the timer is inactive. |
-| **Play Icon** | Displayed when the timer is running. |
-| **Pause Icon** | Displayed when the timer is paused. |
+| **Play Icon**  | Displayed when the timer is running.  |
+| **Pause Icon** | Displayed when the timer is paused.   |
 
 The icon can be toggled on or off in the plugin settings or with the "Toggle Icon" command.
 
@@ -118,7 +118,7 @@ The plugin automatically:
 
 Sound notifications can be:
 
-- **Enabled/Disabled**: Toggle in settings or using the *Toggle Sound Notifications* command.
+- **Enabled/Disabled**: Toggle in settings or using the _Toggle Sound Notifications_ command.
 - **Customized**: Choose from default options or provide a custom URL/file path.
 - **Cross-platform**: Audio loads from CDN for improved reliability and compatibility.
 

@@ -8,32 +8,32 @@ This guide provides solutions to common issues with the PomoBar plugin. If you d
 
 - **Symptom**: The timer is not visible in the status bar.
 - **Solution**:
-  1. **Enable the Plugin**: Go to `Settings > Community Plugins` and make sure "PomoBar" is toggled on.
-  2. **Check Settings**: In PomoBar's settings, ensure "Show Timer Icon" is enabled.
-  3. **Restart Obsidian**: Sometimes a simple restart resolves visibility issues.
+    1. **Enable the Plugin**: Go to `Settings > Community Plugins` and make sure "PomoBar" is toggled on.
+    2. **Check Settings**: In PomoBar's settings, ensure "Show Timer Icon" is enabled.
+    3. **Restart Obsidian**: Sometimes a simple restart resolves visibility issues.
 
 ### Timer Not Responding
 
 - **Symptom**: Clicking the timer (left, middle, or right) has no effect.
 - **Solution**:
-  1. **Check for Conflicts**: Disable other plugins one by one to see if another plugin is interfering with PomoBar.
-  2. **Re-enable Plugin**: Disable and then re-enable PomoBar in the Community Plugins settings.
-  3. **Check Console**: Open the developer console (`Ctrl+Shift+I` or `Cmd+Option+I`) and look for error messages related to PomoBar.
+    1. **Check for Conflicts**: Disable other plugins one by one to see if another plugin is interfering with PomoBar.
+    2. **Re-enable Plugin**: Disable and then re-enable PomoBar in the Community Plugins settings.
+    3. **Check Console**: Open the developer console (`Ctrl+Shift+I` or `Cmd+Option+I`) and look for error messages related to PomoBar.
 
 ### Settings Not Saving
 
 - **Symptom**: Changes to timer durations or other settings are not applied.
 - **Solution**:
-  1. **Enter Valid Numbers**: Ensure you are entering positive integers for all timer durations.
-  2. **Reload Obsidian**: After changing settings, reload Obsidian to ensure they are correctly applied.
-  3. **Check File Permissions**: Make sure Obsidian has permission to write to its configuration files.
+    1. **Enter Valid Numbers**: Ensure you are entering positive integers for all timer durations.
+    2. **Reload Obsidian**: After changing settings, reload Obsidian to ensure they are correctly applied.
+    3. **Check File Permissions**: Make sure Obsidian has permission to write to its configuration files.
 
 ### Incorrect Time Display
 
 - **Symptom**: The timer shows the wrong time or doesn't update.
 - **Solution**:
-  1. **Reset the Timer**: Right-click the timer to reset it to its default state.
-  2. **Check System Clock**: Ensure your computer's clock is accurate.
+    1. **Reset the Timer**: Right-click the timer to reset it to its default state.
+    2. **Check System Clock**: Ensure your computer's clock is accurate.
 
 ## Performance Issues
 
@@ -41,8 +41,8 @@ This guide provides solutions to common issues with the PomoBar plugin. If you d
 
 - **Symptom**: Obsidian becomes slow or unresponsive when the timer is running.
 - **Solution**:
-  1. **Disable and Re-enable**: Try turning the plugin off and on again.
-  2. **Report the Issue**: If the problem persists, open an issue on GitHub with details about your setup.
+    1. **Disable and Re-enable**: Try turning the plugin off and on again.
+    2. **Report the Issue**: If the problem persists, open an issue on GitHub with details about your setup.
 
 ### Memory Leaks
 

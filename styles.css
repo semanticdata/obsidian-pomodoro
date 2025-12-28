@@ -4,7 +4,9 @@
 .pomodoro-timer {
 	gap: 4px;
 	cursor: pointer;
-	transition: background-color 0.3s ease, color 0.3s ease;
+	transition:
+		background-color 0.3s ease,
+		color 0.3s ease;
 
 	/* Default state - inherits status bar text color */
 	color: var(--text-normal);
@@ -39,7 +41,10 @@
 	height: var(--icon-xs);
 	fill: none;
 	stroke-width: 2;
-	transition: stroke 0.3s ease, opacity 0.2s ease, transform 0.2s ease;
+	transition:
+		stroke 0.3s ease,
+		opacity 0.2s ease,
+		transform 0.2s ease;
 
 	/* Default state - matches text color */
 	stroke: var(--text-normal);

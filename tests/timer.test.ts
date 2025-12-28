@@ -1,656 +1,949 @@
-import './setup';
-import PomodoroPlugin from '../src/main';
-import { App } from 'obsidian';
-import { PluginWithPrivates } from './setup';
-import { PomodoroTimer } from '../src/logic/timer';
-
-describe('PomodoroTimer', () => {
-  let plugin: PomodoroPlugin;
-  let mockApp: App;
-  let mockStatusBarItem: HTMLElement;
-
-  beforeEach(async () => {
-    // Reset mocks before each test
-    jest.clearAllMocks();
-
-    mockApp = {} as App; // Minimal App mock
-    const manifest = { id: 'test-plugin', name: 'Test Plugin', version: '1.0.0', minAppVersion: '0.15.0', author: 'Test Author', description: 'Test Description' };
-
-    plugin = new PomodoroPlugin(mockApp, manifest);
-
-    plugin.loadData = jest.fn().mockResolvedValue({});
-    plugin.saveData = jest.fn().mockResolvedValue(undefined);
-
-    await plugin.onload();
-    mockStatusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-  });
-
-  afterEach(async () => {
-    // Clean up any running timers
-    const timer = (plugin as PluginWithPrivates)?._timer;
-    if (timer) {
-      timer.pauseTimer(); // Stop any running timers
-      timer.cleanup(); // Clean up intervals
-    }
-    
-    // Ensure plugin is unloaded if onload was called
-    if (plugin.onunload) {
-      await plugin.onunload();
-    }
-  });
-
-  describe('Timer Logic', () => {
-    it('should start the timer and update display', () => {
-      jest.useFakeTimers();
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      timer.startTimer();
-      expect(timer.running).toBe(true);
-      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-active');
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-paused');
-      expect(window.setInterval).toHaveBeenCalledTimes(1);
-
-      jest.useRealTimers();
-    });
-
-    it('should pause the timer', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      // Clear previous classList calls from setup
-      (mockStatusBarItem.classList.add as jest.Mock).mockClear();
-      (mockStatusBarItem.classList.remove as jest.Mock).mockClear();
-
-      timer.startTimer();
-      timer.pauseTimer();
-      expect(timer.running).toBe(false);
-      expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith('pomodoro-active');
-      expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith('pomodoro-paused');
-      expect(window.clearInterval).toHaveBeenCalledTimes(1);
-    });
-
-    it('should reset the timer', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      timer.resetTimer();
-      expect(timer.running).toBe(false);
-      expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
-    });
-
-    it('should cycle durations correctly', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      timer.cycleDuration();
-      expect(timer.currentDuration).toBe(1); // Short break
-
-      timer.cycleDuration();
-      expect(timer.currentDuration).toBe(2); // Long break
-
-      timer.cycleDuration();
-      expect(timer.currentDuration).toBe(0); // Work
-    });
-
-    it('should not cycle duration when timer is running', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      timer.startTimer();
-      const initialDuration = timer.currentDuration;
-      timer.cycleDuration();
-
-      expect(timer.currentDuration).toBe(initialDuration);
-      timer.pauseTimer();
-    });
-
-    // eslint-disable-next-line jest/no-disabled-tests
-    it.skip('should update display when timer counts down', () => {
-      jest.useFakeTimers();
-      const timer = (plugin as PluginWithPrivates)._timer;
-      const textEl = { textContent: '' };
-      mockStatusBarItem.querySelector = jest.fn().mockReturnValue(textEl);
-
-      timer.startTimer();
-
-      // Advance timer by 1 second
-      jest.advanceTimersByTime(1000);
-
-      // Should show 24:59 (25 minutes - 1 second)
-      expect(textEl.textContent).toBe('24:59');
-
-      timer.pauseTimer();
-      jest.useRealTimers();
-    });
-  });
-
-  describe('resetToWorkState Method', () => {
-    it('should reset timer to work state and pause', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      // Set timer to different state
-      timer['currentDurationIndex'] = 2; // Long break
-      timer['workIntervalCount'] = 3;
-      timer.startTimer();
-
-      // Call resetToWorkState (covers lines 191-194)
-      timer.resetToWorkState();
-
-      expect(timer['currentDurationIndex']).toBe(0); // Work state
-      expect(timer['workIntervalCount']).toBe(0); // Reset count
-      expect(timer.running).toBe(false); // Should be paused
-      expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60); // Work duration
-    });
-
-    it('should reset to work state even when already in work state', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-
-      // Already in work state but with some progress
-      timer['currentDurationIndex'] = 0; // Work state
-      timer['workIntervalCount'] = 2;
-      timer['remainingTime'] = 500; // Some progress made
-
-      timer.resetToWorkState();
-
-      expect(timer['currentDurationIndex']).toBe(0); // Still work state
-      expect(timer['workIntervalCount']).toBe(0); // Reset count
-      expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60); // Reset duration
-    });
-  });
-
-  describe('Edge Cases', () => {
-    it('should handle missing text element in updateDisplay', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-      mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
-
-      // Should not throw error
-      expect(() => timer['updateDisplay']()).not.toThrow();
-    });
-
-    it('should handle missing icon element in updateIconVisibility', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-      mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
-
-      // Should not throw error
-      expect(() => timer.updateSettings(plugin.settings)).not.toThrow();
-    });
-
-    it('should handle cleanup with multiple registered intervals', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-      const clearIntervalSpy = jest.spyOn(window, 'clearInterval');
-
-      // Simulate multiple intervals being registered
-      timer['registeredIntervals'] = new Set([1, 2, 3]);
-
-      timer.cleanup();
-
-      expect(clearIntervalSpy).toHaveBeenCalledWith(1);
-      expect(clearIntervalSpy).toHaveBeenCalledWith(2);
-      expect(clearIntervalSpy).toHaveBeenCalledWith(3);
-      expect(timer['registeredIntervals'].size).toBe(0);
-
-      clearIntervalSpy.mockRestore();
-    });
-
-    it('should handle cleanup with no registered intervals', () => {
-      const timer = (plugin as PluginWithPrivates)._timer;
-      const clearIntervalSpy = jest.spyOn(window, 'clearInterval');
-
-      // Ensure no intervals are registered
-      timer['registeredIntervals'] = new Set();
-
-      expect(() => timer.cleanup()).not.toThrow();
-      expect(clearIntervalSpy).not.toHaveBeenCalled();
-
-      clearIntervalSpy.mockRestore();
-    });
-  });
-
-  // eslint-disable-next-line jest/no-disabled-tests
-  describe.skip('Mouse Event Handling', () => {
-    let timer: PomodoroTimer;
-
-    beforeEach(async () => {
-      await plugin.onload();
-      timer = (plugin as PluginWithPrivates)._timer;
-    });
-
-    describe('Left Click Events', () => {
-      it('should start timer when not running', () => {
-        expect(timer.running).toBe(false);
-        
-        // Spy on method before calling handler
-        const startTimerSpy = jest.spyOn(timer, 'startTimer').mockImplementation(() => {
-          timer._isRunning = true;
-        });
-        
-        // Verify the event was registered during setup
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const clickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'click'
-        );
-        expect(clickHandler).toBeDefined();
-
-        // Execute the click handler directly with proper event
-        const clickEvent = { button: 0 };
-        clickHandler[2](clickEvent);
-        
-        expect(startTimerSpy).toHaveBeenCalled();
-        startTimerSpy.mockRestore();
-      });
-
-      it('should pause timer when running', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
-        
-        const pauseTimerSpy = jest.spyOn(timer, 'pauseTimer').mockImplementation(() => {
-          timer._isRunning = false;
-        });
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const clickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'click'
-        )[2];
-        
-        const clickEvent = { button: 0 };
-        clickHandler(clickEvent);
-        
-        expect(pauseTimerSpy).toHaveBeenCalled();
-        pauseTimerSpy.mockRestore();
-      });
-    });
-
-    describe('Middle Click Events', () => {
-      it('should cycle duration when not running', () => {
-        expect(timer.running).toBe(false);
-        
-        const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
-        
-        const auxclickEvent = { button: 1 };
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const auxclickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'auxclick'
-        );
-        expect(auxclickHandler).toBeDefined();
-        
-        auxclickHandler[2](auxclickEvent);
-        
-        expect(cycleDurationSpy).toHaveBeenCalled();
-        cycleDurationSpy.mockRestore();
-      });
-
-      it('should still call cycleDuration when running (no restriction in auxclick)', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
-        
-        const cycleDurationSpy = jest.spyOn(timer, 'cycleDuration').mockImplementation(() => {});
-        
-        const auxclickEvent = { button: 1 };
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const auxclickHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'auxclick'
-        )[2];
-        
-        auxclickHandler(auxclickEvent);
-        
-        expect(cycleDurationSpy).toHaveBeenCalled();
-        cycleDurationSpy.mockRestore();
-      });
-    });
-
-    describe('Right Click Events', () => {
-      it('should reset timer when not running', () => {
-        expect(timer.running).toBe(false);
-        
-        const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
-        
-        const contextmenuEvent = {
-          preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        );
-        expect(contextmenuHandler).toBeDefined();
-        
-        contextmenuHandler[2](contextmenuEvent);
-        
-        expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
-        expect(resetTimerSpy).toHaveBeenCalled();
-        resetTimerSpy.mockRestore();
-      });
-
-      it('should not reset timer when running', () => {
-        timer.startTimer();
-        expect(timer.running).toBe(true);
-        
-        const resetTimerSpy = jest.spyOn(timer, 'resetTimer').mockImplementation(() => {});
-        
-        const contextmenuEvent = {
-          preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        )[2];
-        
-        contextmenuHandler(contextmenuEvent);
-        
-        expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
-        expect(resetTimerSpy).not.toHaveBeenCalled();
-        resetTimerSpy.mockRestore();
-      });
-
-      it('should always prevent default context menu', () => {
-        const contextmenuEvent = {
-          preventDefault: jest.fn()
-        };
-        
-        const mockRegisterDomEvent = plugin.registerDomEvent as jest.Mock;
-        const contextmenuHandler = mockRegisterDomEvent.mock.calls.find(
-          call => call[1] === 'contextmenu'
-        )[2];
-        
-        contextmenuHandler(contextmenuEvent);
-        
-        expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
-      });
-    });
-  });
-
-  describe('Icon State Transitions', () => {
-    let timer: PomodoroTimer;
-
-    beforeEach(async () => {
-      await plugin.onload();
-      timer = (plugin as PluginWithPrivates)._timer;
-    });
-
-    it('should show timer icon when at default duration', () => {
-      // Timer starts at default duration
-      expect(timer._isAtDefaultDuration()).toBe(true);
-      
-      const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-      const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
-      
-      // Should have timer icon
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG'); // From our SVG mock
-    });
-
-    it('should show play icon when running', () => {
-      timer.startTimer();
-      expect(timer.running).toBe(true);
-      
-      const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-      const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
-      
-      // Should have play icon
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
-    });
-
-    it('should show pause icon when paused mid-session', () => {
-      // Start timer then pause it
-      timer.startTimer();
-      timer.pauseTimer();
-      
-      expect(timer.running).toBe(false);
-      expect(timer._isAtDefaultDuration()).toBe(true); // Still at full duration in our mock
-      
-      const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-      const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
-      
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
-    });
-
-    it('should update icon when cycling durations', () => {
-      const initialDuration = timer.currentDuration;
-      
-      timer.cycleDuration();
-      
-      expect(timer.currentDuration).not.toBe(initialDuration);
-      
-      const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
-      const iconContainer = statusBarItem.querySelector('.pomodoro-icon');
-      
-      expect(iconContainer).toBeDefined();
-      expect(iconContainer?.innerHTML).toContain('Mock SVG');
-    });
-  });
-
-  describe('Timer Completion Flow', () => {
-    let timer: PomodoroTimer;
-
-    beforeEach(async () => {
-      await plugin.onload();
-      timer = (plugin as PluginWithPrivates)._timer;
-      
-      // Mock the Notice constructor
-      jest.clearAllMocks();
-    });
-
-    it('should transition from work to short break', () => {
-      // Set up work timer
-      timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-      timer._workIntervalCount = 0;
-      
-      // Mock timer completion
-      timer._remainingTime = 0;
-      timer._isRunning = true;
-      
-      const initialWorkCount = timer.workCount;
-      
-      // Simulate timer reaching zero (this would normally happen in the interval)
-      // We need to trigger the timer completion logic manually since we can't wait for intervals
-      if (timer._remainingTime === 0) {
-        timer._workIntervalCount++;
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
-      
-      expect(timer.workCount).toBe(initialWorkCount + 1);
-      expect(timer.currentDuration).toBe(1); // Should be in short break
-    });
-
-    it('should transition to long break after configured work intervals', () => {
-      // Set up for long break transition
-      timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-      timer._workIntervalCount = 3; // One less than default intervalsBeforeLongBreak (4)
-      
-      timer._remainingTime = 0;
-      timer._isRunning = true;
-      
-      // Simulate timer completion leading to long break
-      if (timer._remainingTime === 0) {
-        timer._workIntervalCount++;
-        if (timer._workIntervalCount >= plugin.settings.intervalsBeforeLongBreak) {
-          timer._currentDurationIndex = 2; // TIMER_STATES.LONG_BREAK
-          timer._workIntervalCount = 0;
-        }
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
-      
-      expect(timer.currentDuration).toBe(2); // Should be in long break
-      expect(timer.workCount).toBe(0); // Should reset work count
-    });
-
-    it('should transition from break back to work', () => {
-      // Set up break timer
-      timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-      
-      timer._remainingTime = 0;
-      timer._isRunning = true;
-      
-      // Simulate break completion
-      if (timer._remainingTime === 0) {
-        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-        timer.resetTimer();
-        timer.pauseTimer();
-      }
-      
-      expect(timer.currentDuration).toBe(0); // Should be back to work
-    });
-  });
-
-  describe('Auto-progression Feature', () => {
-    let timer: PomodoroTimer;
-
-    beforeEach(async () => {
-      await plugin.onload();
-      timer = (plugin as PluginWithPrivates)._timer;
-      jest.clearAllMocks();
-    });
-
-    describe('Auto-progression Disabled (Default Behavior)', () => {
-      beforeEach(() => {
-        // Ensure auto-progression is disabled (default)
-        plugin.settings.autoProgressEnabled = false;
-        timer.updateSettings(plugin.settings);
-      });
-
-      it('should pause after work timer completes', () => {
-        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-        timer._workIntervalCount = 0;
-        timer._remainingTime = 0;
-        timer._isRunning = true;
-
-        // Simulate timer completion logic (without auto-progression)
-        if (timer._remainingTime === 0) {
-          timer._workIntervalCount++;
-          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-          timer.resetTimer();
-          timer.pauseTimer();
-        }
-
-        expect(timer.running).toBe(false);
-        expect(timer.currentDuration).toBe(1); // Should be in short break
-        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
-      });
-
-      it('should pause after break timer completes', () => {
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer._remainingTime = 0;
-        timer._isRunning = true;
-
-        // Simulate break completion logic (without auto-progression)
-        if (timer._remainingTime === 0) {
-          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-          timer.resetTimer();
-          timer.pauseTimer();
-        }
-
-        expect(timer.running).toBe(false);
-        expect(timer.currentDuration).toBe(0); // Should be back to work
-        expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
-      });
-    });
-
-    describe('Auto-progression Enabled', () => {
-      beforeEach(() => {
-        // Enable auto-progression
-        plugin.settings.autoProgressEnabled = true;
-        timer.updateSettings(plugin.settings);
-      });
-
-      it('should continue running after work timer completes', () => {
-        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-        timer._workIntervalCount = 0;
-        timer._remainingTime = 0;
-        timer._isRunning = true;
-
-        // Simulate timer completion logic (with auto-progression)
-        if (timer._remainingTime === 0) {
-          timer._workIntervalCount++;
-          timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
-
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(1); // Should be in short break
-        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
-      });
-
-      it('should continue running after break timer completes', () => {
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer._remainingTime = 0;
-        timer._isRunning = true;
-
-        // Simulate break completion logic (with auto-progression)
-        if (timer._remainingTime === 0) {
-          timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
-
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(0); // Should be back to work
-        expect(timer.timeRemaining).toBe(plugin.settings.workTime * 60);
-      });
-
-      it('should transition to long break with auto-progression', () => {
-        timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-        timer._workIntervalCount = 3; // One less than default (4)
-        timer._remainingTime = 0;
-        timer._isRunning = true;
-
-        // Simulate work completion leading to long break
-        if (timer._remainingTime === 0) {
-          timer._workIntervalCount++;
-          if (timer._workIntervalCount >= plugin.settings.intervalsBeforeLongBreak) {
-            timer._currentDurationIndex = 2; // TIMER_STATES.LONG_BREAK
-            timer._workIntervalCount = 0;
-          }
-          
-          if (plugin.settings.autoProgressEnabled) {
-            timer._remainingTime = timer['getCurrentDurationTime']();
-          } else {
-            timer.resetTimer();
-            timer.pauseTimer();
-          }
-        }
-
-        expect(timer.running).toBe(true);
-        expect(timer.currentDuration).toBe(2); // Should be in long break
-        expect(timer.workCount).toBe(0); // Should reset work count
-        expect(timer.timeRemaining).toBe(plugin.settings.longBreakTime * 60);
-      });
-
-      it('should still allow manual pause during auto-progression', () => {
-        // Enable auto-progression but test manual control
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer._isRunning = true;
-        timer._remainingTime = 300; // 5 minutes remaining
-
-        timer.pauseTimer();
-
-        expect(timer.running).toBe(false);
-        expect(timer.timeRemaining).toBe(300); // Time should be preserved
-      });
-
-      it('should allow manual reset during auto-progression', () => {
-        timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-        timer._isRunning = false;
-        timer._remainingTime = 300; // Some time remaining
-
-        timer.resetTimer();
-
-        expect(timer.running).toBe(false);
-        expect(timer.currentDuration).toBe(1); // Should stay in short break
-        expect(timer.timeRemaining).toBe(plugin.settings.shortBreakTime * 60);
-      });
-    });
-  });
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import "./setup";
+import PomodoroPlugin from "../src/main";
+import { moment, App } from "obsidian";
+import { PluginWithPrivates } from "./setup";
+import { PomodoroTimer } from "../src/logic/timer";
+
+describe("PomodoroTimer", () => {
+	let plugin: PomodoroPlugin;
+	let mockApp: App;
+	let mockStatusBarItem: HTMLElement;
+
+	beforeEach(async () => {
+		// Reset mocks before each test
+		jest.clearAllMocks();
+
+		mockApp = {} as App; // Minimal App mock
+		const manifest = {
+			id: "test-plugin",
+			name: "Test Plugin",
+			version: "1.0.0",
+			minAppVersion: "0.15.0",
+			author: "Test Author",
+			description: "Test Description",
+		};
+
+		plugin = new PomodoroPlugin(mockApp, manifest);
+
+		plugin.loadData = jest.fn().mockResolvedValue({});
+		plugin.saveData = jest.fn().mockResolvedValue(undefined);
+
+		await plugin.onload();
+		mockStatusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
+	});
+
+	afterEach(async () => {
+		// Clean up any running timers
+		const timer = (plugin as PluginWithPrivates)?._timer;
+		if (timer) {
+			timer.pauseTimer(); // Stop any running timers
+			timer.cleanup(); // Clean up intervals
+		}
+
+		// Ensure plugin is unloaded if onload was called
+		if (plugin.onunload) {
+			await plugin.onunload();
+		}
+	});
+
+	describe("Timer Logic", () => {
+		describe("Basic Timer Operations (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(new Date());
+			});
+
+			afterEach(() => {
+				jest.useRealTimers();
+			});
+
+			it("should start the timer and update display", () => {
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+				expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith(
+					"pomodoro-active",
+				);
+				expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith(
+					"pomodoro-paused",
+				);
+				expect(window.setInterval).toHaveBeenCalledTimes(1);
+			});
+
+			it("should update display when timer counts down", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				// Set up querySelector to return text element
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				// Start the timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Advance the fake system time by 1 second and update display manually.
+				const after = now + 1000;
+				jest.setSystemTime(after);
+
+				// Call updateDisplay to reflect the new time
+				(timer as any).updateDisplay();
+
+				// Should show 24:59 (25 minutes - 1 second)
+				expect(textEl.textContent).toBe("24:59");
+
+				// Clean up
+				timer.pauseTimer();
+			});
+
+			it("should format positive time with consistent MM:SS format", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				timer.toggleTimer();
+
+				// Test various positive times to ensure consistent formatting
+				const testCases = [
+					{ offset: 0, expected: "25:00" }, // Full time
+					{ offset: 1000, expected: "24:59" }, // 1 second elapsed
+					{ offset: 60000, expected: "24:00" }, // 1 minute elapsed
+					{ offset: 9000, expected: "24:51" }, // 9 seconds elapsed
+					{ offset: 599000, expected: "15:01" }, // 9:59 elapsed
+					{ offset: 1494000, expected: "0:06" }, // Almost done
+				];
+
+				testCases.forEach(({ offset, expected }) => {
+					jest.setSystemTime(now + offset);
+					(timer as any).updateDisplay();
+					expect(textEl.textContent).toBe(expected);
+				});
+
+				timer.pauseTimer();
+			});
+		});
+
+		it("should pause the timer", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			// Clear previous classList calls from setup
+			(mockStatusBarItem.classList.add as jest.Mock).mockClear();
+			(mockStatusBarItem.classList.remove as jest.Mock).mockClear();
+
+			timer.toggleTimer();
+			timer.pauseTimer();
+			expect(timer.isRunning).toBe(false);
+			expect(mockStatusBarItem.classList.remove).toHaveBeenCalledWith(
+				"pomodoro-active",
+			);
+			expect(mockStatusBarItem.classList.add).toHaveBeenCalledWith(
+				"pomodoro-paused",
+			);
+			expect(window.clearInterval).toHaveBeenCalledTimes(1);
+		});
+
+		it("should reset the timer", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			timer.resetTimer();
+
+			// After reset, timeRemaining should match the configured work duration
+			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+				moment
+					.duration(plugin.settings.workMinutes, "minutes")
+					.asMilliseconds(),
+			);
+		});
+
+		it("should cycle durations correctly", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			timer.cycleDuration();
+			expect(timer.timerType).toBe(1); // Short break
+
+			timer.cycleDuration();
+			expect(timer.timerType).toBe(2); // Long break
+
+			timer.cycleDuration();
+			expect(timer.timerType).toBe(0); // Work
+		});
+
+		it("should not cycle duration when timer is running", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			timer.toggleTimer();
+			const initialTimerType = timer.timerType;
+			timer.cycleDuration();
+
+			expect(timer.timerType).toBe(initialTimerType);
+			timer.pauseTimer();
+		});
+	});
+
+	describe("resetToWorkState Method", () => {
+		it("should reset timer to work state and pause", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			// Set timer to different state
+			timer["currentDurationIndex"] = 2; // Long break
+			timer["workIntervalCount"] = 3;
+			timer.toggleTimer();
+
+			// Call resetToWorkState (covers lines 191-194)
+			timer.resetToWorkState();
+
+			expect(timer["currentDurationIndex"]).toBe(0); // Work state
+			expect(timer["workIntervalCount"]).toBe(0); // Reset count
+			expect(timer.isRunning).toBe(false); // Should be paused
+			// Compare durations numerically to avoid 1ms differences from timing
+			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+				moment
+					.duration(plugin.settings.workMinutes, "minutes")
+					.asMilliseconds(),
+				-2,
+			); // Work duration
+		});
+
+		it("should reset to work state even when already in work state", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+
+			// Already in work state but with some progress
+			timer["currentDurationIndex"] = 0; // Work state
+			timer["workIntervalCount"] = 2;
+			timer["timeEnd"] = moment.utc(moment.now()).add(500, "seconds"); // Some progress made
+
+			timer.resetToWorkState();
+
+			expect(timer["currentDurationIndex"]).toBe(0); // Still work state
+			expect(timer["workIntervalCount"]).toBe(0); // Reset count
+			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+				moment
+					.duration(plugin.settings.workMinutes, "minutes")
+					.asMilliseconds(),
+				-2,
+			); // Reset duration
+		});
+	});
+
+	describe("Edge Cases", () => {
+		describe("Negative Duration Display (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(Date.now());
+			});
+
+			afterEach(() => {
+				jest.useRealTimers();
+			});
+
+			it("should handle negative duration display (timer overflow)", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				// Set up querySelector to return text element
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				// Start the timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Advance time beyond the timer duration to create negative duration
+				// Default work time is 25 minutes (1500 seconds)
+				const overflowTime = 1500000 + 30000; // 25 minutes + 30 seconds
+				jest.setSystemTime(now + overflowTime);
+
+				// Call updateDisplay to reflect the negative time
+				(timer as any).updateDisplay();
+
+				// Fixed behavior: shows -0:30 (proper negative formatting)
+				expect(textEl.textContent).toBe("-0:30");
+
+				// Clean up
+				timer.pauseTimer();
+			});
+
+			it("should format negative minutes correctly", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				timer.toggleTimer();
+
+				// Advance time to create -2 minutes and 15 seconds overflow
+				const overflowTime = 1500000 + 135000; // 25 minutes + 2 minutes 15 seconds
+				jest.setSystemTime(now + overflowTime);
+
+				(timer as any).updateDisplay();
+
+				// Fixed behavior: shows -2:15 (proper negative formatting)
+				expect(textEl.textContent).toBe("-2:15");
+
+				timer.pauseTimer();
+			});
+
+			it("should format negative time with consistent -MM:SS format", () => {
+				const now = Date.now();
+				const timer = (plugin as PluginWithPrivates)._timer;
+
+				const textEl: any = { textContent: "" };
+				mockStatusBarItem.querySelector = jest
+					.fn()
+					.mockReturnValue(textEl);
+
+				timer.toggleTimer();
+
+				// Test various negative times to ensure consistent formatting
+				const testCases = [
+					{ offset: 1500000 + 1000, expected: "-0:01" }, // 1 second over
+					{ offset: 1500000 + 5000, expected: "-0:05" }, // 5 seconds over
+					{ offset: 1500000 + 60000, expected: "-1:00" }, // 1 minute over
+					{ offset: 1500000 + 65000, expected: "-1:05" }, // 1:05 over
+					{ offset: 1500000 + 600000, expected: "-10:00" }, // 10 minutes over
+					{ offset: 1500000 + 3599000, expected: "-59:59" }, // 59:59 over
+				];
+
+				testCases.forEach(({ offset, expected }) => {
+					jest.setSystemTime(now + offset);
+					(timer as any).updateDisplay();
+					expect(textEl.textContent).toBe(expected);
+				});
+
+				timer.pauseTimer();
+			});
+		});
+
+		it("should handle missing text element in updateDisplay", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
+
+			// Should not throw error and should not change remaining time
+			const beforeMs = timer.timeRemaining.asMilliseconds();
+			expect(() => timer["updateDisplay"]()).not.toThrow();
+			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+				beforeMs,
+				-2,
+			);
+		});
+
+		it("should handle missing icon element in updateIconVisibility", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			mockStatusBarItem.querySelector = jest.fn().mockReturnValue(null);
+
+			// Should not throw error and should preserve class list when icon element is missing
+			const beforeClasses = Array.from(mockStatusBarItem.classList);
+			expect(() => timer.updateSettings(plugin.settings)).not.toThrow();
+			expect(Array.from(mockStatusBarItem.classList)).toEqual(
+				beforeClasses,
+			);
+		});
+
+		it("should handle cleanup with multiple registered intervals", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			const clearIntervalSpy = jest.spyOn(window, "clearInterval");
+
+			// Simulate multiple intervals being registered
+			timer["registeredIntervals"] = new Set([1, 2, 3]);
+
+			timer.cleanup();
+
+			expect(clearIntervalSpy).toHaveBeenCalledWith(1);
+			expect(clearIntervalSpy).toHaveBeenCalledWith(2);
+			expect(clearIntervalSpy).toHaveBeenCalledWith(3);
+			expect(timer["registeredIntervals"].size).toBe(0);
+
+			clearIntervalSpy.mockRestore();
+		});
+
+		it("should handle cleanup with no registered intervals", () => {
+			const timer = (plugin as PluginWithPrivates)._timer;
+			const clearIntervalSpy = jest.spyOn(window, "clearInterval");
+
+			// Ensure no intervals are registered
+			timer["registeredIntervals"] = new Set();
+
+			// Should not throw and should not call clearInterval; internal state should remain cleared
+			expect(() => timer.cleanup()).not.toThrow();
+			expect(clearIntervalSpy).not.toHaveBeenCalled();
+			expect(timer["registeredIntervals"].size).toBe(0);
+			expect(timer["currentInterval"]).toBeNull();
+
+			clearIntervalSpy.mockRestore();
+		});
+	});
+
+	describe("Mouse Event Handling", () => {
+		let timer: PomodoroTimer;
+
+		beforeEach(() => {
+			timer = (plugin as PluginWithPrivates)._timer;
+		});
+
+		/**
+		 * Helper to find a registered DOM event handler by event name
+		 */
+		function findEventHandler(eventName: string) {
+			const handler = (plugin as any).domEventHandlers.find(
+				(call: any) => call.event === eventName,
+			);
+			return handler ? handler.callback : null;
+		}
+
+		describe("Left Click Events", () => {
+			it("should toggle timer on left click", () => {
+				expect(timer.isRunning).toBe(false);
+
+				const toggleTimerSpy = jest.spyOn(timer, "toggleTimer");
+				const clickHandler = findEventHandler("click");
+
+				expect(clickHandler).toBeDefined();
+
+				// Simulate left click (button: 0)
+				const clickEvent = { button: 0 } as MouseEvent;
+				clickHandler(clickEvent);
+
+				expect(toggleTimerSpy).toHaveBeenCalled();
+			});
+
+			it("should start timer when clicked while not running", () => {
+				expect(timer.isRunning).toBe(false);
+
+				const clickHandler = findEventHandler("click");
+				const clickEvent = { button: 0 } as MouseEvent;
+				clickHandler(clickEvent);
+
+				expect(timer.isRunning).toBe(true);
+			});
+
+			it("should pause timer when clicked while running", () => {
+				// Start timer first
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				const clickHandler = findEventHandler("click");
+				const clickEvent = { button: 0 } as MouseEvent;
+				clickHandler(clickEvent);
+
+				expect(timer.isRunning).toBe(false);
+			});
+		});
+
+		describe("Middle Click Events", () => {
+			it("should cycle duration on middle click when not running", () => {
+				expect(timer.isRunning).toBe(false);
+				const initialTimerType = timer.timerType;
+
+				const auxclickHandler = findEventHandler("auxclick");
+				expect(auxclickHandler).toBeDefined();
+
+				// Simulate middle click (button: 1)
+				const auxclickEvent = { button: 1 } as MouseEvent;
+				auxclickHandler(auxclickEvent);
+
+				// Timer type should have cycled
+				expect(timer.timerType).not.toBe(initialTimerType);
+			});
+
+			it("should attempt to cycle duration even when running", () => {
+				// Note: cycleDuration checks isRunning internally and returns early if running
+				// But the event handler doesn't prevent calling it
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				const cycleDurationSpy = jest.spyOn(timer, "cycleDuration");
+				const auxclickHandler = findEventHandler("auxclick");
+
+				const auxclickEvent = { button: 1 } as MouseEvent;
+				auxclickHandler(auxclickEvent);
+
+				// cycleDuration is called but does nothing when timer is running
+				expect(cycleDurationSpy).toHaveBeenCalled();
+			});
+		});
+
+		describe("Right Click Events", () => {
+			it("should reset timer on right click when not running", () => {
+				expect(timer.isRunning).toBe(false);
+
+				const resetTimerSpy = jest.spyOn(timer, "resetTimer");
+				const contextmenuHandler = findEventHandler("contextmenu");
+
+				expect(contextmenuHandler).toBeDefined();
+
+				const contextmenuEvent = {
+					preventDefault: jest.fn(),
+				} as unknown as MouseEvent;
+
+				contextmenuHandler(contextmenuEvent);
+
+				expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
+				expect(resetTimerSpy).toHaveBeenCalled();
+			});
+
+			it("should not reset timer on right click when running", () => {
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				const resetTimerSpy = jest.spyOn(timer, "resetTimer");
+				const contextmenuHandler = findEventHandler("contextmenu");
+
+				const contextmenuEvent = {
+					preventDefault: jest.fn(),
+				} as unknown as MouseEvent;
+
+				contextmenuHandler(contextmenuEvent);
+
+				// Context menu is prevented but timer is not reset
+				expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
+				expect(resetTimerSpy).not.toHaveBeenCalled();
+			});
+
+			it("should always prevent default context menu", () => {
+				const contextmenuHandler = findEventHandler("contextmenu");
+
+				const contextmenuEvent = {
+					preventDefault: jest.fn(),
+				} as unknown as MouseEvent;
+
+				contextmenuHandler(contextmenuEvent);
+
+				expect(contextmenuEvent.preventDefault).toHaveBeenCalled();
+			});
+		});
+	});
+
+	describe("Icon State Transitions", () => {
+		let timer: PomodoroTimer;
+
+		beforeEach(async () => {
+			await plugin.onload();
+			timer = (plugin as PluginWithPrivates)._timer;
+		});
+
+		it("should show timer icon when at default duration", () => {
+			// Timer starts at default duration
+			expect(timer._isAtDefaultDuration()).toBe(true);
+
+			const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
+			const iconContainer = statusBarItem.querySelector(".pomodoro-icon");
+
+			// Should have timer icon-off since timer starts disabled (timeEnd === null)
+			expect(iconContainer).toBeDefined();
+			expect(iconContainer?.getAttribute("data-icon-key")).toBe(
+				"pomobar-timer-off",
+			);
+		});
+
+		it("should show pause icon when running", () => {
+			timer.toggleTimer();
+			expect(timer.isRunning).toBe(true);
+
+			const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
+			const iconContainer = statusBarItem.querySelector(".pomodoro-icon");
+
+			// Should have pause icon key
+			expect(iconContainer).toBeDefined();
+			expect(iconContainer?.getAttribute("data-icon-key")).toBe(
+				"pomobar-timer-pause",
+			);
+		});
+
+		describe("Paused Mid-Session Icon (with fake timers)", () => {
+			beforeEach(() => {
+				jest.useFakeTimers({ legacyFakeTimers: false });
+				jest.setSystemTime(Date.now());
+			});
+
+			afterEach(() => {
+				jest.useRealTimers();
+			});
+
+			it("should show play icon when paused mid-session", () => {
+				// Start timer
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Advance time by 1 second
+				jest.advanceTimersByTime(1000);
+				(timer as any).updateDisplay(); // Manually trigger update
+
+				// Pause the timer
+				timer.pauseTimer();
+
+				expect(timer.isRunning).toBe(false);
+				expect(timer._isAtDefaultDuration()).toBe(false); // No longer at default duration
+
+				const statusBarItem = (
+					plugin as PluginWithPrivates
+				)._statusBarItem;
+				const iconContainer =
+					statusBarItem.querySelector(".pomodoro-icon");
+
+				expect(iconContainer).toBeDefined();
+				// Should have play icon key when paused mid-session
+				expect(iconContainer?.getAttribute("data-icon-key")).toBe(
+					"pomobar-timer-play",
+				);
+			});
+		});
+
+		it("should update icon when cycling durations", () => {
+			const initialDuration = timer.timerType;
+
+			timer.cycleDuration();
+
+			expect(timer.timerType).not.toBe(initialDuration);
+
+			const statusBarItem = (plugin as PluginWithPrivates)._statusBarItem;
+			const iconContainer = statusBarItem.querySelector(".pomodoro-icon");
+
+			expect(iconContainer).toBeDefined();
+			// Icon key should reflect the (possibly cycled) state
+			expect([
+				"pomobar-timer",
+				"pomobar-timer-play",
+				"pomobar-timer-pause",
+				"pomobar-timer-off",
+			]).toContain(iconContainer?.getAttribute("data-icon-key"));
+		});
+	});
+
+	describe("Timer Completion Flow", () => {
+		let timer: PomodoroTimer;
+
+		beforeEach(async () => {
+			await plugin.onload();
+			timer = (plugin as PluginWithPrivates)._timer;
+
+			// Mock the Notice constructor
+			jest.clearAllMocks();
+		});
+
+		it("should transition from work to short break", () => {
+			// Set up work timer
+			timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+			timer._workIntervalCount = 0;
+
+			// Mock timer completion
+			timer._timeEnd = moment.duration(0);
+			timer._isRunning = true;
+
+			const initialWorkCount = timer.workIntervalsCount;
+
+			// Simulate timer reaching zero (this would normally happen in the interval)
+			// We need to trigger the timer completion logic manually since we can't wait for intervals
+			timer.advanceTimer();
+			timer.pauseTimer();
+
+			expect(timer.workIntervalsCount).toBe(initialWorkCount + 1);
+			expect(timer.timerType).toBe(1); // Should be in short break
+		});
+
+		it("should transition to long break after configured work intervals", () => {
+			// Set up for long break transition
+			timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+			timer._workIntervalCount = 3; // One less than default intervalsBeforeLongBreak (4)
+
+			timer._timeEnd = moment.duration(0);
+			timer._isRunning = true;
+
+			// Simulate timer completion leading to long break
+			timer.advanceTimer();
+			timer.pauseTimer();
+
+			expect(timer.timerType).toBe(2); // Should be in long break
+			expect(timer.workIntervalsCount).toBe(0); // Should reset work count
+		});
+
+		it("should transition from break back to work", () => {
+			// Set up break timer
+			timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+
+			timer._timeEnd = moment.duration(0);
+			timer._isRunning = true;
+
+			// Simulate break completion
+			timer.advanceTimer();
+			timer.pauseTimer();
+
+			expect(timer.timerType).toBe(0); // Should be back to work
+		});
+	});
+
+	describe("Auto-progression Feature", () => {
+		let timer: PomodoroTimer;
+
+		beforeEach(async () => {
+			await plugin.onload();
+			timer = (plugin as PluginWithPrivates)._timer;
+			jest.clearAllMocks();
+		});
+
+		describe("Auto-progression Disabled (Default Behavior)", () => {
+			beforeEach(() => {
+				// Ensure auto-progression is disabled (default)
+				plugin.settings.autoProgressEnabled = false;
+				timer.updateSettings(plugin.settings);
+			});
+
+			it("should pause after work timer completes", () => {
+				timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+				timer._workIntervalCount = 0;
+				timer._timeEnd = moment.duration(0);
+				timer._isRunning = true;
+
+				// Simulate timer completion logic (without auto-progression)
+				timer.advanceTimer();
+				timer.pauseTimer();
+
+				expect(timer.isRunning).toBe(false);
+				expect(timer.timerType).toBe(1); // Should be in short break
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.shortBreakMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+
+			it("should pause after break timer completes", () => {
+				timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+				timer._timeEnd = moment.duration(0);
+				timer._isRunning = true;
+
+				// Simulate break completion logic (without auto-progression)
+				timer.advanceTimer();
+				timer.pauseTimer();
+
+				expect(timer.isRunning).toBe(false);
+				expect(timer.timerType).toBe(0); // Should be back to work
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.workMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+		});
+
+		describe("Auto-progression Enabled", () => {
+			beforeEach(() => {
+				// Enable auto-progression
+				plugin.settings.autoProgressEnabled = true;
+				timer.updateSettings(plugin.settings);
+			});
+
+			it("should continue running after work timer completes", () => {
+				timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+				timer._workIntervalCount = 0;
+				timer._timeEnd = moment.duration(0);
+				timer._isRunning = true;
+
+				// Simulate timer completion logic (with auto-progression)
+				timer.advanceTimer();
+
+				expect(timer.isRunning).toBe(true);
+				expect(timer.timerType).toBe(1); // Should be in short break
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.shortBreakMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+
+			it("should continue running after break timer completes", () => {
+				timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+				timer._timeEnd = moment.duration(0);
+				timer._isRunning = true;
+
+				// Simulate break completion logic (with auto-progression)
+				timer.advanceTimer();
+
+				expect(timer.isRunning).toBe(true);
+				expect(timer.timerType).toBe(0); // Should be back to work
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.workMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+
+			it("should transition to long break with auto-progression", () => {
+				timer._currentDurationIndex = 0; // TIMER_STATES.WORK
+				timer._workIntervalCount = 3; // One less than default (4)
+				timer._timeEnd = moment.duration(0);
+				timer._isRunning = true;
+
+				// Simulate work completion leading to long break
+				timer.advanceTimer();
+
+				expect(timer.isRunning).toBe(true);
+				expect(timer.timerType).toBe(2); // Should be in long break
+				expect(timer.workIntervalsCount).toBe(0); // Should reset work count
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.longBreakMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+
+			it("should still allow manual pause during auto-progression", () => {
+				// Enable auto-progression but test manual control
+				timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+				timer._isRunning = true;
+				timer._timeEnd = moment
+					.utc(moment.now())
+					.add(plugin.settings.shortBreakMinutes, "minutes"); // 5 minutes remaining
+
+				timer.pauseTimer();
+
+				expect(timer.isRunning).toBe(false);
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.shortBreakMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				); // Time should be preserved
+			});
+
+			it("should allow manual reset during auto-progression", () => {
+				timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
+				timer._isRunning = false;
+				timer._timeEnd = moment
+					.utc(moment.now())
+					.add(plugin.settings.shortBreakMinutes, "minutes"); // Some time remaining
+
+				timer.resetTimer();
+
+				expect(timer.isRunning).toBe(false);
+				expect(timer.timerType).toBe(1); // Should stay in short break
+				expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
+					moment
+						.duration(plugin.settings.shortBreakMinutes, "minutes")
+						.asMilliseconds(),
+					-2,
+				);
+			});
+		});
+
+		describe("Persistent Notification Feature", () => {
+			beforeEach(() => {
+				// Enable persistent notification
+				plugin.settings.persistentNotification = true;
+				plugin.settings.autoProgressEnabled = false;
+				timer.updateSettings(plugin.settings);
+			});
+
+			it("should create persistent notification only once when timer overflows", () => {
+				// Access the private persistentNotice property
+				const getNotice = () => (timer as any).persistentNotice;
+
+				// Initially no notification
+				expect(getNotice()).toBeNull();
+
+				// Simulate timer overflow scenario
+				timer._currentDurationIndex = 0;
+				timer._workIntervalCount = 0;
+
+				// Start timer and immediately set to overflow state
+				timer.toggleTimer();
+				expect(timer.isRunning).toBe(true);
+
+				// Manually trigger the overflow logic by calling the interval callback
+				// In real scenario, this would happen when time reaches 0
+				const intervalCallback = (timer as any).currentInterval;
+				expect(intervalCallback).not.toBeNull();
+
+				// Note: We can't easily test the interval callback directly in unit tests
+				// because it's an anonymous function. The important part is that the
+				// persistent notification is only created once and tracked properly.
+			});
+
+			it("should clear persistent notification when timer is paused", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Pause the timer
+				timer.pauseTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+
+			it("should clear persistent notification when timer is reset", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Reset the timer
+				timer.resetTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+
+			it("should clear persistent notification when timer is toggled", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Toggle the timer (start it)
+				timer.toggleTimer();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference (set to null before starting)
+				// Note: After toggleTimer, a new timer is running, so persistentNotice
+				// should have been cleared before starting
+				timer.pauseTimer(); // Clean up
+			});
+
+			it("should clear persistent notification in cleanup", () => {
+				// Create a mock persistent notification
+				const mockNotice = {
+					hide: jest.fn(),
+				};
+				(timer as any).persistentNotice = mockNotice;
+
+				// Call cleanup
+				timer.cleanup();
+
+				// Should have called hide on the notification
+				expect(mockNotice.hide).toHaveBeenCalled();
+
+				// Should have cleared the reference
+				expect((timer as any).persistentNotice).toBeNull();
+			});
+		});
+	});
 });

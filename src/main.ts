@@ -15,70 +15,73 @@ export default class PomodoroPlugin extends Plugin {
 
 		this.statusBarItem = this.addStatusBarItem();
 		this.soundManager = new SoundManager(this, this.settings);
-		this.timer = new PomodoroTimer(this, this.settings, this.statusBarItem, this.soundManager);
+		this.timer = new PomodoroTimer(
+			this,
+			this.settings,
+			this.statusBarItem,
+			this.soundManager,
+		);
 
-		this.addSettingTab(new PomodoroSettingTab(this.app, this, this.soundManager));
+		this.addSettingTab(
+			new PomodoroSettingTab(this.app, this, this.soundManager),
+		);
 
 		// Add commands for keyboard shortcuts
 		this.addCommand({
-			id: 'toggle-timer',
-			name: 'Start/Pause timer',
+			id: "toggle-timer",
+			name: "Toggle timer",
 			callback: () => {
 				if (this.timer) {
-					if (this.timer.running) {
-						this.timer.pauseTimer();
-					} else {
-						this.timer.startTimer();
-					}
+					this.timer.toggleTimer();
 				}
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'reset-timer',
-			name: 'Reset current timer',
+			id: "reset-timer",
+			name: "Reset current timer",
 			callback: () => {
-				if (this.timer && !this.timer.running) {
+				if (this.timer && !this.timer.isRunning) {
 					this.timer.resetTimer();
 				}
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'cycle-timer',
-			name: 'Cycle to next timer duration',
+			id: "cycle-timer",
+			name: "Cycle to next timer duration",
 			callback: () => {
-				if (this.timer && !this.timer.running) {
+				if (this.timer && !this.timer.isRunning) {
 					this.timer.cycleDuration();
 				}
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'toggle-icon-visibility',
-			name: 'Toggle timer icon visibility',
+			id: "toggle-icon-visibility",
+			name: "Toggle timer icon visibility",
 			callback: () => {
 				this.settings.showIcon = !this.settings.showIcon;
 				this.saveSettings();
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'toggle-status-bar',
-			name: 'Toggle status bar visibility',
+			id: "toggle-status-bar",
+			name: "Toggle status bar visibility",
 			callback: () => {
 				this.timer.toggleStatusBarVisibility();
 				this.saveSettings(); // Save the updated setting
-			}
+			},
 		});
 
 		this.addCommand({
-			id: 'toggle-sound-notifications',
-			name: 'Toggle sound notifications',
+			id: "toggle-sound-notifications",
+			name: "Toggle sound notifications",
 			callback: () => {
 				this.settings.soundEnabled = !this.settings.soundEnabled;
 				this.saveSettings();
-			}
+			},
 		});
 	}
 
@@ -89,11 +92,25 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	async loadSettings() {
-		this.settings = Object.assign(
-			{},
-			DEFAULT_SETTINGS,
-			await this.loadData()
-		);
+		const data = await this.loadData();
+
+		// Migration for v2.0 settings schema
+		if (data && data.workTime !== undefined) {
+			// Migrate old property names to new ones
+			data.workMinutes = data.workTime;
+			data.shortBreakMinutes = data.shortBreakTime;
+			data.longBreakMinutes = data.longBreakTime;
+
+			// Remove old properties
+			delete data.workTime;
+			delete data.shortBreakTime;
+			delete data.longBreakTime;
+
+			// Save migrated settings
+			await this.saveData(data);
+		}
+
+		this.settings = Object.assign({}, DEFAULT_SETTINGS, data);
 	}
 
 	async saveSettings() {
@@ -104,7 +121,7 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	get currentDurationIndex() {
-		return this.timer?.currentDuration ?? 0;
+		return this.timer?.timerType ?? 0;
 	}
 
 	set currentDurationIndex(_value: number) {
@@ -112,7 +129,7 @@ export default class PomodoroPlugin extends Plugin {
 	}
 
 	get workIntervalCount() {
-		return this.timer?.workCount ?? 0;
+		return this.timer?.workIntervalsCount ?? 0;
 	}
 
 	set workIntervalCount(_value: number) {

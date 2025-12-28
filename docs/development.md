@@ -17,7 +17,7 @@ git clone https://github.com/semanticdata/obsidian-pomodoro.git
 cd obsidian-pomodoro
 ```
 
-2. **Install dependencies**:
+1. **Install dependencies**:
 
 === "PNPM"
 
@@ -66,7 +66,8 @@ cd obsidian-pomodoro
   - `constants.ts`: Contains the project's constants.
   - `icons.ts`: Contains the project's icons.
   - `logic/`: Contains the project's logic.
-    - `timer.ts`: The timer logic.
+    - `timer.ts`: The timer logic with Moment.js state machine.
+    - `soundManager.ts`: Audio notification management.
   - `main.ts`: The main entry point for the project.
   - `types.ts`: Contains the project's types.
 - `tests/`: Contains the tests for the project.
@@ -80,15 +81,15 @@ cd obsidian-pomodoro
 
 ## Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm run dev` | Build in development mode with file watching |
-| `pnpm run build` | Build for production |
-| `pnpm run lint` | Run ESLint code analysis |
-| `pnpm run lint:fix` | Fix automatically fixable linting issues |
-| `pnpm run test` | Run Jest test suite |
-| `pnpm run test:watch` | Run tests in watch mode |
-| `pnpm run test:coverage` | Generate test coverage report |
+| Command                  | Description                                  |
+| ------------------------ | -------------------------------------------- |
+| `pnpm run dev`           | Build in development mode with file watching |
+| `pnpm run build`         | Build for production                         |
+| `pnpm run lint`          | Run ESLint code analysis                     |
+| `pnpm run lint:fix`      | Fix automatically fixable linting issues     |
+| `pnpm run test`          | Run Jest test suite                          |
+| `pnpm run test:watch`    | Run tests in watch mode                      |
+| `pnpm run test:coverage` | Generate test coverage report                |
 
 ## Architecture Overview
 
@@ -102,9 +103,11 @@ cd obsidian-pomodoro
 
 #### PomodoroTimer (`src/logic/timer.ts`)
 
-- Handles all timer logic and state management
+- Handles all timer logic and state management using Moment.js
 - Manages status bar display and user interactions
-- Controls timer intervals and state transitions
+- Controls timer intervals and state transitions with type-based state machine
+- Integrates with SoundManager for audio notifications
+- Supports persistent notifications and auto-progress functionality
 
 #### PomodoroSettingTab (`src/components/SettingsTab.ts`)
 
@@ -117,11 +120,18 @@ cd obsidian-pomodoro
 
 ```typescript
 interface PomodoroSettings {
-    workTime: number;              // Work session duration (minutes)
-    shortBreakTime: number;        // Short break duration (minutes)
-    longBreakTime: number;         // Long break duration (minutes)
-    intervalsBeforeLongBreak: number; // Work sessions before long break
-    showIcon: boolean;             // Show/hide timer icon
+ workMinutes: number; // Work session duration (minutes)
+ shortBreakMinutes: number; // Short break duration (minutes)
+ longBreakMinutes: number; // Long break duration (minutes)
+ intervalsBeforeLongBreak: number; // Work sessions before long break
+ showIcon: boolean; // Show/hide timer icon
+ showInStatusBar: boolean; // Show/hide entire status bar timer
+ soundEnabled: boolean; // Enable sound notifications
+ persistentNotification: boolean; // Keep notifications visible until interaction
+ selectedSound: string; // Sound file name
+ soundVolume: number; // Volume level (0.0-1.0)
+ customSoundUrl?: string; // Optional custom sound URL
+ autoProgressEnabled: boolean; // Auto-start next timer
 }
 ```
 
@@ -149,15 +159,15 @@ pnpm run test:coverage
 ### Writing Tests
 
 ```typescript title="tests/new-test.test.ts"
-import { PomodoroTimer } from '../src/logic/timer';
-import { mockPlugin, mockSettings } from './__mocks__/obsidian';
+import { PomodoroTimer } from "../src/logic/timer";
+import { mockPlugin, mockSettings } from "./__mocks__/obsidian";
 
-describe('PomodoroTimer', () => {
-    test('should initialize with correct default state', () => {
-        const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
-        expect(timer.running).toBe(false);
-        expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
-    });
+describe("PomodoroTimer", () => {
+ test("should initialize with correct default state", () => {
+  const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
+  expect(timer.running).toBe(false);
+  expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
+ });
 });
 ```
 
