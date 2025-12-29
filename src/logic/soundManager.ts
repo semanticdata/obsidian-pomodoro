@@ -151,8 +151,14 @@ export class SoundManager {
 
 	private async playSound(soundName: string): Promise<void> {
 		const soundUrl = await this.getSoundUrl(soundName);
+		this.stopCurrentAudio();
 		const audio = await this.createAudioElement(soundUrl);
-		await audio.play();
+		try {
+			await audio.play();
+		} catch (error) {
+			console.error("Failed to play audio:", error);
+			throw error;
+		}
 	}
 
 	async previewSound(soundName?: string): Promise<void> {
