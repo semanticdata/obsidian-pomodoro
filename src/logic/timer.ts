@@ -246,7 +246,6 @@ export class PomodoroTimer {
 
 	private clearCurrentInterval() {
 		if (this.currentInterval) {
-			console.log("Cleared interval", this.currentInterval);
 			window.clearInterval(this.currentInterval);
 			this.registeredIntervals.delete(this.currentInterval);
 			this.currentInterval = null;
