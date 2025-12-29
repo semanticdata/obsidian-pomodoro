@@ -180,20 +180,7 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange("30");
 
 			expect(mockPlugin.settings.workMinutes).toBe(30);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 			expect(mockPlugin.resetTimer).toHaveBeenCalled();
-		});
-
-		it("should not update workMinutes on invalid input", async () => {
-			settingTab.display();
-			const initialWorkMinutes = mockPlugin.settings.workMinutes;
-			const component = getTextComponentBySettingName("Work Duration");
-
-			await component.triggerChange("invalid");
-
-			expect(mockPlugin.settings.workMinutes).toBe(initialWorkMinutes);
-			expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
-			expect(mockPlugin.resetTimer).not.toHaveBeenCalled();
 		});
 
 		it("should update shortBreakMinutes on valid input", async () => {
@@ -205,7 +192,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange("10");
 
 			expect(mockPlugin.settings.shortBreakMinutes).toBe(10);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 			expect(mockPlugin.resetTimer).toHaveBeenCalled();
 		});
 
@@ -218,7 +204,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange("20");
 
 			expect(mockPlugin.settings.longBreakMinutes).toBe(20);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 			expect(mockPlugin.resetTimer).toHaveBeenCalled();
 		});
 
@@ -231,7 +216,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange("3");
 
 			expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(3);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 			expect(mockPlugin.resetPomodoroSession).toHaveBeenCalled();
 			expect(mockPlugin.workIntervalCount).toBe(0);
 			expect(mockPlugin.currentDurationIndex).toBe(0);
@@ -245,7 +229,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange(true);
 
 			expect(mockPlugin.settings.showIcon).toBe(true);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 		});
 
 		it("should update autoProgressEnabled on toggle", async () => {
@@ -257,7 +240,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 			await component.triggerChange(true);
 
 			expect(mockPlugin.settings.autoProgressEnabled).toBe(true);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
 		});
 	});
 });

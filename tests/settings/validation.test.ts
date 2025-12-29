@@ -134,27 +134,35 @@ describe("PomodoroSettingTab - Validation", () => {
 			settingName: string,
 			settingProperty: keyof typeof mockPlugin.settings,
 			testCases: ValidationTestCase[],
+			getCurrentValue: () => unknown,
+			expectSaveSettings: jest.Mock,
+			expectResetTimer?: jest.Mock,
 		) {
 			for (const testCase of testCases) {
 				// Re-setup for each test case
 				jest.clearAllMocks();
+				
+				// Reset settings to defaults before each test case
+				await mockPlugin.loadSettings();
 				settingTab.display();
 
-				const initialValue = mockPlugin.settings[settingProperty];
+				const initialValue = getCurrentValue();
 				const component = getTextComponentBySettingName(settingName);
 
 				await component.triggerChange(testCase.input);
 
 				if (testCase.shouldUpdate) {
-					expect(mockPlugin.settings[settingProperty]).not.toBe(
-						initialValue,
-					);
-					expect(mockPlugin.saveSettings).toHaveBeenCalled();
+					expect(getCurrentValue()).not.toBe(initialValue);
+					expect(expectSaveSettings).toHaveBeenCalled();
+					if (expectResetTimer) {
+						expect(expectResetTimer).toHaveBeenCalled();
+					}
 				} else {
-					expect(mockPlugin.settings[settingProperty]).toBe(
-						initialValue,
-					);
-					expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
+					expect(getCurrentValue()).toBe(initialValue);
+					expect(expectSaveSettings).not.toHaveBeenCalled();
+					if (expectResetTimer) {
+						expect(expectResetTimer).not.toHaveBeenCalled();
+					}
 				}
 			}
 		}
@@ -200,24 +208,24 @@ describe("PomodoroSettingTab - Validation", () => {
 		];
 
 		describe("Work Duration Validation", () => {
-			commonInvalidInputs.forEach((testCase) => {
-				it(`should reject ${testCase.description}`, async () => {
-					await testNumericValidation(
-						"Work Duration",
-						"workMinutes",
-						[testCase],
-					);
-				});
+			it("should reject invalid inputs", async () => {
+				await testNumericValidation(
+					"Work Duration",
+					"workMinutes",
+					commonInvalidInputs,
+					() => mockPlugin.settings.workMinutes,
+					mockPlugin.saveSettings as jest.Mock,
+				);
 			});
 
-			commonValidInputs.forEach((testCase) => {
-				it(`should accept ${testCase.description}`, async () => {
-					await testNumericValidation(
-						"Work Duration",
-						"workMinutes",
-						[testCase],
-					);
-				});
+			it("should accept valid inputs", async () => {
+				await testNumericValidation(
+					"Work Duration",
+					"workMinutes",
+					commonValidInputs,
+					() => mockPlugin.settings.workMinutes,
+					mockPlugin.saveSettings as jest.Mock,
+				);
 			});
 		});
 
@@ -227,6 +235,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Short Break Duration",
 					"shortBreakMinutes",
 					commonInvalidInputs,
+					() => mockPlugin.settings.shortBreakMinutes,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 
@@ -235,6 +245,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Short Break Duration",
 					"shortBreakMinutes",
 					[{ description: "valid", input: "10", shouldUpdate: true }],
+					() => mockPlugin.settings.shortBreakMinutes,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 		});
@@ -245,6 +257,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Long Break Duration",
 					"longBreakMinutes",
 					commonInvalidInputs,
+					() => mockPlugin.settings.longBreakMinutes,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 
@@ -253,6 +267,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Long Break Duration",
 					"longBreakMinutes",
 					[{ description: "valid", input: "20", shouldUpdate: true }],
+					() => mockPlugin.settings.longBreakMinutes,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 		});
@@ -263,6 +279,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Intervals Before Long Break",
 					"intervalsBeforeLongBreak",
 					commonInvalidInputs,
+					() => mockPlugin.settings.intervalsBeforeLongBreak,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 
@@ -271,6 +289,8 @@ describe("PomodoroSettingTab - Validation", () => {
 					"Intervals Before Long Break",
 					"intervalsBeforeLongBreak",
 					[{ description: "valid", input: "3", shouldUpdate: true }],
+					() => mockPlugin.settings.intervalsBeforeLongBreak,
+					mockPlugin.saveSettings as jest.Mock,
 				);
 			});
 		});
