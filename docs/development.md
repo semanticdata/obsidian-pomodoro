@@ -4,7 +4,7 @@
 
 ### Prerequisites
 
-- Node.js (version 18 or higher)
+- Node.js (version 20 or higher)
 - pnpm package manager
 - Git
 
@@ -73,11 +73,24 @@ cd obsidian-pomodoro
 - `tests/`: Contains the tests for the project.
   - `__mocks__/`: Contains mocks for the tests.
     - `obsidian.ts`: Mocks for the Obsidian API.
-  - `plugin.test.ts`: Tests for the plugin.
-  - `settings-tab.test.ts`: Tests for the settings tab.
-  - `settings.test.ts`: Tests for the settings.
-  - `setup.ts`: Setup for the tests.
-  - `timer.test.ts`: Tests for the timer.
+    - `svg-mock.ts`: Mock for SVG icon imports.
+  - `helpers/`: Reusable test helper functions.
+    - `plugin-test-helpers.ts`: Standardized plugin setup and cleanup helpers.
+    - `settings-test-helpers.ts`: Mock component helpers and validation test utilities.
+  - `plugin/`: Plugin-level tests organized by functionality.
+    - `commands.test.ts`: Tests for plugin commands.
+    - `compatibility.test.ts`: Tests for backward compatibility features.
+    - `lifecycle.test.ts`: Tests for plugin lifecycle events.
+  - `settings/`: Settings-related tests.
+    - `display.test.ts`: Tests for settings display and rendering.
+    - `validation.test.ts`: Tests for settings input validation.
+  - `timer/`: Timer logic tests organized by feature area.
+    - `auto-progression.test.ts`: Tests for auto-progress functionality.
+    - `basic-operations.test.ts`: Tests for core timer operations.
+    - `edge-cases.test.ts`: Tests for edge cases and error handling.
+    - `mouse-events.test.ts`: Tests for mouse interaction handling.
+    - `timer-completion.test.ts`: Tests for timer completion behavior.
+  - `setup.ts`: Jest test setup and global configuration.
 
 ## Available Scripts
 
@@ -152,24 +165,66 @@ pnpm run test:coverage
 
 ### Test Structure
 
-- **Unit Tests**: Test individual components and functions
-- **Integration Tests**: Test component interactions
-- **Mock Objects**: Obsidian API is mocked for testing
+The test suite is organized into focused modules to improve maintainability:
+
+- **Unit Tests**: Test individual components and functions in isolation
+- **Integration Tests**: Test component interactions and workflows
+- **Mock Objects**: Obsidian API is mocked for testing in `tests/__mocks__/`
+
+#### Test Organization Pattern
+
+Tests are organized by feature rather than component:
+
+- `tests/plugin/` - Plugin-level functionality (commands, lifecycle, compatibility)
+- `tests/timer/` - Timer-specific features (basic operations, mouse events, auto-progression, edge cases)
+- `tests/settings/` - Settings UI and validation (display, validation logic)
+
+#### Test Helpers
+
+Reusable test helpers eliminate duplication:
+
+- `createStandardTestPlugin()` - Creates a fully initialized plugin with default settings
+- `cleanupStandardTestPlugin(plugin)` - Cleans up timers and resources after tests
+- `createTestPluginWithSavedData(savedData)` - Creates a plugin with custom settings
+- `createMockTextComponent()` / `createMockToggleComponent()` - Mock Obsidian UI components
+- `testNumericValidation()` - Reusable validation test helper for numeric settings
 
 ### Writing Tests
 
-```typescript title="tests/new-test.test.ts"
-import { PomodoroTimer } from "../src/logic/timer";
-import { mockPlugin, mockSettings } from "./__mocks__/obsidian";
+```typescript title="tests/timer/basic-operations.test.ts"
+import "../setup";
+import PomodoroPlugin from "../../src/main";
+import { PluginWithPrivates } from "../setup";
+import { createStandardTestPlugin, cleanupStandardTestPlugin } from "../helpers/plugin-test-helpers";
 
-describe("PomodoroTimer", () => {
- test("should initialize with correct default state", () => {
-  const timer = new PomodoroTimer(mockPlugin, mockSettings, mockElement);
-  expect(timer.running).toBe(false);
-  expect(timer.timeRemaining).toBe(1500); // 25 minutes in seconds
- });
+describe("PomodoroTimer - Basic Operations", () => {
+    let plugin: PomodoroPlugin;
+
+    beforeEach(async () => {
+        const setup = await createStandardTestPlugin();
+        plugin = setup.plugin;
+    });
+
+    afterEach(async () => {
+        await cleanupStandardTestPlugin(plugin);
+    });
+
+    it("should start the timer and update display", () => {
+        const timer = (plugin as PluginWithPrivates)._timer;
+
+        timer.toggleTimer();
+        expect(timer.isRunning).toBe(true);
+    });
 });
 ```
+
+### Best Practices
+
+1. **Always use test helpers** - Use `createStandardTestPlugin()` and `cleanupStandardTestPlugin()` instead of manual setup
+2. **Clean up intervals** - The cleanup helper automatically stops timers and clears intervals
+3. **Organize by feature** - Group tests by functionality, not just by component
+4. **Use fake timers** - For time-based tests, use `jest.useFakeTimers()` with `legacyFakeTimers: false`
+5. **Test edge cases** - Include tests for invalid inputs, missing elements, and error conditions
 
 ## Building and Distribution
 
