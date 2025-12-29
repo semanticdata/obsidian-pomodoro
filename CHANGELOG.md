@@ -8,6 +8,9 @@ All notable changes to this project will be documented in this file.
 
 - Fixed test accessor bug in timer state management where wrong variable was checked in type validation.
 - Added null check for vault adapter to prevent runtime errors when loading custom audio files.
+- Removed debug console.log statement from timer interval cleanup.
+- Added error handling for audio playback failures to gracefully handle autoplay policy and format issues.
+- Fixed audio overlap issue by stopping currently playing audio before starting new sound.
 
 ## 1.6.0 - 2025-12-27
 
