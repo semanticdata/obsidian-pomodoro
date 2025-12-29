@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## 1.6.1 - 2025-12-28
 
 ### Fixed
 
@@ -11,6 +11,9 @@ All notable changes to this project will be documented in this file.
 - Removed debug console.log statement from timer interval cleanup.
 - Added error handling for audio playback failures to gracefully handle autoplay policy and format issues.
 - Fixed audio overlap issue by stopping currently playing audio before starting new sound.
+- Corrected volume slider description to match actual value range (0-1 instead of 0-100%).
+- Removed dead/commented CSS style.
+- Simplified volume preview sound logic for better readability.
 
 ## 1.6.0 - 2025-12-27
 
