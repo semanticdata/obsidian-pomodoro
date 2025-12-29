@@ -1,6 +1,6 @@
 [project]
 name = "pomobar-documentation"
-version = "1.6.0"
+version = "1.6.1"
 requires-python = ">=3.13"
 dependencies = []
 
