@@ -43,87 +43,39 @@ describe("PomodoroPlugin - Commands", () => {
 		}
 	});
 
-	describe("Toggle Timer Command", () => {
-		it("should handle timer being undefined", async () => {
-			// Create plugin with undefined timer
-			const testPlugin = new PomodoroPlugin({} as App, {
-				id: "test",
-				name: "Test",
-				version: "1.0.0",
-				minAppVersion: "0.15.0",
-				author: "Test",
-				description: "Test",
+	describe("Command Safety with Undefined Timer", () => {
+		const commandsToTest = [
+			{ id: "toggle-timer", name: "Toggle Timer" },
+			{ id: "reset-timer", name: "Reset Timer" },
+			{ id: "cycle-timer", name: "Cycle Timer" },
+		];
+
+		commandsToTest.forEach(({ id, name }) => {
+			it(`should handle ${name.toLowerCase()} when timer is undefined`, async () => {
+				// Create plugin with undefined timer
+				const testPlugin = new PomodoroPlugin({} as App, {
+					id: "test",
+					name: "Test",
+					version: "1.0.0",
+					minAppVersion: "0.15.0",
+					author: "Test",
+					description: "Test",
+				});
+
+				// Load plugin to register commands but don't initialize timer
+				await testPlugin.onload();
+
+				const mockAddCommand = testPlugin.addCommand as jest.Mock;
+				const command = mockAddCommand.mock.calls.find(
+					(call) => call[0].id === id,
+				);
+
+				// The command must be registered
+				expect(command).toBeDefined();
+
+				// Execute callback and assert it does not throw (safe when timer is undefined)
+				expect(() => command[0].callback()).not.toThrow();
 			});
-
-			// Load the plugin to register commands but don't initialize timer
-			await testPlugin.onload();
-
-			const mockAddCommand = testPlugin.addCommand as jest.Mock;
-			const toggleCommand = mockAddCommand.mock.calls.find(
-				(call) => call[0].id === "toggle-timer",
-			);
-
-			// The toggle command must be registered
-			expect(toggleCommand).toBeDefined();
-
-			// Execute the callback and assert it does not throw (safe when timer is undefined)
-			expect(() => toggleCommand[0].callback()).not.toThrow();
-		});
-	});
-
-	describe("Reset Timer Command", () => {
-		it("should handle timer being undefined", async () => {
-			// Create plugin with undefined timer
-			const testPlugin = new PomodoroPlugin({} as App, {
-				id: "test",
-				name: "Test",
-				version: "1.0.0",
-				minAppVersion: "0.15.0",
-				author: "Test",
-				description: "Test",
-			});
-
-			// Load the plugin to register commands but don't initialize timer
-			await testPlugin.onload();
-
-			const mockAddCommand = testPlugin.addCommand as jest.Mock;
-			const resetCommand = mockAddCommand.mock.calls.find(
-				(call) => call[0].id === "reset-timer",
-			);
-
-			// The reset command must be registered
-			expect(resetCommand).toBeDefined();
-
-			// Execute the callback and assert it does not throw (safe when timer is undefined)
-			expect(() => resetCommand[0].callback()).not.toThrow();
-		});
-	});
-
-	describe("Cycle Timer Command", () => {
-		it("should handle timer being undefined", async () => {
-			// Create plugin with undefined timer
-			const testPlugin = new PomodoroPlugin({} as App, {
-				id: "test",
-				name: "Test",
-				version: "1.0.0",
-				minAppVersion: "0.15.0",
-				author: "Test",
-				description: "Test",
-			});
-
-			// Load the plugin to register commands but don't initialize timer
-			await testPlugin.onload();
-
-			const mockAddCommand = testPlugin.addCommand as jest.Mock;
-			const cycleCommand = mockAddCommand.mock.calls.find(
-				(call) => call[0].id === "cycle-timer",
-			);
-
-			// The cycle command must be registered
-			expect(cycleCommand).toBeDefined();
-
-			// Execute the callback and assert it does not throw (safe when timer is undefined)
-			expect(() => cycleCommand[0].callback()).not.toThrow();
 		});
 	});
 
