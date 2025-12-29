@@ -71,7 +71,7 @@ describe("PomodoroTimer - Basic Operations", () => {
 			timer.pauseTimer();
 		});
 
-		it("should format positive time with consistent MM:SS format", () => {
+		it("should format time with consistent MM:SS format (positive and negative)", () => {
 			const now = Date.now();
 			const timer = (plugin as PluginWithPrivates)._timer;
 
@@ -82,8 +82,8 @@ describe("PomodoroTimer - Basic Operations", () => {
 
 			timer.toggleTimer();
 
-			// Test various positive times to ensure consistent formatting
-			const testCases = [
+			// Test various positive times
+			const positiveTestCases = [
 				{ offset: 0, expected: "25:00" }, // Full time
 				{ offset: 1000, expected: "24:59" }, // 1 second elapsed
 				{ offset: 60000, expected: "24:00" }, // 1 minute elapsed
@@ -92,7 +92,23 @@ describe("PomodoroTimer - Basic Operations", () => {
 				{ offset: 1494000, expected: "0:06" }, // Almost done
 			];
 
-			testCases.forEach(({ offset, expected }) => {
+			positiveTestCases.forEach(({ offset, expected }) => {
+				jest.setSystemTime(now + offset);
+				(timer as any).updateDisplay();
+				expect(textEl.textContent).toBe(expected);
+			});
+
+			// Test various negative times (overflow scenarios)
+			const negativeTestCases = [
+				{ offset: 1500000 + 1000, expected: "-0:01" }, // 1 second over
+				{ offset: 1500000 + 5000, expected: "-0:05" }, // 5 seconds over
+				{ offset: 1500000 + 60000, expected: "-1:00" }, // 1 minute over
+				{ offset: 1500000 + 65000, expected: "-1:05" }, // 1:05 over
+				{ offset: 1500000 + 600000, expected: "-10:00" }, // 10 minutes over
+				{ offset: 1500000 + 3599000, expected: "-59:59" }, // 59:59 over
+			];
+
+			negativeTestCases.forEach(({ offset, expected }) => {
 				jest.setSystemTime(now + offset);
 				(timer as any).updateDisplay();
 				expect(textEl.textContent).toBe(expected);

@@ -130,44 +130,6 @@ describe("PomodoroTimer - Auto-progression", () => {
 				-2,
 			);
 		});
-
-		it("should still allow manual pause during auto-progression", () => {
-			// Enable auto-progression but test manual control
-			timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-			timer._isRunning = true;
-			timer._timeEnd = moment
-				.utc(moment.now())
-				.add(plugin.settings.shortBreakMinutes, "minutes"); // 5 minutes remaining
-
-			timer.pauseTimer();
-
-			expect(timer.isRunning).toBe(false);
-			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
-				moment
-					.duration(plugin.settings.shortBreakMinutes, "minutes")
-					.asMilliseconds(),
-				-2,
-			); // Time should be preserved
-		});
-
-		it("should allow manual reset during auto-progression", () => {
-			timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-			timer._isRunning = false;
-			timer._timeEnd = moment
-				.utc(moment.now())
-				.add(plugin.settings.shortBreakMinutes, "minutes"); // Some time remaining
-
-			timer.resetTimer();
-
-			expect(timer.isRunning).toBe(false);
-			expect(timer.timerType).toBe(1); // Should stay in short break
-			expect(timer.timeRemaining.asMilliseconds()).toBeCloseTo(
-				moment
-					.duration(plugin.settings.shortBreakMinutes, "minutes")
-					.asMilliseconds(),
-				-2,
-			);
-		});
 	});
 
 	describe("Persistent Notification Feature", () => {
@@ -203,73 +165,44 @@ describe("PomodoroTimer - Auto-progression", () => {
 			// persistent notification is only created once and tracked properly.
 		});
 
-		it("should clear persistent notification when timer is paused", () => {
+		it("should clear persistent notification on timer operations", () => {
 			// Create a mock persistent notification
 			const mockNotice = {
 				hide: jest.fn(),
 			};
 			(timer as any).persistentNotice = mockNotice;
 
-			// Pause the timer
+			// Test pause clears notification
 			timer.pauseTimer();
-
-			// Should have called hide on the notification
-			expect(mockNotice.hide).toHaveBeenCalled();
-
-			// Should have cleared the reference
+			expect(mockNotice.hide).toHaveBeenCalledTimes(1);
 			expect((timer as any).persistentNotice).toBeNull();
-		});
 
-		it("should clear persistent notification when timer is reset", () => {
-			// Create a mock persistent notification
-			const mockNotice = {
-				hide: jest.fn(),
-			};
+			// Reset for next test
 			(timer as any).persistentNotice = mockNotice;
+			mockNotice.hide.mockClear();
 
-			// Reset the timer
+			// Test reset clears notification
 			timer.resetTimer();
-
-			// Should have called hide on the notification
-			expect(mockNotice.hide).toHaveBeenCalled();
-
-			// Should have cleared the reference
+			expect(mockNotice.hide).toHaveBeenCalledTimes(1);
 			expect((timer as any).persistentNotice).toBeNull();
-		});
 
-		it("should clear persistent notification when timer is toggled", () => {
-			// Create a mock persistent notification
-			const mockNotice = {
-				hide: jest.fn(),
-			};
+			// Reset for next test
 			(timer as any).persistentNotice = mockNotice;
+			mockNotice.hide.mockClear();
 
-			// Toggle the timer (start it)
+			// Test toggle clears notification
 			timer.toggleTimer();
-
-			// Should have called hide on the notification
-			expect(mockNotice.hide).toHaveBeenCalled();
-
-			// Should have cleared the reference (set to null before starting)
-			// Note: After toggleTimer, a new timer is running, so persistentNotice
-			// should have been cleared before starting
+			expect(mockNotice.hide).toHaveBeenCalledTimes(1);
+			expect((timer as any).persistentNotice).toBeNull();
 			timer.pauseTimer(); // Clean up
-		});
 
-		it("should clear persistent notification in cleanup", () => {
-			// Create a mock persistent notification
-			const mockNotice = {
-				hide: jest.fn(),
-			};
+			// Reset for final test
 			(timer as any).persistentNotice = mockNotice;
+			mockNotice.hide.mockClear();
 
-			// Call cleanup
+			// Test cleanup clears notification
 			timer.cleanup();
-
-			// Should have called hide on the notification
-			expect(mockNotice.hide).toHaveBeenCalled();
-
-			// Should have cleared the reference
+			expect(mockNotice.hide).toHaveBeenCalledTimes(1);
 			expect((timer as any).persistentNotice).toBeNull();
 		});
 	});

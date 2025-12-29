@@ -99,19 +99,15 @@ describe("PomodoroPlugin - Lifecycle", () => {
 	});
 
 	describe("Plugin Lifecycle", () => {
-		it("should add settings tab on load", async () => {
+		it("should add settings tab and initialize timer correctly on load", async () => {
 			const addSettingTabSpy = jest.spyOn(plugin, "addSettingTab");
 			await plugin.onload();
+			
+			// Check settings tab was added
 			expect(addSettingTabSpy).toHaveBeenCalledWith(expect.any(Object));
-		});
-
-		it("should initialize timer with correct default duration", async () => {
-			await plugin.onload();
+			
+			// Check timer initialization
 			const timer = (plugin as PluginWithPrivates)._timer;
-
-			// Fixed: Use asSeconds() instead of seconds() to get total seconds
-			// seconds() only returns seconds within the current minute (0-59)
-			// asSeconds() returns the total duration in seconds
 			const expectedDurationSeconds = moment
 				.duration(plugin.settings.workMinutes, "minutes")
 				.asSeconds();
@@ -121,6 +117,17 @@ describe("PomodoroPlugin - Lifecycle", () => {
 			expect(timer.isRunning).toBe(false);
 			expect(timer.timerType).toBe(0); // Work state
 			expect(timer.workIntervalsCount).toBe(0);
+		});
+
+		it("should update timer settings when settings change", async () => {
+			await plugin.onload(); // Ensure timer is initialized
+			const timer = (plugin as PluginWithPrivates)._timer;
+			const updateSettingsSpy = jest.spyOn(timer, "updateSettings");
+
+			plugin.settings.workMinutes = 45;
+			await plugin.saveSettings();
+
+			expect(updateSettingsSpy).toHaveBeenCalledWith(plugin.settings);
 		});
 	});
 });

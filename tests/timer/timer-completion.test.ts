@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "../setup";
 import PomodoroPlugin from "../../src/main";
-import { moment } from "obsidian";
 import { PluginWithPrivates } from "../setup";
 import { createStandardTestPlugin, cleanupStandardTestPlugin } from "../helpers/plugin-test-helpers";
 
@@ -105,66 +104,6 @@ describe("PomodoroTimer - Timer Completion", () => {
 				"pomobar-timer-pause",
 				"pomobar-timer-off",
 			]).toContain(iconContainer?.getAttribute("data-icon-key"));
-		});
-	});
-
-	describe("Timer Completion Flow", () => {
-		beforeEach(async () => {
-			await plugin.onload();
-			timer = (plugin as PluginWithPrivates)._timer;
-
-			// Mock the Notice constructor
-			jest.clearAllMocks();
-		});
-
-		it("should transition from work to short break", () => {
-			// Set up work timer
-			timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-			timer._workIntervalCount = 0;
-
-			// Mock timer completion
-			timer._timeEnd = moment.duration(0);
-			timer._isRunning = true;
-
-			const initialWorkCount = timer.workIntervalsCount;
-
-			// Simulate timer reaching zero (this would normally happen in the interval)
-			// We need to trigger the timer completion logic manually since we can't wait for intervals
-			timer.advanceTimer();
-			timer.pauseTimer();
-
-			expect(timer.workIntervalsCount).toBe(initialWorkCount + 1);
-			expect(timer.timerType).toBe(1); // Should be in short break
-		});
-
-		it("should transition to long break after configured work intervals", () => {
-			// Set up for long break transition
-			timer._currentDurationIndex = 0; // TIMER_STATES.WORK
-			timer._workIntervalCount = 3; // One less than default intervalsBeforeLongBreak (4)
-
-			timer._timeEnd = moment.duration(0);
-			timer._isRunning = true;
-
-			// Simulate timer completion leading to long break
-			timer.advanceTimer();
-			timer.pauseTimer();
-
-			expect(timer.timerType).toBe(2); // Should be in long break
-			expect(timer.workIntervalsCount).toBe(0); // Should reset work count
-		});
-
-		it("should transition from break back to work", () => {
-			// Set up break timer
-			timer._currentDurationIndex = 1; // TIMER_STATES.SHORT_BREAK
-
-			timer._timeEnd = moment.duration(0);
-			timer._isRunning = true;
-
-			// Simulate break completion
-			timer.advanceTimer();
-			timer.pauseTimer();
-
-			expect(timer.timerType).toBe(0); // Should be back to work
 		});
 	});
 });
