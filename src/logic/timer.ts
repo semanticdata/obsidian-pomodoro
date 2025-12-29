@@ -414,7 +414,7 @@ export class PomodoroTimer {
 	set _timeEnd(value: moment.Moment | moment.Duration | number) {
 		if (moment.isMoment(value)) {
 			this.timeEnd = value;
-		} else if (moment.isDuration(this.timeEnd)) {
+		} else if (moment.isDuration(value)) {
 			this.timeEnd = moment.utc(moment.now()).add(value);
 		} else {
 			this.timeEnd = moment.utc(moment.now()).add(value, "seconds");
