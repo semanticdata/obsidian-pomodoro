@@ -46,6 +46,12 @@ export class SoundManager {
 			!soundName.startsWith("https://")
 		) {
 			try {
+				// Check if vault adapter is available
+				if (!this.plugin.app?.vault?.adapter) {
+					console.error("Vault adapter not available for loading audio file");
+					return soundName;
+				}
+
 				// Read the file from the vault as binary data
 				const arrayBuffer =
 					await this.plugin.app.vault.adapter.readBinary(soundName);
