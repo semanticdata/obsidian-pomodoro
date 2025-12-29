@@ -27,8 +27,10 @@ export async function createStandardTestPlugin(): Promise<StandardTestSetup> {
 
 	const plugin = new PomodoroPlugin(mockApp, manifest);
 
-	(plugin.loadData as jest.Mock) = jest.fn().mockResolvedValue({});
-	(plugin.saveData as jest.Mock) = jest.fn().mockResolvedValue(undefined);
+	// Override loadData mock to return default data
+	jest.spyOn(plugin, 'loadData').mockResolvedValue({});
+	// Override saveData mock to return undefined
+	jest.spyOn(plugin, 'saveData').mockResolvedValue(undefined);
 
 	await plugin.onload();
 
@@ -77,7 +79,7 @@ export async function createTestPluginWithSavedData(
 	const { plugin, mockApp } = await createStandardTestPlugin();
 
 	// Override loadData mock to return custom data
-	(plugin.loadData as jest.Mock) = jest.fn().mockResolvedValue(savedData);
+	jest.spyOn(plugin, 'loadData').mockResolvedValue(savedData);
 
 	// Reload the plugin to trigger settings loading
 	await plugin.onunload();

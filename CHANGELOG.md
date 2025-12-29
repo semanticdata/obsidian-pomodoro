@@ -14,6 +14,11 @@ All notable changes to this project will be documented in this file.
 - Corrected volume slider description to match actual value range (0-1 instead of 0-100%).
 - Removed dead/commented CSS style.
 - Simplified volume preview sound logic for better readability.
+- Fixed TypeScript build errors in test helpers:
+  - Added missing `App` export to test setup file
+  - Resolved Jest mock type issues by switching from type casting to `jest.spyOn()` approach
+  - Fixed "Generic type 'Mock' requires between 0 and 1 type arguments" errors
+  - Eliminated "Argument of type '{}' is not assignable to parameter of type 'never'" errors
 
 ### Refactored
 
