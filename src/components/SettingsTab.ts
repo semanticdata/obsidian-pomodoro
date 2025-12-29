@@ -275,7 +275,7 @@ export class PomodoroSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName("Volume")
-			.setDesc("Adjust the volume for sound notifications (0-100%).")
+			.setDesc("Adjust the volume for sound notifications.")
 			.addSlider((slider) =>
 				slider
 					.setLimits(0, 1, 0.1)
@@ -289,17 +289,10 @@ export class PomodoroSettingTab extends PluginSettingTab {
 			.addButton((button) =>
 				button.setButtonText("Test Volume").onClick(async () => {
 					try {
-						const isCustomSelected =
-							this.plugin.settings.customSoundUrl?.trim();
-						if (isCustomSelected) {
-							await this.soundManager.previewSound(
-								this.plugin.settings.customSoundUrl!.trim(),
-							);
-						} else {
-							await this.soundManager.previewSound(
-								this.plugin.settings.selectedSound,
-							);
-						}
+						const soundToPreview =
+							this.plugin.settings.customSoundUrl?.trim() ||
+							this.plugin.settings.selectedSound;
+						await this.soundManager.previewSound(soundToPreview);
 					} catch (error) {
 						console.warn("Volume test failed:", error);
 					}
