@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import "./setup";
-import { PomodoroSettingTab } from "../src/components/SettingsTab";
-import type PomodoroPlugin from "../src/main";
+import "../setup";
+import { PomodoroSettingTab } from "../../src/components/SettingsTab";
+import type PomodoroPlugin from "../../src/main";
 import { App } from "obsidian";
-import { SoundManager } from "../src/logic/soundManager";
+import { SoundManager } from "../../src/logic/soundManager";
 
 /**
  * Helper to create a mock text component that captures callbacks for testing.
@@ -31,33 +31,7 @@ function createMockTextComponent() {
 	return component;
 }
 
-/**
- * Helper to create a mock toggle component
- */
-function createMockToggleComponent() {
-	let onChangeCallback: ((value: boolean) => void) | null = null;
-
-	const component: any = {
-		setValue: jest.fn().mockReturnThis(),
-		onChange: jest.fn((cb: (value: boolean) => void) => {
-			onChangeCallback = cb;
-			return component;
-		}),
-		triggerChange: async (value: boolean) => {
-			if (onChangeCallback) {
-				await onChangeCallback(value);
-			}
-		},
-	};
-
-	return component;
-}
-
-/* eslint-disable jest/expect-expect */
-
-// Simplified Setting mock - no circular references, just straightforward mocking
-
-describe("PomodoroSettingTab", () => {
+describe("PomodoroSettingTab - Validation", () => {
 	let settingTab: PomodoroSettingTab;
 	let mockPlugin: PomodoroPlugin;
 	let mockApp: App;
@@ -79,7 +53,7 @@ describe("PomodoroSettingTab", () => {
 
 		// Dynamically import the plugin class to avoid circular runtime imports
 		// between `src/main` and `src/components/SettingsTab` during test load.
-		const { default: PomodoroPluginClass } = await import("../src/main");
+		const { default: PomodoroPluginClass } = await import("../../src/main");
 		mockPlugin = new PomodoroPluginClass(mockApp, manifest);
 		mockPlugin.loadData = jest.fn().mockResolvedValue({});
 		mockPlugin.saveData = jest.fn().mockResolvedValue(undefined);
@@ -145,157 +119,6 @@ describe("PomodoroSettingTab", () => {
 
 		return component;
 	}
-
-	/**
-	 * Helper to find a setting by name and extract its toggle component
-	 */
-	function getToggleComponentBySettingName(name: string) {
-		const settingMock = (jest.requireMock("obsidian") as any)
-			.Setting as jest.Mock;
-		const allSettings = settingMock.mock.results.map(
-			(result: any) => result.value,
-		);
-
-		const setting = allSettings.find(
-			(s: any) => s.setName.mock.calls[0]?.[0] === name,
-		);
-
-		if (!setting) {
-			throw new Error(`Setting with name "${name}" not found`);
-		}
-
-		const addToggleCall = setting.addToggle.mock.calls[0];
-		if (!addToggleCall) {
-			throw new Error(`Setting "${name}" has no toggle component`);
-		}
-
-		const callback = addToggleCall[0];
-		const component = createMockToggleComponent();
-		callback(component);
-
-		return component;
-	}
-
-	describe("Display", () => {
-		it("should clear container and create settings UI", () => {
-			settingTab.display();
-
-			expect(mockContainerEl.empty).toHaveBeenCalled();
-			const SettingMock = (jest.requireMock("obsidian") as any)
-				.Setting as jest.Mock;
-			expect(SettingMock).toHaveBeenCalled();
-		});
-
-		it("should create all required timer settings", () => {
-			settingTab.display();
-
-			const settingMock = (jest.requireMock("obsidian") as any)
-				.Setting as jest.Mock;
-			const allSettings = settingMock.mock.results.map(
-				(result: any) => result.value,
-			);
-			const settingNames = allSettings
-				.map((setting: any) => setting.setName.mock.calls[0]?.[0])
-				.filter(Boolean);
-
-			// Test for presence of specific settings rather than counting total
-			expect(settingNames).toContain("Work Duration");
-			expect(settingNames).toContain("Short Break Duration");
-			expect(settingNames).toContain("Long Break Duration");
-			expect(settingNames).toContain("Intervals Before Long Break");
-			expect(settingNames).toContain("Auto-start Next Timer");
-			expect(settingNames).toContain("Show Timer Icon");
-		});
-	});
-
-	describe("Settings Interactions", () => {
-		it("should update workMinutes on valid input", async () => {
-			settingTab.display();
-			const component = getTextComponentBySettingName("Work Duration");
-
-			await component.triggerChange("30");
-
-			expect(mockPlugin.settings.workMinutes).toBe(30);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-			expect(mockPlugin.resetTimer).toHaveBeenCalled();
-		});
-
-		it("should not update workMinutes on invalid input", async () => {
-			settingTab.display();
-			const initialWorkMinutes = mockPlugin.settings.workMinutes;
-			const component = getTextComponentBySettingName("Work Duration");
-
-			await component.triggerChange("invalid");
-
-			expect(mockPlugin.settings.workMinutes).toBe(initialWorkMinutes);
-			expect(mockPlugin.saveSettings).not.toHaveBeenCalled();
-			expect(mockPlugin.resetTimer).not.toHaveBeenCalled();
-		});
-
-		it("should update shortBreakMinutes on valid input", async () => {
-			settingTab.display();
-			const component = getTextComponentBySettingName(
-				"Short Break Duration",
-			);
-
-			await component.triggerChange("10");
-
-			expect(mockPlugin.settings.shortBreakMinutes).toBe(10);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-			expect(mockPlugin.resetTimer).toHaveBeenCalled();
-		});
-
-		it("should update longBreakMinutes on valid input", async () => {
-			settingTab.display();
-			const component = getTextComponentBySettingName(
-				"Long Break Duration",
-			);
-
-			await component.triggerChange("20");
-
-			expect(mockPlugin.settings.longBreakMinutes).toBe(20);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-			expect(mockPlugin.resetTimer).toHaveBeenCalled();
-		});
-
-		it("should update intervalsBeforeLongBreak on valid input", async () => {
-			settingTab.display();
-			const component = getTextComponentBySettingName(
-				"Intervals Before Long Break",
-			);
-
-			await component.triggerChange("3");
-
-			expect(mockPlugin.settings.intervalsBeforeLongBreak).toBe(3);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-			expect(mockPlugin.resetPomodoroSession).toHaveBeenCalled();
-			expect(mockPlugin.workIntervalCount).toBe(0);
-			expect(mockPlugin.currentDurationIndex).toBe(0);
-		});
-
-		it("should update showIcon on toggle", async () => {
-			settingTab.display();
-			const component =
-				getToggleComponentBySettingName("Show Timer Icon");
-
-			await component.triggerChange(true);
-
-			expect(mockPlugin.settings.showIcon).toBe(true);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-		});
-
-		it("should update autoProgressEnabled on toggle", async () => {
-			settingTab.display();
-			const component = getToggleComponentBySettingName(
-				"Auto-start Next Timer",
-			);
-
-			await component.triggerChange(true);
-
-			expect(mockPlugin.settings.autoProgressEnabled).toBe(true);
-			expect(mockPlugin.saveSettings).toHaveBeenCalled();
-		});
-	});
 
 	describe("Input Validation", () => {
 		interface ValidationTestCase {
