@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-## 1.6.1 - 2025-12-28
+## 1.6.1 - 2025-12-29
 
 ### Fixed
 
@@ -14,6 +14,13 @@ All notable changes to this project will be documented in this file.
 - Corrected volume slider description to match actual value range (0-1 instead of 0-100%).
 - Removed dead/commented CSS style.
 - Simplified volume preview sound logic for better readability.
+
+### Refactored
+
+- Extracted duplicate sound selection logic into `getSelectedSound()` helper method in SoundManager.
+- Simplified timer duration calculation using array indexing instead of if/else chain.
+- Flattened icon selection conditions to reduce nesting in timer state management.
+- Added TODO comment to revisit CDN URL duplication in sound management.
 
 ## 1.6.0 - 2025-12-27
 

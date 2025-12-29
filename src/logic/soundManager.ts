@@ -13,6 +13,8 @@ export class SoundManager {
 		"jingle.wav",
 		"triangle.wav",
 	];
+	// TODO: Revisit - cdnUrls duplicates builtInSounds data.
+	// Could derive URLs programmatically to reduce maintenance overhead.
 	private readonly cdnUrls: Record<string, string> = {
 		"ding.wav":
 			"https://cdn.jsdelivr.net/gh/semanticdata/dotfiles@latest/assets/ding.wav",
@@ -33,6 +35,13 @@ export class SoundManager {
 
 	updateSettings(settings: PomodoroSettings) {
 		this.settings = settings;
+	}
+
+	private getSelectedSound(): string {
+		return (
+			this.settings.customSoundUrl?.trim() ||
+			this.settings.selectedSound
+		);
 	}
 
 	private async getSoundUrl(soundName: string): Promise<string> {
@@ -137,13 +146,7 @@ export class SoundManager {
 			return;
 		}
 		try {
-			const soundToPlay =
-				this.settings.customSoundUrl &&
-				this.settings.customSoundUrl.trim() !== ""
-					? this.settings.customSoundUrl.trim()
-					: this.settings.selectedSound;
-
-			await this.playSound(soundToPlay);
+			await this.playSound(this.getSelectedSound());
 		} catch {
 			// Silently handle audio playback errors
 		}
@@ -162,14 +165,7 @@ export class SoundManager {
 	}
 
 	async previewSound(soundName?: string): Promise<void> {
-		const soundToPreview =
-			soundName ||
-			(this.settings.customSoundUrl &&
-			this.settings.customSoundUrl.trim() !== ""
-				? this.settings.customSoundUrl.trim()
-				: this.settings.selectedSound);
-
-		await this.playSound(soundToPreview);
+		await this.playSound(soundName || this.getSelectedSound());
 	}
 
 	stopCurrentAudio(): void {
