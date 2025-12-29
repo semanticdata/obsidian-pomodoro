@@ -13,6 +13,8 @@ export class SoundManager {
 		"jingle.wav",
 		"triangle.wav",
 	];
+	// TODO: Revisit - cdnUrls duplicates builtInSounds data.
+	// Could derive URLs programmatically to reduce maintenance overhead.
 	private readonly cdnUrls: Record<string, string> = {
 		"ding.wav":
 			"https://cdn.jsdelivr.net/gh/semanticdata/dotfiles@latest/assets/ding.wav",
@@ -35,6 +37,13 @@ export class SoundManager {
 		this.settings = settings;
 	}
 
+	private getSelectedSound(): string {
+		return (
+			this.settings.customSoundUrl?.trim() ||
+			this.settings.selectedSound
+		);
+	}
+
 	private async getSoundUrl(soundName: string): Promise<string> {
 		if (this.isBuiltInSound(soundName)) {
 			return this.cdnUrls[soundName] || soundName;
@@ -46,6 +55,12 @@ export class SoundManager {
 			!soundName.startsWith("https://")
 		) {
 			try {
+				// Check if vault adapter is available
+				if (!this.plugin.app?.vault?.adapter) {
+					console.error("Vault adapter not available for loading audio file");
+					return soundName;
+				}
+
 				// Read the file from the vault as binary data
 				const arrayBuffer =
 					await this.plugin.app.vault.adapter.readBinary(soundName);
@@ -131,13 +146,7 @@ export class SoundManager {
 			return;
 		}
 		try {
-			const soundToPlay =
-				this.settings.customSoundUrl &&
-				this.settings.customSoundUrl.trim() !== ""
-					? this.settings.customSoundUrl.trim()
-					: this.settings.selectedSound;
-
-			await this.playSound(soundToPlay);
+			await this.playSound(this.getSelectedSound());
 		} catch {
 			// Silently handle audio playback errors
 		}
@@ -145,19 +154,18 @@ export class SoundManager {
 
 	private async playSound(soundName: string): Promise<void> {
 		const soundUrl = await this.getSoundUrl(soundName);
+		this.stopCurrentAudio();
 		const audio = await this.createAudioElement(soundUrl);
-		await audio.play();
+		try {
+			await audio.play();
+		} catch (error) {
+			console.error("Failed to play audio:", error);
+			throw error;
+		}
 	}
 
 	async previewSound(soundName?: string): Promise<void> {
-		const soundToPreview =
-			soundName ||
-			(this.settings.customSoundUrl &&
-			this.settings.customSoundUrl.trim() !== ""
-				? this.settings.customSoundUrl.trim()
-				: this.settings.selectedSound);
-
-		await this.playSound(soundToPreview);
+		await this.playSound(soundName || this.getSelectedSound());
 	}
 
 	stopCurrentAudio(): void {

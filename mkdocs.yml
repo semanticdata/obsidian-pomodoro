@@ -5,7 +5,7 @@ repo_url: https://github.com/semanticdata/obsidian-pomodoro
 repo_name: PomoBar
 # edit_uri: edit/master/docs/
 site_author: Miguel Pimentel
-copyright: Copyright &copy; 2025 Miguel Pimentel
+copyright: Copyright &copy; 2025 <a target="_blank" href="https://miguelpimentel.do/">Miguel Pimentel</a>
 theme:
     name: material
     icon:
@@ -85,6 +85,9 @@ extra:
         - icon: fontawesome/brands/github
           link: https://github.com/semanticdata/
           name: semanticdata on GitHub
+        - icon: fontawesome/brands/mastodon
+          link: https://social.lol/@database
+          name: Miguel Pimentel on Mastodon
         # - icon: fontawesome/brands/codepen
         #   link: https://codepen.io/semanticdata
         #   name: semanticdata on Codepen

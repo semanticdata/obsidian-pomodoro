@@ -133,14 +133,11 @@ export class PomodoroTimer {
 			} else if (this.timeEnd === null) {
 				// Timer disabled
 				iconKey = "pomobar-timer-off";
-			} else if (moment.isDuration(this.timeEnd)) {
-				// Paused state (Duration)
-				if (this.isAtDefaultDuration()) {
-					iconKey = "pomobar-timer"; // Fresh timer at default duration
-				} else {
-					iconKey = "pomobar-timer-play"; // Paused with time left
-				}
+			} else if (!this.isAtDefaultDuration()) {
+				// Paused with time remaining
+				iconKey = "pomobar-timer-play";
 			}
+			// else: Fresh timer at default duration uses "pomobar-timer"
 
 			// Expose which icon key was selected for testing/debugging
 			try {
@@ -170,13 +167,12 @@ export class PomodoroTimer {
 	}
 
 	private getCurrentTimerDuration(): moment.Duration {
-		if (this.currentDurationIndex === TIMER_STATES.WORK) {
-			return moment.duration(this.settings.workMinutes, "minutes");
-		} else if (this.currentDurationIndex === TIMER_STATES.SHORT_BREAK) {
-			return moment.duration(this.settings.shortBreakMinutes, "minutes");
-		} else {
-			return moment.duration(this.settings.longBreakMinutes, "minutes");
-		}
+		const settings = [
+			this.settings.workMinutes,
+			this.settings.shortBreakMinutes,
+			this.settings.longBreakMinutes,
+		];
+		return moment.duration(settings[this.currentDurationIndex], "minutes");
 	}
 
 	updateSettings(settings: PomodoroSettings) {
@@ -246,7 +242,6 @@ export class PomodoroTimer {
 
 	private clearCurrentInterval() {
 		if (this.currentInterval) {
-			console.log("Cleared interval", this.currentInterval);
 			window.clearInterval(this.currentInterval);
 			this.registeredIntervals.delete(this.currentInterval);
 			this.currentInterval = null;
@@ -414,7 +409,7 @@ export class PomodoroTimer {
 	set _timeEnd(value: moment.Moment | moment.Duration | number) {
 		if (moment.isMoment(value)) {
 			this.timeEnd = value;
-		} else if (moment.isDuration(this.timeEnd)) {
+		} else if (moment.isDuration(value)) {
 			this.timeEnd = moment.utc(moment.now()).add(value);
 		} else {
 			this.timeEnd = moment.utc(moment.now()).add(value, "seconds");

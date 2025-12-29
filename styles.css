@@ -21,7 +21,6 @@
 
 /* Text container */
 .pomodoro-timer .pomodoro-text {
-	/* font-family: var(--font-monospace); */
 	font-size: var(--font-ui-smaller);
 	line-height: 1;
 }

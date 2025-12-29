@@ -1,11 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { PomodoroTimer } from "../src/logic/timer";
 import PomodoroPlugin from "../src/main";
+import { App } from "obsidian";
 
 export interface PluginWithPrivates extends PomodoroPlugin {
 	_statusBarItem: HTMLElement;
 	_timer: PomodoroTimer;
 }
+
+export { App };
 
 jest.mock("obsidian", () => {
 	const obsidian = jest.requireActual("obsidian");
