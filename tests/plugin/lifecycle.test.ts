@@ -2,6 +2,7 @@ import "../setup";
 import PomodoroPlugin from "../../src/main";
 import { moment, App } from "obsidian";
 import { PluginWithPrivates } from "../setup";
+import { cleanupStandardTestPlugin } from "../helpers/plugin-test-helpers";
 
 describe("PomodoroPlugin - Lifecycle", () => {
 	let plugin: PomodoroPlugin;
@@ -32,17 +33,7 @@ describe("PomodoroPlugin - Lifecycle", () => {
 	});
 
 	afterEach(async () => {
-		// Clean up any running timers
-		const timer = (plugin as PluginWithPrivates)?._timer;
-		if (timer) {
-			timer.pauseTimer(); // Stop any running timers
-			timer.cleanup(); // Clean up intervals
-		}
-
-		// Ensure plugin is unloaded if onload was called
-		if (plugin.onunload) {
-			await plugin.onunload();
-		}
+		await cleanupStandardTestPlugin(plugin);
 	});
 
 	describe("Initialization and Settings", () => {

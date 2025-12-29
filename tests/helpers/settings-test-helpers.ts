@@ -132,12 +132,22 @@ export async function testNumericValidation(
 	settingProperty: string,
 	testCases: ValidationTestCase[],
 	getCurrentValue: () => unknown,
-	expectSaveSettings: jest.Mock,
-	expectResetTimer?: jest.Mock,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	expectSaveSettings: any,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	expectResetTimer?: any,
+	settingTab?: { display: () => void },
+	mockPlugin?: { loadSettings: () => Promise<void> },
 ) {
 	for (const testCase of testCases) {
 		// Re-setup for each test case
 		jest.clearAllMocks();
+
+		// Reset settings to defaults before each test case
+		if (mockPlugin && settingTab) {
+			await mockPlugin.loadSettings();
+			settingTab.display();
+		}
 
 		const initialValue = getCurrentValue();
 		const component = getTextComponentBySettingName(settingName);

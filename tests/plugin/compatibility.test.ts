@@ -1,46 +1,18 @@
 import "../setup";
 import PomodoroPlugin from "../../src/main";
-import { App } from "obsidian";
 import { PluginWithPrivates } from "../setup";
+import { createStandardTestPlugin, cleanupStandardTestPlugin, createUninitializedTestPlugin } from "../helpers/plugin-test-helpers";
 
 describe("PomodoroPlugin - Compatibility", () => {
 	let plugin: PomodoroPlugin;
-	let mockApp: App;
 
 	beforeEach(async () => {
-		// Reset mocks before each test
-		jest.clearAllMocks();
-
-		mockApp = {} as App; // Minimal App mock
-		const manifest = {
-			id: "test-plugin",
-			name: "Test Plugin",
-			version: "1.0.0",
-			minAppVersion: "0.15.0",
-			author: "Test Author",
-			description: "Test Description",
-		};
-
-		plugin = new PomodoroPlugin(mockApp, manifest);
-
-		plugin.loadData = jest.fn().mockResolvedValue({});
-		plugin.saveData = jest.fn().mockResolvedValue(undefined);
-
-		await plugin.onload();
+		const setup = await createStandardTestPlugin();
+		plugin = setup.plugin;
 	});
 
 	afterEach(async () => {
-		// Clean up any running timers
-		const timer = (plugin as PluginWithPrivates)?._timer;
-		if (timer) {
-			timer.pauseTimer(); // Stop any running timers
-			timer.cleanup(); // Clean up intervals
-		}
-
-		// Ensure plugin is unloaded if onload was called
-		if (plugin.onunload) {
-			await plugin.onunload();
-		}
+		await cleanupStandardTestPlugin(plugin);
 	});
 
 	describe("Compatibility Properties", () => {
@@ -82,14 +54,7 @@ describe("PomodoroPlugin - Compatibility", () => {
 
 		it("should safely handle resetTimer when timer is not initialized", () => {
 			// Create a plugin without calling onload (no timer initialized)
-			const uninitializedPlugin = new PomodoroPlugin({} as App, {
-				id: "test",
-				name: "Test",
-				version: "1.0.0",
-				minAppVersion: "0.15.0",
-				author: "Test",
-				description: "Test",
-			});
+			const uninitializedPlugin = createUninitializedTestPlugin();
 
 			// Should not throw when timer is undefined
 			expect(() => {

@@ -1,57 +1,13 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+ 
 import "../setup";
 import { PomodoroSettingTab } from "../../src/components/SettingsTab";
 import type PomodoroPlugin from "../../src/main";
 import { App } from "obsidian";
 import { SoundManager } from "../../src/logic/soundManager";
-
-/**
- * Helper to create a mock text component that captures callbacks for testing.
- * Instead of complex circular references, we use a simple closure to capture the onChange callback.
- */
-function createMockTextComponent() {
-	let onChangeCallback: ((value: string) => void) | null = null;
-
-	const component: any = {
-		setPlaceholder: jest.fn().mockReturnThis(),
-		setValue: jest.fn().mockReturnThis(),
-		onChange: jest.fn((cb: (value: string) => void) => {
-			onChangeCallback = cb;
-			return component;
-		}),
-		onInput: jest.fn().mockReturnThis(),
-		// Helper method to trigger the onChange callback in tests
-		triggerChange: async (value: string) => {
-			if (onChangeCallback) {
-				await onChangeCallback(value);
-			}
-		},
-	};
-
-	return component;
-}
-
-/**
- * Helper to create a mock toggle component
- */
-function createMockToggleComponent() {
-	let onChangeCallback: ((value: boolean) => void) | null = null;
-
-	const component: any = {
-		setValue: jest.fn().mockReturnThis(),
-		onChange: jest.fn((cb: (value: boolean) => void) => {
-			onChangeCallback = cb;
-			return component;
-		}),
-		triggerChange: async (value: boolean) => {
-			if (onChangeCallback) {
-				await onChangeCallback(value);
-			}
-		},
-	};
-
-	return component;
-}
+import {
+	getTextComponentBySettingName,
+	getToggleComponentBySettingName,
+} from "../helpers/settings-test-helpers";
 
 describe("PomodoroSettingTab - Interactions", () => {
 	let settingTab: PomodoroSettingTab;
@@ -110,67 +66,6 @@ describe("PomodoroSettingTab - Interactions", () => {
 		);
 		settingTab.containerEl = mockContainerEl;
 	});
-
-	/**
-	 * Helper to find a setting by name and extract its text component
-	 */
-	function getTextComponentBySettingName(name: string) {
-		const settingMock = (jest.requireMock("obsidian") as any)
-			.Setting as jest.Mock;
-		const allSettings = settingMock.mock.results.map(
-			(result: any) => result.value,
-		);
-
-		const setting = allSettings.find(
-			(s: any) => s.setName.mock.calls[0]?.[0] === name,
-		);
-
-		if (!setting) {
-			throw new Error(`Setting with name "${name}" not found`);
-		}
-
-		const addTextCall = setting.addText.mock.calls[0];
-		if (!addTextCall) {
-			throw new Error(`Setting "${name}" has no text component`);
-		}
-
-		// Re-create the component by calling the callback
-		const callback = addTextCall[0];
-		const component = createMockTextComponent();
-		callback(component);
-
-		return component;
-	}
-
-	/**
-	 * Helper to find a setting by name and extract its toggle component
-	 */
-	function getToggleComponentBySettingName(name: string) {
-		const settingMock = (jest.requireMock("obsidian") as any)
-			.Setting as jest.Mock;
-		const allSettings = settingMock.mock.results.map(
-			(result: any) => result.value,
-		);
-
-		const setting = allSettings.find(
-			(s: any) => s.setName.mock.calls[0]?.[0] === name,
-		);
-
-		if (!setting) {
-			throw new Error(`Setting with name "${name}" not found`);
-		}
-
-		const addToggleCall = setting.addToggle.mock.calls[0];
-		if (!addToggleCall) {
-			throw new Error(`Setting "${name}" has no toggle component`);
-		}
-
-		const callback = addToggleCall[0];
-		const component = createMockToggleComponent();
-		callback(component);
-
-		return component;
-	}
 
 	describe("Settings Interactions", () => {
 		it("should update workMinutes on valid input", async () => {

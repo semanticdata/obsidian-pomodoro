@@ -1,7 +1,7 @@
 import "../setup";
 import PomodoroPlugin from "../../src/main";
 import { PluginWithPrivates } from "../setup";
-import { createStandardTestPlugin, cleanupStandardTestPlugin } from "../helpers/common-test-helpers";
+import { createStandardTestPlugin, cleanupStandardTestPlugin } from "../helpers/plugin-test-helpers";
 
 describe("PomodoroPlugin - Settings Management", () => {
 	let plugin: PomodoroPlugin;

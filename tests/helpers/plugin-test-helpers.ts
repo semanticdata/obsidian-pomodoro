@@ -3,20 +3,19 @@ import PomodoroPlugin from "../../src/main";
 import { App } from "obsidian";
 import { PluginWithPrivates } from "../setup";
 
-export interface TestPluginSetup {
+export interface StandardTestSetup {
 	plugin: PomodoroPlugin;
 	mockApp: App;
 }
 
 /**
  * Creates a standardized plugin setup for testing
- * Reduces duplication across test files
+ * This replaces the repetitive beforeEach setup in multiple test files
  */
-export async function createTestPlugin(): Promise<TestPluginSetup> {
-	// Reset mocks before each test
+export async function createStandardTestPlugin(): Promise<StandardTestSetup> {
 	jest.clearAllMocks();
 
-	const mockApp = {} as App; // Minimal App mock
+	const mockApp = {} as App;
 	const manifest = {
 		id: "test-plugin",
 		name: "Test Plugin",
@@ -28,9 +27,8 @@ export async function createTestPlugin(): Promise<TestPluginSetup> {
 
 	const plugin = new PomodoroPlugin(mockApp, manifest);
 
-	// The mocked 'obsidian' module's Plugin class will provide mocks for these:
-	plugin.loadData = jest.fn(() => Promise.resolve({}));
-	plugin.saveData = jest.fn(() => Promise.resolve());
+	(plugin.loadData as jest.Mock) = jest.fn().mockResolvedValue({});
+	(plugin.saveData as jest.Mock) = jest.fn().mockResolvedValue(undefined);
 
 	await plugin.onload();
 
@@ -39,20 +37,35 @@ export async function createTestPlugin(): Promise<TestPluginSetup> {
 
 /**
  * Standard cleanup for plugin tests
- * Ensures proper timer cleanup and plugin unloading
+ * This replaces the repetitive afterEach cleanup in multiple test files
  */
-export async function cleanupTestPlugin(plugin: PomodoroPlugin): Promise<void> {
-	// Clean up any running timers
+export async function cleanupStandardTestPlugin(plugin: PomodoroPlugin): Promise<void> {
 	const timer = (plugin as PluginWithPrivates)?._timer;
 	if (timer) {
-		timer.pauseTimer(); // Stop any running timers
-		timer.cleanup(); // Clean up intervals
+		timer.pauseTimer();
+		timer.cleanup();
 	}
 
-	// Ensure plugin is unloaded if onload was called
 	if (plugin.onunload) {
 		await plugin.onunload();
 	}
+}
+
+/**
+ * Creates a plugin without loading it (for testing uninitialized state)
+ */
+export function createUninitializedTestPlugin(): PomodoroPlugin {
+	const mockApp = {} as App;
+	const manifest = {
+		id: "test-plugin",
+		name: "Test Plugin",
+		version: "1.0.0",
+		minAppVersion: "0.15.0",
+		author: "Test Author",
+		description: "Test Description",
+	};
+
+	return new PomodoroPlugin(mockApp, manifest);
 }
 
 /**
@@ -60,15 +73,15 @@ export async function cleanupTestPlugin(plugin: PomodoroPlugin): Promise<void> {
  */
 export async function createTestPluginWithSavedData(
 	savedData: Record<string, unknown>,
-): Promise<TestPluginSetup> {
-	const { plugin, mockApp } = await createTestPlugin();
-	
+): Promise<StandardTestSetup> {
+	const { plugin, mockApp } = await createStandardTestPlugin();
+
 	// Override loadData mock to return custom data
-	plugin.loadData = jest.fn(() => Promise.resolve(savedData));
-	
+	(plugin.loadData as jest.Mock) = jest.fn().mockResolvedValue(savedData);
+
 	// Reload the plugin to trigger settings loading
 	await plugin.onunload();
 	await plugin.onload();
-	
+
 	return { plugin, mockApp };
 }

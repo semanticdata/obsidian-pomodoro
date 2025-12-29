@@ -1,49 +1,22 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import "../setup";
 import PomodoroPlugin from "../../src/main";
-import { App } from "obsidian";
 import { PluginWithPrivates } from "../setup";
 import { PomodoroTimer } from "../../src/logic/timer";
+import { createStandardTestPlugin, cleanupStandardTestPlugin } from "../helpers/plugin-test-helpers";
 
 describe("PomodoroTimer - Mouse Events", () => {
 	let plugin: PomodoroPlugin;
-	let mockApp: App;
 	let timer: PomodoroTimer;
 
 	beforeEach(async () => {
-		// Reset mocks before each test
-		jest.clearAllMocks();
-
-		mockApp = {} as App; // Minimal App mock
-		const manifest = {
-			id: "test-plugin",
-			name: "Test Plugin",
-			version: "1.0.0",
-			minAppVersion: "0.15.0",
-			author: "Test Author",
-			description: "Test Description",
-		};
-
-		plugin = new PomodoroPlugin(mockApp, manifest);
-
-		plugin.loadData = jest.fn().mockResolvedValue({});
-		plugin.saveData = jest.fn().mockResolvedValue(undefined);
-
-		await plugin.onload();
+		const setup = await createStandardTestPlugin();
+		plugin = setup.plugin;
 		timer = (plugin as PluginWithPrivates)._timer;
 	});
 
 	afterEach(async () => {
-		// Clean up any running timers
-		if (timer) {
-			timer.pauseTimer(); // Stop any running timers
-			timer.cleanup(); // Clean up intervals
-		}
-
-		// Ensure plugin is unloaded if onload was called
-		if (plugin.onunload) {
-			await plugin.onunload();
-		}
+		await cleanupStandardTestPlugin(plugin);
 	});
 
 	/**
